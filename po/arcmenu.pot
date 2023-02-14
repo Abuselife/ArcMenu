@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-11 08:23-0500\n"
+"POT-Creation-Date: 2023-02-14 07:32-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: appMenu.js:42 appMenu.js:235
+#: appMenu.js:42 appMenu.js:233
 msgid "Pin to ArcMenu"
 msgstr ""
 
-#: appMenu.js:65 appMenu.js:191
+#: appMenu.js:65 appMenu.js:189
 msgid "Create Desktop Shortcut"
 msgstr ""
 
-#: appMenu.js:191
+#: appMenu.js:189
 msgid "Delete Desktop Shortcut"
 msgstr ""
 
-#: appMenu.js:199 appMenu.js:235
+#: appMenu.js:197 appMenu.js:233
 msgid "Unpin from ArcMenu"
 msgstr ""
 
-#: appMenu.js:272
+#: appMenu.js:270
 msgid "Open Folder Location"
 msgstr ""
 
@@ -224,15 +224,15 @@ msgstr ""
 msgid "Files"
 msgstr ""
 
-#: gnome43/search.js:688 search.js:699
+#: gnome43/search.js:667 search.js:678
 msgid "Searching..."
 msgstr ""
 
-#: gnome43/search.js:690 search.js:701
+#: gnome43/search.js:669 search.js:680
 msgid "No results."
 msgstr ""
 
-#: gnome43/search.js:768 search.js:779
+#: gnome43/search.js:747 search.js:758
 #, javascript-format
 msgid "+ %d more"
 msgstr ""
@@ -291,7 +291,7 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#: menuWidgets.js:1131 menuWidgets.js:2553 menulayouts/plasma.js:122
+#: menuWidgets.js:1131 menuWidgets.js:2555 menulayouts/plasma.js:122
 msgid "Apps"
 msgstr ""
 
@@ -301,11 +301,11 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: menuWidgets.js:1885
+#: menuWidgets.js:1882
 msgid "New"
 msgstr ""
 
-#: menuWidgets.js:2123 menulayouts/az.js:70 menulayouts/eleven.js:61
+#: menuWidgets.js:2120 menulayouts/az.js:70 menulayouts/eleven.js:61
 #: menulayouts/insider.js:167 menulayouts/plasma.js:117 menulayouts/raven.js:56
 #: menulayouts/raven.js:213 menulayouts/raven.js:262 menulayouts/redmond.js:73
 #: menulayouts/redmond.js:76 menulayouts/redmond.js:77 menulayouts/unity.js:38
@@ -313,7 +313,19 @@ msgstr ""
 msgid "Pinned"
 msgstr ""
 
-#: menuWidgets.js:2406
+#: menuWidgets.js:2282
+msgid "Unmount Drive"
+msgstr ""
+
+#: menuWidgets.js:2284
+msgid "Eject Drive"
+msgstr ""
+
+#: menuWidgets.js:2330
+msgid "Remove from Recent"
+msgstr ""
+
+#: menuWidgets.js:2407
 msgid "Search…"
 msgstr ""
 
@@ -379,13 +391,13 @@ msgstr ""
 msgid "Failed to mount volume for “%s”"
 msgstr ""
 
-#: placeDisplay.js:114 placeDisplay.js:354
+#: placeDisplay.js:114 placeDisplay.js:362
 #: settings/Menu/LayoutTweaksPage.js:507 settings/Menu/LayoutTweaksPage.js:542
 #: settings/Menu/ListPinnedPage.js:386 utils.js:234
 msgid "Home"
 msgstr ""
 
-#: placeDisplay.js:217
+#: placeDisplay.js:225
 #, javascript-format
 msgid "Ejecting drive “%s” failed:"
 msgstr ""
