@@ -181,6 +181,14 @@ var PlaceDeviceInfo = class ArcMenu_PlaceDeviceInfo extends PlaceInfo {
         return this._mount.can_eject() || this._mount.can_unmount();
     }
 
+    canUnmount(){
+        return this._mount.can_unmount();
+    }
+
+    canEject(){
+        return this._mount.can_eject();
+    }
+
     eject() {
         let unmountArgs = [
             Gio.MountUnmountFlags.NONE,

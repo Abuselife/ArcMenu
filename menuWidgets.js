@@ -2274,13 +2274,26 @@ var PlaceMenuItem = GObject.registerClass(class ArcMenu_PlaceMenuItem extends Ar
         }
 
         if (info.isRemovable()) {
-            this.style = "padding-right: 15px;";
-            this._ejectButton = new ArcMenuButtonItem(this._menuLayout, null, 'media-eject-symbolic');
-            this._ejectButton.add_style_class_name("arcmenu-small-button")
-            this._ejectButton.setIconSize(14);
-            this._ejectButton.x_align = Clutter.ActorAlign.END;
-            this._ejectButton.x_expand = true;
-            this._ejectButton.connect('activate', info.eject.bind(info));
+            this.hasContextMenu = true;
+
+            this._additionalAction = info.eject.bind(info);
+
+            if (info.canUnmount())
+                this._additionalActionName = _('Unmount Drive');
+            else
+                this._additionalActionName = _('Eject Drive');
+        }
+
+        if (info.isRemovable()) {
+            this._ejectIcon = new St.Icon({
+                icon_name: 'media-eject-symbolic',
+                style_class: 'popup-menu-icon',
+            });
+            this._ejectButton = new St.Button({
+                child: this._ejectIcon,
+                style_class: 'button arcmenu-small-button',
+            });
+            this._ejectButton.connect('clicked', info.eject.bind(info));
             this.add_child(this._ejectButton);
         }
 
@@ -2307,26 +2320,14 @@ var PlaceMenuItem = GObject.registerClass(class ArcMenu_PlaceMenuItem extends Ar
         let file = Gio.File.new_for_uri(recentFile.get_uri());
 
         this.folderPath = file.get_parent()?.get_path() // can be null
-        this.style = "padding-right: 15px;";
         this.description = recentFile.get_uri_display().replace(homeRegExp, '~');
         this.fileUri = recentFile.get_uri();
 
-        this._deleteButton = new ArcMenuButtonItem(this._menuLayout, null, 'edit-delete-symbolic');
-        this._deleteButton.toggleMenuOnClick = false;
-        this._deleteButton.x_align = Clutter.ActorAlign.END;
-        this._deleteButton.x_expand = true;
-        this._deleteButton.add_style_class_name("arcmenu-small-button");
-        this._deleteButton.setIconSize(14);
-        this._deleteButton.connect('activate', () => {
-            this.cancelPopupTimeout();
-            this.contextMenu?.close();
-
+        this._additionalAction = () => {
             removeRecentFile();
-
             this.destroy();
-        });
-
-        this.add_child(this._deleteButton);
+        };
+        this._additionalActionName = _('Remove from Recent');
     }
 
     _onDestroy() {
@@ -2346,7 +2347,10 @@ var PlaceMenuItem = GObject.registerClass(class ArcMenu_PlaceMenuItem extends Ar
 
         if(this.contextMenu === undefined){
             this.contextMenu = new AppContextMenu(this, this._menuLayout);
-            this.contextMenu.setFolderPath(this.folderPath);
+            if( this.folderPath)
+                this.contextMenu.setFolderPath(this.folderPath);
+            if (this._additionalAction)
+                this.contextMenu.addAdditionalAction(_(this._additionalActionName), this._additionalAction);
             if(this._displayType === Constants.DisplayType.GRID)
                 this.contextMenu.centerBoxPointerPosition();
         }

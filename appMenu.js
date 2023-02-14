@@ -284,8 +284,23 @@ var AppContextMenu = class ArcMenu_AppContextMenu extends AppMenu.AppMenu {
         });
     }
 
+    addAdditionalAction(name, action){
+        if (!this._openFolderLocationItem) {
+            this._disconnectSignals();
+            this.removeAll();
+        } else
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        
+        this._additionalAction = new PopupMenu.PopupMenuItem(_(name));
+        this._additionalAction.connect('activate', () => {
+            this.close();
+            action();
+        });
+        this.addMenuItem(this._additionalAction);
+    }
+
     isEmpty() {
-        if (!this._app && !this._openFolderLocationItem && !this._command)
+        if (!this._app && !this._openFolderLocationItem && !this._command && !this._additionalAction)
             return true;
 
         let hasVisibleChildren = this.box.get_children().some(child => {

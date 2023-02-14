@@ -40,7 +40,7 @@ var Menu = class ArcMenu_InsiderLayout extends BaseMenuLayout{
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.FILL,
             vertical: true,
-            style: 'margin: 0px; spacing: 6px;'
+            style: 'margin-right: 6px; spacing: 6px;'
         });
         this.add_child(this.actionsBox);
 
