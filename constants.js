@@ -44,7 +44,7 @@ var DefaultMenuView = {
     ALL_PROGRAMS: 3
 }
 
-var PrefsVisiblePage = {
+var SettingsPage = {
     MAIN: 0,
     MENU_LAYOUT: 1,
     BUTTON_APPEARANCE: 2,
@@ -53,7 +53,13 @@ var PrefsVisiblePage = {
     CUSTOMIZE_MENU: 5,
     RUNNER_TWEAKS: 6,
     GENERAL: 7,
-    MENU_THEME: 8
+    MENU_THEME: 8,
+    DIRECTORY_SHORTCUTS: 9,
+    APPLICATION_SHORTCUTS: 10,
+    SEARCH_OPTIONS: 11,
+    POWER_OPTIONS: 12,
+    EXTRA_CATEGORIES: 13,
+    PINNED_APPS: 14,
 }
 
 var DefaultMenuViewTognee = {
@@ -150,7 +156,7 @@ var GridIconInfo = [
     { NAME: 'LargeRectIconGrid', SIZE: 105, ICON_SIZE: 42, ENUM: GridIconSize.LARGE_RECT },
 ]
 
-var ICON_HIDDEN = -1;
+var ICON_HIDDEN = 0;
 var EXTRA_SMALL_ICON_SIZE = 16;
 var SMALL_ICON_SIZE = 20;
 var MEDIUM_ICON_SIZE = 25;

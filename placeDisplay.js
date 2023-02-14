@@ -2,13 +2,15 @@
  * Credits: this file is a copy of GNOME's 'placeDisplay.js' file from the 'Places Status Indicator' extension.
  * https://gitlab.gnome.org/GNOME/gnome-shell-extensions/-/blob/main/extensions/places-menu/placeDisplay.js
  */
+
+const {Gio, GLib, Shell} = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {Gio, GLib, Shell } = imports.gi;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
+
 const Main = imports.ui.main;
 const ShellMountOperation = imports.ui.shellMountOperation;
 const Signals = imports.signals;
-const _ = Gettext.gettext;
 
 Gio._promisify(Gio.AppInfo, 'launch_default_for_uri_async');
 Gio._promisify(Gio.File.prototype, 'mount_enclosing_volume');
@@ -163,8 +165,7 @@ var RootInfo = class ArcMenu_RootInfo extends PlaceInfo {
         }
         super.destroy();
     }
-};
-
+}
 
 var PlaceDeviceInfo = class ArcMenu_PlaceDeviceInfo extends PlaceInfo {
     _init(kind, mount) {
@@ -178,6 +179,14 @@ var PlaceDeviceInfo = class ArcMenu_PlaceDeviceInfo extends PlaceInfo {
 
     isRemovable() {
         return this._mount.can_eject() || this._mount.can_unmount();
+    }
+
+    canUnmount(){
+        return this._mount.can_unmount();
+    }
+
+    canEject(){
+        return this._mount.can_eject();
     }
 
     eject() {
@@ -216,7 +225,7 @@ var PlaceDeviceInfo = class ArcMenu_PlaceDeviceInfo extends PlaceInfo {
         let msg = _('Ejecting drive “%s” failed:').format(this._mount.get_name());
         Main.notifyError(msg, exception.message);
     }
-};
+}
 
 var PlaceVolumeInfo = class ArcMenu_PlaceVolumeInfo extends PlaceInfo {
     _init(kind, volume) {
@@ -242,7 +251,7 @@ var PlaceVolumeInfo = class ArcMenu_PlaceVolumeInfo extends PlaceInfo {
     getIcon() {
         return this._volume.get_symbolic_icon();
     }
-};
+}
 
 const DEFAULT_DIRECTORIES = [
     GLib.UserDirectory.DIRECTORY_DOCUMENTS,
@@ -260,7 +269,7 @@ var PlacesManager = class ArcMenu_PlacesManager {
             bookmarks: [],
             network: [],
         };
-
+        this._connections = new Map();
         this._settings = new Gio.Settings({ schema_id: BACKGROUND_SCHEMA });
         this._showDesktopIconsChangedId = this._settings.connect(
             'changed::show-desktop-icons', this._updateSpecials.bind(this));
@@ -295,6 +304,10 @@ var PlacesManager = class ArcMenu_PlacesManager {
         }
     }
 
+    setConnection(signal, callback) {
+        this._connections.set(this.connect(signal, callback), this);
+    }
+
     _connectVolumeMonitorSignals() {
         const signals = [
             'volume-added',
@@ -317,6 +330,13 @@ var PlacesManager = class ArcMenu_PlacesManager {
     }
 
     destroy() {
+        this._connections.forEach((object, id) => {
+            object.disconnect(id);
+            id = null;
+        });
+
+        this._connections = null;
+
         if (this._settings)
             this._settings.disconnect(this._showDesktopIconsChangedId);
         this._settings = null;
@@ -378,15 +398,6 @@ var PlacesManager = class ArcMenu_PlacesManager {
         this._places.devices = [];
         this._places.network.forEach(p => p.destroy());
         this._places.network = [];
-
-        /* Add standard places */
-        /*this._places.devices.push(new RootInfo());
-        this._places.network.push(new PlaceInfo(
-           'network',
-            Gio.File.new_for_uri('network:///'),
-            _('Network'),
-            'network-workgroup-symbolic')
-        );*/
 
         /* first go through all connected drives */
         let drives = this._volumeMonitor.get_connected_drives();

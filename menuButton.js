@@ -1,24 +1,26 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const {Clutter, GLib, GObject, Shell, St} = imports.gi;
+const {Clutter, GLib, GObject, Graphene, Meta, Shell, St} = imports.gi;
 const Constants = Me.imports.constants;
 const { ExtensionState } = ExtensionUtils;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const Main = imports.ui.main;
 const MW = Me.imports.menuWidgets;
 const PanelMenu = imports.ui.panelMenu;
+const PointerWatcher = imports.ui.pointerWatcher;
 const PopupMenu = imports.ui.popupMenu;
 const SystemActions = imports.misc.systemActions;
-const Util = imports.misc.util;
 const Utils = Me.imports.utils;
 const _ = Gettext.gettext;
 
 var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMenu.Button{
-    _init(settings, panel) {
+    _init(panel, panelBox, panelParent) {
         super._init(0.5, null, true);
-        this._settings = settings;
+
         this._panel = panel;
+        this._panelBox = panelBox;
+        this._panelParent = panelParent;
         this.menu.destroy();
         this.menu = null;
         this.add_style_class_name('arcmenu-panel-menu');
@@ -26,7 +28,7 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         this.tooltipShowingID = null;
 
         this.tooltip = new MW.Tooltip(this);
-        this.dtpNeedsRelease = false;
+        this._dtpNeedsRelease = false;
 
         //Create Main Menus - ArcMenu and ArcMenu's context menu
         this.arcMenu = new ArcMenu(this, 0.5, St.Side.TOP);
@@ -55,9 +57,6 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         this.subMenuManager._changeMenu = (menu) => {};
 
         this.menuButtonWidget = new MW.MenuButtonWidget();
-        this.x_expand = false;
-        this.y_expand = false;
-
         this.add_child(this.menuButtonWidget);
     }
 
@@ -67,20 +66,11 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         if(this.dashToPanel?.state === ExtensionState.ENABLED && global.dashToPanel)
             this.syncWithDashToPanel();
 
-        this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () =>
-            this.updateHeight());
-
-        this._startupCompleteId = Main.layoutManager.connect('startup-complete', () => 
-            this.updateHeight());
+        this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => this.updateHeight());
+        this._startupCompleteId = Main.layoutManager.connect('startup-complete', () => this.updateHeight());
 
         this.setMenuPositionAlignment();
-
-        this.clearMenuLayoutTimeouts();
-        this.createLayoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
-            this.createMenuLayout();
-            this.createLayoutID = null;
-            return GLib.SOURCE_REMOVE;
-        });
+        this.createMenuLayoutTimeout();
     }
 
     syncWithDashToPanel(){
@@ -93,68 +83,51 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
             let side = Utils.getDashToPanelPosition(this.dashToPanel.settings, monitorIndex);
             this.updateArrowSide(side);
         });
-
-        //Find the associated Dash to Panel panel.
-        //Needed to show/hide DtP if intellihide is on
-        global.dashToPanel.panels.forEach(p => {
-            if(p.panel === this._panel){
-                this.dtpPanel = p;
-            }
-        });
     }
 
-    createMenuLayout(){
-        if(this.tooltip)
-            this.tooltip.sourceActor = null;
-        this._menuInForcedLocation = false;
-        this.arcMenu.removeAll();
-        this.section = new PopupMenu.PopupMenuSection();
-        this.arcMenu.addMenuItem(this.section);
-        this.mainBox = new St.BoxLayout({
-            reactive: true,
-            vertical: false,
-            x_expand: true,
-            y_expand: true,
-            x_align: Clutter.ActorAlign.FILL,
-            y_align: Clutter.ActorAlign.FILL
-        });
-        this.mainBox._delegate = this.mainBox;
-        this.section.actor.add_child(this.mainBox);
-
-        this.MenuLayout = Utils.getMenuLayout(this, this._settings.get_enum('menu-layout'));
-        this.setMenuPositionAlignment();
-        this.forceMenuLocation();
-        this.updateHeight();
+    _clearMenuLayoutTimeouts(){
+        if(this._createMenuLayoutTimeoutID){
+            GLib.source_remove(this._createMenuLayoutTimeoutID);
+            this._createMenuLayoutTimeoutID = null;
+        }
     }
 
-    reloadMenuLayout(){
-        if(this.tooltip)
-            this.tooltip.sourceActor = null;
-        this._menuInForcedLocation = false;
+    createMenuLayoutTimeout(){
+        this._clearMenuLayoutTimeouts();
+        this._clearTooltipShowingId();
+        this._clearTooltip();
 
-        this.MenuLayout.destroy();
-        this.MenuLayout = null;
-        this.MenuLayout = Utils.getMenuLayout(this, this._settings.get_enum('menu-layout'));
+        this._destroyMenuLayout();
 
-        this.setMenuPositionAlignment();
-        this.forceMenuLocation();
-        this.updateHeight();
+        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this._menuLayout = Utils.getMenuLayout(this, Me.settings.get_enum('menu-layout'));
+
+            if (this._menuLayout)
+                this.arcMenu.box.add_child(this._menuLayout);
+
+            this.setMenuPositionAlignment();
+            this.forceMenuLocation();
+            this.updateHeight();
+
+            this._createMenuLayoutTimeoutID = null;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     setMenuPositionAlignment(){
-        let layout = this._settings.get_enum('menu-layout');
+        const layout = Me.settings.get_enum('menu-layout');
+        const arrowAlignment = 1 - (Me.settings.get_int('menu-position-alignment') / 100);
 
-        let arrowAlignment = 1 - (this._settings.get_int('menu-position-alignment') / 100);
         if(layout !== Constants.MenuLayout.RUNNER){
-            if(this._settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
+            if(Me.settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
                 this.arcMenuContextMenu._arrowAlignment = arrowAlignment
                 this.arcMenu._arrowAlignment = arrowAlignment
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
                 this.arcMenu._boxPointer.setSourceAlignment(.5);
             }
             else if(this.dashToPanel?.state === ExtensionState.ENABLED){
-                let monitorIndex = Main.layoutManager.findIndexForActor(this);
-                let side = Utils.getDashToPanelPosition(this.dashToPanel.settings, monitorIndex);
+                const monitorIndex = Main.layoutManager.findIndexForActor(this);
+                const side = Utils.getDashToPanelPosition(this.dashToPanel.settings, monitorIndex);
                 this.updateArrowSide(side, false);
             }
             else{
@@ -163,7 +136,7 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         }
         else{
             this.updateArrowSide(St.Side.TOP, false);
-            if(this._settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
+            if(Me.settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
                 this.arcMenuContextMenu._arrowAlignment = arrowAlignment
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
             }
@@ -192,53 +165,46 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
     }
 
     forceMenuLocation(){
-        let layout = this._settings.get_enum('menu-layout');
-        let forcedMenuLocation = this._settings.get_enum('force-menu-location');
+        const layout = Me.settings.get_enum('menu-layout');
         if(layout === Constants.MenuLayout.RUNNER || layout === Constants.MenuLayout.RAVEN)
             return;
 
-        if(forcedMenuLocation === Constants.ForcedMenuLocation.OFF){
-            if(!this._menuInForcedLocation)
+        this.arcMenu.actor.remove_style_class_name('bottomOfScreenMenu');
+
+        const newMenuLocation = Me.settings.get_enum('force-menu-location');
+        if (this._menuLocation !== newMenuLocation) {
+            this._menuLocation = newMenuLocation;
+
+            if (newMenuLocation === Constants.ForcedMenuLocation.OFF) {
+                this.arcMenu.sourceActor = this.arcMenu.focusActor = this;
+                this.arcMenu._boxPointer.setPosition(this, 0.5);
+                this.setMenuPositionAlignment();
                 return;
-            this.arcMenu.sourceActor = this;
-            this.arcMenu.focusActor = this;
-            this.arcMenu._boxPointer.setPosition(this, 0.5);
-            this.setMenuPositionAlignment();
-            this._menuInForcedLocation = false;
-            return;
-        }
+            }
 
-        if(!this.dummyWidget){
-            this.dummyWidget = new St.Widget({ width: 0, height: 0, opacity: 0 });
-            Main.uiGroup.add_child(this.dummyWidget);
-        }
-
-        if(!this._menuInForcedLocation){
-            this.arcMenu.sourceActor = this.dummyWidget;
-            this.arcMenu.focusActor = this.dummyWidget;
-            this.arcMenu._boxPointer.setPosition(this.dummyWidget, 0.5);
+            this.arcMenu.sourceActor = this.arcMenu.focusActor = Main.layoutManager.dummyCursor;
+            this.arcMenu._boxPointer.setPosition(Main.layoutManager.dummyCursor, 0.5);
             this.arcMenu._boxPointer.setSourceAlignment(0.5);
             this.arcMenu._arrowAlignment = 0.5;
-            this._menuInForcedLocation = true;
         }
 
-        let monitorIndex = Main.layoutManager.findIndexForActor(this);
-        let rect = Main.layoutManager.getWorkAreaForMonitor(monitorIndex);
+        if (newMenuLocation === Constants.ForcedMenuLocation.OFF)
+            return;
 
-        //Position the runner menu in the center of the current monitor, at top of screen.
-        let positionX = Math.round(rect.x + (rect.width / 2));
+        this.updateArrowSide(St.Side.TOP);
+        const monitorIndex = Main.layoutManager.findIndexForActor(this);
+        const rect = Main.layoutManager.getWorkAreaForMonitor(monitorIndex);
+        const positionX = Math.round(rect.x + (rect.width / 2));
         let positionY;
-        if(forcedMenuLocation === Constants.ForcedMenuLocation.TOP_CENTERED){
-            this.updateArrowSide(St.Side.TOP);
+
+        if (newMenuLocation === Constants.ForcedMenuLocation.TOP_CENTERED) {
             positionY = rect.y;
+        } else if (newMenuLocation === Constants.ForcedMenuLocation.BOTTOM_CENTERED) {
+            positionY = rect.y + rect.height - 1;
+            this.arcMenu.actor.add_style_class_name('bottomOfScreenMenu');
         }
 
-        else if(forcedMenuLocation === Constants.ForcedMenuLocation.BOTTOM_CENTERED){
-            this.updateArrowSide(St.Side.BOTTOM);
-            positionY = rect.y + rect.height;
-        }
-
-        this.dummyWidget.set_position(positionX, positionY);
+        Main.layoutManager.setDummyCursorGeometry(positionX, positionY, 0, 0);
     }
 
     vfunc_event(event){
@@ -254,203 +220,251 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         return Clutter.EVENT_PROPAGATE;
     }
 
-    toggleMenu(){
-        if(this.contextMenuManager.activeMenu)
+    closeOtherMenus(){
+        if (this.contextMenuManager.activeMenu)
             this.contextMenuManager.activeMenu.toggle();
-        if(this.subMenuManager.activeMenu)
+        if (this.subMenuManager.activeMenu)
             this.subMenuManager.activeMenu.toggle();
-
-        this.forceMenuLocation();
-        let layout = this._settings.get_enum('menu-layout');
-        if(layout === Constants.MenuLayout.GNOME_OVERVIEW){
-            if(this._settings.get_boolean('gnome-dash-show-applications'))
-                Main.overview._overview._controls._toggleAppsPage();
-            else
-                Main.overview.toggle();
-        }
-        else if(!this.arcMenu.isOpen){
-            if(layout === Constants.MenuLayout.RUNNER || layout === Constants.MenuLayout.RAVEN)
-                this.MenuLayout.updateLocation();
-
-            if(this.MenuLayout?.updateStyle)
-                this.MenuLayout.updateStyle();
-
-            if(this.dtpPanel){
-                if(this.dtpPanel.intellihide?.enabled){
-                    this.dtpPanel.intellihide._revealPanel(true);
-                    this.dtpPanel.intellihide.revealAndHold(1);
-                }
-                else if(!this.dtpPanel.panelBox.visible){
-                    this.dtpPanel.panelBox.visible = true;
-                    this.dtpNeedsHiding = true;
-                }
-            }
-            else if(this._panel === Main.panel && !Main.layoutManager.panelBox.visible){
-                Main.layoutManager.panelBox.visible = true;
-                this.mainPanelNeedsHiding = true;
-            }
-
-            this.arcMenu.toggle();
-            if(this.arcMenu.isOpen && this.MenuLayout)
-                this.mainBox.grab_key_focus();
-        }
-        else if(this.arcMenu.isOpen)
-            this.arcMenu.toggle();
     }
 
-    toggleArcMenuContextMenu(){
+    closeContextMenu(){
         if(this.arcMenuContextMenu.isOpen)
             this.arcMenuContextMenu.toggle();
     }
 
+    toggleMenu(){
+        this.closeOtherMenus();
+
+        this.forceMenuLocation();
+
+        const layout = Me.settings.get_enum('menu-layout');
+        if(layout === Constants.MenuLayout.GNOME_OVERVIEW){
+            if(Me.settings.get_boolean('gnome-dash-show-applications'))
+                Main.overview._overview._controls._toggleAppsPage();
+            else
+                Main.overview.toggle();
+            return;
+        }
+
+        if(!this.arcMenu.isOpen){
+            if(this._menuLayout?.updateLocation)
+                this._menuLayout.updateLocation();
+
+            if(this._menuLayout?.updateStyle)
+                this._menuLayout.updateStyle();
+
+            this._maybeShowPanel();
+        }
+
+        this.arcMenu.toggle();
+
+        if (this.arcMenu.isOpen)
+            this._menuLayout?.grab_key_focus();
+    }
+
+    _maybeShowPanel(){
+        if (this._panelParent.intellihide && this._panelParent.intellihide.enabled) {
+            this._panelParent.intellihide._revealPanel(true);
+            this._panelParent.intellihide.revealAndHold(1);
+        }
+        else if (!this._panelBox.visible) {
+            this._panelBox.visible = true;
+            this._panelNeedsHiding = true;
+        }
+    }
+
     updateHeight(){
-        if(!this.MenuLayout)
+        if(!this._menuLayout)
             return;
 
-        let layout = this._settings.get_enum('menu-layout');
-        let height = this._settings.get_int('menu-height');
-
+        const layout = Me.settings.get_enum('menu-layout');
         if(layout === Constants.MenuLayout.RUNNER || layout === Constants.MenuLayout.RAVEN){
             this.arcMenu.actor.style = '';
             return;
         }
 
+        const height = Me.settings.get_int('menu-height');
         this.arcMenu.actor.style = `height: ${height}px;`;
     }
 
     updateWidth(){
-        if(this.MenuLayout?.updateWidth)
-            this.MenuLayout.updateWidth(true);
+        if(this._menuLayout?.updateWidth)
+            this._menuLayout.updateWidth(true);
+    }
+
+    _clearTooltipShowingId(){
+        if(this.tooltipShowingID){
+            GLib.source_remove(this.tooltipShowingID);
+            this.tooltipShowingID = null;
+        }
+    }
+
+    _clearTooltip(){
+        this.tooltipShowing = false;
+        if(this.tooltip){
+            this.tooltip.hide();
+            this.tooltip.sourceActor = null;
+        }
     }
 
     _onDestroy(){
+        this._removePointerWatcher();
+
         if(this._monitorsChangedId){
             Main.layoutManager.disconnect(this._monitorsChangedId);
             this._monitorsChangedId = null;
         }
+
         if(this._startupCompleteId){
             Main.layoutManager.disconnect(this._startupCompleteId);
             this._startupCompleteId = null;
         }
 
-        this.clearMenuLayoutTimeouts();
+        this._clearMenuLayoutTimeouts();
+        this._clearTooltipShowingId();
 
-        if(this.tooltipShowingID){
-            GLib.source_remove(this.tooltipShowingID);
-            this.tooltipShowingID = null;
-        }
         if(this.dtpPostionChangedID && this.dashToPanel.settings){
             this.dashToPanel.settings.disconnect(this.dtpPostionChangedID);
             this.dtpPostionChangedID = null;
         }
 
+        this._destroyMenuLayout();
+
         this.tooltip?.destroy();
-        this.MenuLayout?.destroy();
+        this.tooltip = null;
         this.arcMenu?.destroy();
         this.arcMenuContextMenu?.destroy();
-        this.dummyWidget?.destroy();
 
         super._onDestroy();
     }
 
-    clearMenuLayoutTimeouts(){
-        if(this.createLayoutID){
-            GLib.source_remove(this.createLayoutID);
-            this.createLayoutID = null;
+    _destroyMenuLayout() {
+        if(this._menuLayout){
+            this._menuLayout.destroy();
+            this._menuLayout = null;
         }
-        if(this.updateMenuLayoutID){
-            GLib.source_remove(this.updateMenuLayoutID);
-            this.updateMenuLayoutID = null;
-        }
-    }
-
-    updateMenuLayout(){
-        this.clearMenuLayoutTimeouts();
-
-        this.tooltipShowing = false;
-        if (this.tooltipShowingID) {
-            GLib.source_remove(this.tooltipShowingID);
-            this.tooltipShowingID = null;
-        }
-        if(this.MenuLayout){
-            this.MenuLayout.destroy();
-            this.MenuLayout = null;
-        }
-        this.updateMenuLayoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
-            this.createMenuLayout();
-            this.updateMenuLayoutID = null;
-            return GLib.SOURCE_REMOVE;
-        });
     }
 
     updateLocation(){
-        if(this.MenuLayout && this.MenuLayout.updateLocation)
-            this.MenuLayout.updateLocation();
+        if(this._menuLayout && this._menuLayout.updateLocation)
+            this._menuLayout.updateLocation();
+    }
+
+    getActiveCategoryType() {
+        return this._menuLayout?.activeCategoryType;
+    }
+
+    reloadApplications() {
+        this._menuLayout?.reloadApplications();
     }
 
     displayPinnedApps(){
-        this.MenuLayout?.displayPinnedApps();
+        this._menuLayout?.displayPinnedApps();
     }
 
     loadPinnedApps(){
-        this.MenuLayout?.loadPinnedApps();
-    }
-
-    reload(){
-        if(this.MenuLayout)
-            this.reloadMenuLayout();
+        this._menuLayout?.loadPinnedApps();
     }
 
     setDefaultMenuView(){
-        if(!this.MenuLayout)
+        if(!this._menuLayout)
             return;
 
-        if(!this.MenuLayout.reloadQueued)
-            this.MenuLayout.setDefaultMenuView();
+        if(!this._menuLayout.reloadQueued)
+            this._menuLayout.setDefaultMenuView();
     }
 
     _onOpenStateChanged(_menu, open){
-        if(open){
-            this.menuButtonWidget.setActiveStylePseudoClass(true);
+        if (open) {
+            this.menuButtonWidget.addStylePseudoClass('active');
             this.add_style_pseudo_class('active');
 
-            if(Main.panel.menuManager && Main.panel.menuManager.activeMenu)
+            if (Main.panel.menuManager && Main.panel.menuManager.activeMenu)
                 Main.panel.menuManager.activeMenu.toggle();
 
-            if(this.dtpPanel && !this.dtpNeedsRelease){
-                if(this.dtpPanel.intellihide?.enabled){
-                    this.dtpNeedsRelease = true;
+            if (!this._dtpNeedsRelease && this._panelParent.intellihide?.enabled)
+                this._dtpNeedsRelease = true;
+        }
+        else {
+            if (!this.arcMenu.isOpen) {
+                this._clearTooltipShowingId();
+                this._clearTooltip();
+            }
+
+            if (!this.arcMenu.isOpen && !this.arcMenuContextMenu.isOpen) {
+                this.menuButtonWidget.removeStylePseudoClass('active');
+                this.remove_style_pseudo_class('active');
+
+                if (this._dtpNeedsRelease && !this._panelNeedsHiding) {
+                    this._dtpNeedsRelease = false;
+                    const hidePanel = () => this._panelParent.intellihide?.release(1);
+
+                    const shouldHidePanel = this._maybeHidePanel(hidePanel);
+                    if (!shouldHidePanel)
+                        return;
+
+                    hidePanel();
+                }
+                if (this._panelNeedsHiding) {
+                    this._panelNeedsHiding = false;
+                    const hidePanel = () => this._panelBox.visible = false;
+
+                    const shouldHidePanel = this._maybeHidePanel(hidePanel);
+                    if (!shouldHidePanel)
+                        return;
+
+                    hidePanel();
                 }
             }
         }
-        else{
-            if(!this.arcMenu.isOpen){
-                if (this.tooltipShowingID) {
-                    GLib.source_remove(this.tooltipShowingID);
-                    this.tooltipShowingID = null;
-                }
-                this.tooltipShowing = false;
-                if(this.tooltip){
-                    this.tooltip.hide();
-                    this.tooltip.sourceActor = null;
-                }
-            }
-            if(!this.arcMenu.isOpen && !this.arcMenuContextMenu.isOpen){
-                if(this.dtpPanel && this.dtpNeedsRelease && !this.dtpNeedsHiding){
-                    this.dtpNeedsRelease = false;
-                    this.dtpPanel.intellihide?.release(1);
-                }
-                if(this.dtpPanel && this.dtpNeedsHiding){
-                    this.dtpNeedsHiding = false;
-                    this.dtpPanel.panelBox.visible = false;
-                }
-                if(this.mainPanelNeedsHiding){
-                    Main.layoutManager.panelBox.visible = false;
-                    this.mainPanelNeedsHiding = false;
-                }
-                this.menuButtonWidget.setActiveStylePseudoClass(false);
-                this.remove_style_pseudo_class('active');
-            }
+    }
+
+    _maybeHidePanel(hidePanelCallback) {
+        let [x, y] = global.get_pointer();
+        const mouseOnPanel = this._panelHasMousePointer(x, y);
+
+        const actor = global.stage.get_event_actor(Clutter.get_current_event());
+        if (actor === this._panelParent || this._panelParent.contains(actor) || mouseOnPanel) {
+            if (this._pointerWatch)
+                return false;
+
+            this._pointerWatch = PointerWatcher.getPointerWatcher().addWatch(200, (x, y) => {
+                if (!this._panelHasMousePointer(x, y))
+                    hidePanelCallback();
+            });
+                                    
+            return false;
+        }
+
+        return true;
+    }
+
+    _panelHasMousePointer(x, y) {
+        const grabActor = global.stage.get_grab_actor();
+        const sourceActor = grabActor?._sourceActor || grabActor;
+        const statusArea = this._panelParent.statusArea ?? this._panel.statusArea;
+
+        if (sourceActor && (sourceActor == Main.layoutManager.dummyCursor || 
+                            statusArea?.quickSettings?.menu.actor.contains(sourceActor) || 
+                            this._panelParent.contains(sourceActor))) {
+            return true;
+        }
+
+        const panelBoxRect = this._panelBox.get_transformed_extents();
+        const cursorLocation = new Graphene.Point({x, y});
+
+        if (panelBoxRect.contains_point(cursorLocation))
+            return true;
+        else {
+            this._removePointerWatcher();
+            return false;
+        }
+    }
+
+    _removePointerWatcher() {
+        if (this._pointerWatch) {
+            PointerWatcher.getPointerWatcher()._removeWatch(this._pointerWatch);
+            this._pointerWatch = null;
         }
     }
 });
@@ -458,13 +472,21 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
 var ArcMenu = class ArcMenu_ArcMenu extends PopupMenu.PopupMenu{
     constructor(sourceActor, arrowAlignment, arrowSide, parent) {
         super(sourceActor, arrowAlignment, arrowSide);
-        this._settings = sourceActor._settings;
         this._menuButton = parent || sourceActor;
         Main.uiGroup.add_child(this.actor);
         this.actor.add_style_class_name('panel-menu arcmenu-menu');
         this.actor.hide();
         this._menuClosedID = this.connect('menu-closed', () => this._menuButton.setDefaultMenuView());
         this.connect('destroy', () => this._onDestroy());
+
+        this.actor.connectObject('captured-event', this._onCapturedEvent.bind(this), this);
+    }
+
+    _onCapturedEvent(actor, event) {
+        if (Main.keyboard.maybeHandleEvent(event))
+            return Clutter.EVENT_STOP;
+
+        return Clutter.EVENT_PROPAGATE;
     }
 
     open(animate){
@@ -476,12 +498,8 @@ var ArcMenu = class ArcMenu_ArcMenu extends PopupMenu.PopupMenu{
     }
 
     close(animate){
-        if(this.isOpen){
-            if(this._menuButton.contextMenuManager.activeMenu)
-                this._menuButton.contextMenuManager.activeMenu.toggle();
-            if(this._menuButton.subMenuManager.activeMenu)
-                this._menuButton.subMenuManager.activeMenu.toggle();
-        }
+        if (this.isOpen)
+            this._menuButton.closeOtherMenus();
 
         super.close(animate);
     }
@@ -497,7 +515,6 @@ var ArcMenu = class ArcMenu_ArcMenu extends PopupMenu.PopupMenu{
 var ArcMenuContextMenu = class ArcMenu_ArcMenuContextMenu extends PopupMenu.PopupMenu {
     constructor(sourceActor, arrowAlignment, arrowSide) {
         super(sourceActor, arrowAlignment, arrowSide);
-        this._settings = sourceActor._settings;
         this._menuButton = sourceActor;
 
         this.actor.add_style_class_name('panel-menu app-menu');
@@ -506,12 +523,12 @@ var ArcMenuContextMenu = class ArcMenu_ArcMenuContextMenu extends PopupMenu.Popu
 
         this.systemActions = SystemActions.getDefault();
 
-        const menuItemsChangedId = this._settings.connect('changed::context-menu-shortcuts', () => this.populateMenuItems());
+        const menuItemsChangedId = Me.settings.connect('changed::context-menu-shortcuts', () => this.populateMenuItems());
 
         this.populateMenuItems();
         this.connect('destroy', () => {
             this.disconnectPowerOptions();
-            this._settings.disconnect(menuItemsChangedId);
+            Me.settings.disconnect(menuItemsChangedId);
         });
     }
 
@@ -519,7 +536,7 @@ var ArcMenuContextMenu = class ArcMenu_ArcMenuContextMenu extends PopupMenu.Popu
         this.disconnectPowerOptions();
         this.removeAll();
 
-        const contextMenuShortcuts = this._settings.get_value('context-menu-shortcuts').deep_unpack();
+        const contextMenuShortcuts = Me.settings.get_value('context-menu-shortcuts').deep_unpack();
 
         for(let i = 0; i < contextMenuShortcuts.length; i++){
             const title = contextMenuShortcuts[i][0];
@@ -534,15 +551,15 @@ var ArcMenuContextMenu = class ArcMenu_ArcMenuContextMenu extends PopupMenu.Popu
             else if(command.includes(Constants.ShortcutCommands.SETTINGS)){
                 let settingsPage = command.replace(Constants.ShortcutCommands.SETTINGS, '');
                 if(settingsPage === 'About')
-                    this.addArcMenuSettingsItem(title, Constants.PrefsVisiblePage.ABOUT);
+                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.ABOUT);
                 else if(settingsPage === 'Menu')
-                    this.addArcMenuSettingsItem(title, Constants.PrefsVisiblePage.CUSTOMIZE_MENU);
+                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.CUSTOMIZE_MENU);
                 else if(settingsPage === 'Layout')
-                    this.addArcMenuSettingsItem(title, Constants.PrefsVisiblePage.MENU_LAYOUT);
+                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.MENU_LAYOUT);
                 else if(settingsPage === 'Button')
-                    this.addArcMenuSettingsItem(title, Constants.PrefsVisiblePage.BUTTON_APPEARANCE);
+                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.BUTTON_APPEARANCE);
                 else if(settingsPage === 'Theme')
-                    this.addArcMenuSettingsItem(title, Constants.PrefsVisiblePage.MENU_THEME);
+                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.MENU_THEME);
             }
             else if(command === Constants.ShortcutCommands.OVERVIEW)
                 this.addAction(_('Activities Overview'), () => Main.overview.toggle());
@@ -558,7 +575,7 @@ var ArcMenuContextMenu = class ArcMenu_ArcMenuContextMenu extends PopupMenu.Popu
     addArcMenuSettingsItem(title, prefsVisiblePage){
         let item = new PopupMenu.PopupMenuItem(_(title));
         item.connect('activate', () => {
-            this._settings.set_int('prefs-visible-page', prefsVisiblePage);
+            Me.settings.set_int('prefs-visible-page', prefsVisiblePage);
             ExtensionUtils.openPrefs();
         });
         this.addMenuItem(item);
