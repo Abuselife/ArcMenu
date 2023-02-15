@@ -379,6 +379,7 @@ var MenuLayout = {
     WINDOWS: 16,
     ELEVEN: 17,
     AZ: 18,
+    ENTERPRISE: 19,
 };
 
 var TraditionalMenus = [
@@ -397,7 +398,8 @@ var ModernMenus = [
     { IMAGE: 'menu-redmond-symbolic', TITLE: _('Redmond'), LAYOUT: MenuLayout.REDMOND},
     { IMAGE: 'menu-windows-symbolic', TITLE: _('Windows'), LAYOUT: MenuLayout.WINDOWS},
     { IMAGE: 'menu-eleven-symbolic', TITLE: _('11'), LAYOUT: MenuLayout.ELEVEN},
-    { IMAGE: 'menu-az-symbolic', TITLE: _('a.z.'), LAYOUT: MenuLayout.AZ}];
+    { IMAGE: 'menu-az-symbolic', TITLE: _('a.z.'), LAYOUT: MenuLayout.AZ},
+    { IMAGE: 'menu-enterprise-symbolic', TITLE: _('Enterprise'), LAYOUT: MenuLayout.ENTERPRISE}];
 
 var TouchMenus = [
     { IMAGE: 'menu-elementary-symbolic', TITLE: _('Elementary'), LAYOUT: MenuLayout.ELEMENTARY},

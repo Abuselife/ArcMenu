@@ -59,7 +59,7 @@ var Menu = class ArcMenu_InsiderLayout extends BaseMenuLayout{
             y_align: Clutter.ActorAlign.START,
             vertical: true,
             style: 'padding-top: 9px;'
-        })
+        });
         const userMenuIcon = new MW.UserMenuIcon(this, 75, true);
         userMenuIcon.label.set({
             x_align: Clutter.ActorAlign.CENTER,

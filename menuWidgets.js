@@ -415,7 +415,7 @@ class ArcMenu_Separator extends PopupMenu.PopupBaseMenuItem {
         });
         this.add_child(this._separator);
         if(separatorAlignment === Constants.SeparatorAlignment.HORIZONTAL){
-            this.style = "padding: 0px 5px; margin-left: 0px; margin-right: 0px;";
+            this.style = "padding: 0px 5px; margin: 6px 0px;";
             if(separatorLength === Constants.SeparatorStyle.SHORT)
                 this._separator.style = "margin: 0px 45px;";
             else if(separatorLength === Constants.SeparatorStyle.MEDIUM)
@@ -428,7 +428,7 @@ class ArcMenu_Separator extends PopupMenu.PopupBaseMenuItem {
                 this._separator.style = "margin: 0px; padding: 0px;";
             else if(separatorLength === Constants.SeparatorStyle.HEADER_LABEL){
                 this._separator.style = "margin: 0px 20px 0px 10px;";
-                this.style = "padding: 5px 15px;"
+                this.style = "padding: 5px 15px; margin: 6px 0px;"
             }
         }
         else if(separatorAlignment === Constants.SeparatorAlignment.VERTICAL){
@@ -789,7 +789,6 @@ var PowerOptionsBox = GObject.registerClass(class ArcMenu_PowerOptionsBox extend
             overlay_scrollbars: true,
             clip_to_allocation: true,
         });
-        this.set_policy(St.PolicyType.NEVER, St.PolicyType.NEVER);
         this._orientation = vertical ? Clutter.Orientation.VERTICAL : Clutter.Orientation.HORIZONTAL;
 
         const box = new St.BoxLayout({
@@ -805,7 +804,6 @@ var PowerOptionsBox = GObject.registerClass(class ArcMenu_PowerOptionsBox extend
             if(shouldShow){
                 const powerButton = new PowerButton(menuLayout, powerType);
                 powerButton.connectObject(
-                    'enter-event', () => Utils.ensureActorVisibleInScrollView(powerButton, this._orientation),
                     'key-focus-in', () => Utils.ensureActorVisibleInScrollView(powerButton, this._orientation), this);
                 powerButton.style = 'margin: 0px;';
                 box.add_child(powerButton);
