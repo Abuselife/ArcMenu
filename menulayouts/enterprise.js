@@ -40,11 +40,13 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
             vertical: false,
-            style: 'spacing: 6px; margin-right: 10px; padding: 3px 0px;'
+            style: 'spacing: 6px; margin: 0px 6px; padding: 3px 0px;'
         });
-        this.add_child(this.topBox);
 
-        this.userMenuBox = new St.BoxLayout({ vertical: false });
+        this.userMenuBox = new St.BoxLayout({ 
+            vertical: false,
+            x_expand: true,
+        });
         this.userMenuIcon = new MW.UserMenuIcon(this, 36, true);
         this.userMenuIcon.set({
             x_expand: false,
@@ -53,21 +55,13 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         this.userMenuIcon.label.set({
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
-            x_align: Clutter.ActorAlign.CENTER,
-            style: "font-weight: bold; padding-left: 14px;",
+            style: "font-weight: bold;",
         });
-        this.userMenuBox.add_child(this.userMenuIcon);
-        this.userMenuBox.add_child(this.userMenuIcon.label);
-        this.topBox.add_child(this.userMenuBox);
-
-        this.topBox.add_child(this.searchBox);
 
         this.searchBox.set({
+            x_expand: false,
             y_align: Clutter.ActorAlign.CENTER
         });
-
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
-        this.add_child(separator);
 
         this._mainBox = new St.BoxLayout({
             x_expand: true,
@@ -101,9 +95,16 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
 
         const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
 
-        this._mainBox.add_child(this.leftBox);
+        const horizontalFlip = Me.settings.get_boolean("enable-horizontal-flip");
+        this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
-        this._mainBox.add_child(this.rightBox);
+        this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
+        this.topBox.add_child(horizontalFlip ? this.searchBox : this.userMenuBox);
+        this.topBox.add_child(horizontalFlip ? this.userMenuBox : this.searchBox);
+        this.userMenuBox.add_child(horizontalFlip ? this.userMenuIcon.label : this.userMenuIcon);
+        this.userMenuBox.add_child(horizontalFlip ? this.userMenuIcon : this.userMenuIcon.label);
+        this.userMenuIcon.label.style += horizontalFlip ? 'padding-right: 14px;' : 'padding-left: 14px;';
+        this.userMenuBox.x_align = horizontalFlip ? Clutter.ActorAlign.END : Clutter.ActorAlign.START;
 
         this.categoriesScrollBox = this._createScrollBox({
             x_expand: true,
@@ -130,6 +131,18 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         this.leftBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL));
         this.leftBox.add_child(powerOptionsDisplay);
 
+        const searchbarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
+        
+        if(searchbarLocation === Constants.SearchbarLocation.TOP){
+            this.insert_child_at_index(separator, 0);
+            this.insert_child_at_index(this.topBox, 0);
+        }
+        else if(searchbarLocation === Constants.SearchbarLocation.BOTTOM){
+            this.add_child(separator);
+            this.add_child(this.topBox);
+        }
+
         this.updateWidth();
         this.loadCategories();
         this.loadPinnedApps();
@@ -140,7 +153,6 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         const leftPanelWidthOffset = 70;
         const leftPanelWidth = Me.settings.get_int("left-panel-width") - leftPanelWidthOffset;
         this.leftBox.style = `width: ${leftPanelWidth}px;`;
-        this.userMenuBox.style = `width: ${leftPanelWidth}px; padding-left: 10px;`;
 
         const widthAdjustment = Me.settings.get_int("menu-width-adjustment");
         let menuWidth = this.default_menu_width + widthAdjustment;
@@ -148,6 +160,8 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         menuWidth = Math.max(300, menuWidth);
         this.applicationsScrollBox.style = `width: ${menuWidth}px;`;
         this.menu_width = menuWidth;
+
+        this.searchBox.style = `width: ${menuWidth - 26}px;`
 
         if (setDefaultMenuView)
             this.setDefaultMenuView();

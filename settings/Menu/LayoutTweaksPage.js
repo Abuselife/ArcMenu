@@ -214,9 +214,11 @@ class ArcMenu_LayoutTweaksPage extends SubPage {
 
     _loadEnterpriseTweaks() {
         let tweaksGroup = new Adw.PreferencesGroup();
-        tweaksGroup.add(this._createAvatarShapeRow());
-        tweaksGroup.add(this._createVertSeparatorRow());
         tweaksGroup.add(this._createActivateOnHoverRow());
+        tweaksGroup.add(this._createAvatarShapeRow());
+        tweaksGroup.add(this._createSearchBarLocationRow());
+        tweaksGroup.add(this._createFlipHorizontalRow());
+        tweaksGroup.add(this._createVertSeparatorRow());
         this.add(tweaksGroup);
     }
 
