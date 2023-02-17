@@ -49,7 +49,6 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
         this.applicationsBox = new St.BoxLayout({ vertical: true });
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
@@ -74,7 +73,6 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
-            overlay_scrollbars: true
         });
         this.leftBox.add_child(this.categoriesScrollBox);
         this.categoriesBox = new St.BoxLayout({ vertical: true });

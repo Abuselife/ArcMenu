@@ -37,8 +37,6 @@ var Menu = class ArcMenu_MintLayout extends BaseMenuLayout{
             x_expand: false,
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
-            overlay_scrollbars: true,
-            clip_to_allocation: true,
             style_class: 'small-vfade',
             style: `padding: 10px 0px; width: 62px; margin: 0px 8px 0px 0px; 
                     background-color:rgba(10, 10, 15, 0.1); border-color:rgba(186, 196,201, 0.2); 
@@ -79,7 +77,6 @@ var Menu = class ArcMenu_MintLayout extends BaseMenuLayout{
         this.applicationsBox = new St.BoxLayout({ vertical: true });
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
@@ -103,12 +100,10 @@ var Menu = class ArcMenu_MintLayout extends BaseMenuLayout{
             y_expand: false,
             y_align: Clutter.ActorAlign.START,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
-            overlay_scrollbars: true
         });
         this.leftBox.add_child(this.categoriesScrollBox);
         this.categoriesBox = new St.BoxLayout({ vertical: true });
-        this.categoriesScrollBox.add_actor( this.categoriesBox);
-        this.categoriesScrollBox.clip_to_allocation = true;
+        this.categoriesScrollBox.add_actor(this.categoriesBox);
 
         this.searchBox.style = "margin: 0px;";
         const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');

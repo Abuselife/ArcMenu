@@ -92,7 +92,6 @@ var Menu = class ArcMenu_RedmondLayout extends BaseMenuLayout{
             y_expand: true,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
@@ -119,7 +118,6 @@ var Menu = class ArcMenu_RedmondLayout extends BaseMenuLayout{
         this.shortcutsBox = new St.BoxLayout({ vertical: true });
         this.shortcutsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
         });
         this.shortcutsScrollBox.add_actor(this.shortcutsBox);

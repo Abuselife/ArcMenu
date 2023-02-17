@@ -39,9 +39,7 @@ var Menu = class ArcMenu_ElementaryLayout extends BaseMenuLayout{
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
             x_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class:  this._disableFadeEffect ? '' : 'vfade',
-            reactive:true
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.add_child(this.applicationsScrollBox);

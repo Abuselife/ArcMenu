@@ -60,7 +60,6 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'vfade'
         });
         this.pinnedAppsBox = new St.BoxLayout({
@@ -87,7 +86,6 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             y_expand: false,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
@@ -251,8 +249,6 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
-            reactive: true,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
 

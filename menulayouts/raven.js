@@ -102,7 +102,6 @@ var Menu = class ArcMenu_RavenLayout extends BaseMenuLayout{
             y_expand: false,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);

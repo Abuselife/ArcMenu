@@ -1032,7 +1032,13 @@ var BaseMenuLayout = class ArcMenu_BaseMenuLayout extends St.BoxLayout {
     }
 
     _createScrollBox(params){
-        let scrollBox = new St.ScrollView(params);
+        let scrollBox = new St.ScrollView({
+            ...params,
+            clip_to_allocation: true,
+            hscrollbar_policy: St.PolicyType.NEVER,
+            vscrollbar_policy: St.PolicyType.AUTOMATIC,
+            overlay_scrollbars: true
+        });
         let panAction = new Clutter.PanAction({ interpolate: false });
         panAction.connectObject('pan', (action) => {
             //blocks activate event while panning scroll view
@@ -1048,9 +1054,6 @@ var BaseMenuLayout = class ArcMenu_BaseMenuLayout extends St.BoxLayout {
         panAction.connectObject('gesture-cancel',(action) => this.onPanEnd(action, scrollBox), this);
         panAction.connectObject('gesture-end', (action) => this.onPanEnd(action, scrollBox), this);
         scrollBox.add_action(panAction);
-
-        scrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
-        scrollBox.clip_to_allocation = true;
 
         return scrollBox;
     }

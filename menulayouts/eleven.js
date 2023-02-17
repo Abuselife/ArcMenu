@@ -90,12 +90,10 @@ var Menu = class ArcMenu_ElevenLayout extends BaseMenuLayout {
             style_class: 'arcmenu-margin-box'
         });
         this.applicationsScrollBox = this._createScrollBox({
-            clip_to_allocation: true,
             x_expand: true,
             y_expand: true,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);

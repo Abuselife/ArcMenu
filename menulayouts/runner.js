@@ -91,9 +91,7 @@ var Menu = class ArcMenu_RunnerLayout extends BaseMenuLayout {
             y_expand: false,
             y_align: Clutter.ActorAlign.START,
             x_align: Clutter.ActorAlign.FILL,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
-            reactive: true,
             style: `padding: ${padding}px 0px 0px 0px;`
         });
 

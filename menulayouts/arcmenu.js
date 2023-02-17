@@ -60,8 +60,6 @@ var Menu = class ArcMenu_ArcMenuLayout extends BaseMenuLayout {
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
-            overlay_scrollbars: true,
-            reactive:true
         });
         this.leftBox.add_child(this.applicationsScrollBox);
 
@@ -113,7 +111,6 @@ var Menu = class ArcMenu_ArcMenuLayout extends BaseMenuLayout {
         this.shortcutsBox = new St.BoxLayout({ vertical: true });
         this.shortcutsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.shortcutsScrollBox.add_actor(this.shortcutsBox);

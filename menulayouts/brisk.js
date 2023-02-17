@@ -49,7 +49,6 @@ var Menu = class ArcMenu_BriskLayout extends BaseMenuLayout{
         this.applicationsBox = new St.BoxLayout({ vertical: true });
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
@@ -72,7 +71,6 @@ var Menu = class ArcMenu_BriskLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: false,
             y_align: Clutter.ActorAlign.START,
-            overlay_scrollbars: true,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.leftBox.add_child(this.categoriesScrollBox);
