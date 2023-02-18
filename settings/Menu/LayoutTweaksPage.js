@@ -292,7 +292,7 @@ class ArcMenu_LayoutTweaksPage extends SubPage {
 
     _loadWindowsTweaks(){
         let tweaksGroup = new Adw.PreferencesGroup();
-
+        tweaksGroup.add(this._createVertSeparatorRow());
         let frequentAppsSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER
         });
@@ -711,6 +711,7 @@ class ArcMenu_LayoutTweaksPage extends SubPage {
 
     _loadInsiderMenuTweaks(){
         let tweaksGroup = new Adw.PreferencesGroup();
+        tweaksGroup.add(this._createVertSeparatorRow());
         tweaksGroup.add(this._createAvatarShapeRow());
         this.add(tweaksGroup);
 

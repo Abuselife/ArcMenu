@@ -166,7 +166,7 @@ var Menu = class ArcMenu_UnityLayout extends BaseMenuLayout{
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.ALWAYS_SHOW, Constants.SeparatorAlignment.VERTICAL);
+                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.VERTICAL);
                 this.actionsBox.add_child(separator);
             }
             else {

@@ -43,9 +43,12 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.FILL,
             vertical: true,
-            style: 'margin-right: 6px; spacing: 6px;'
+            style: 'spacing: 6px;'
         });
         this.add_child(this.actionsBox);
+
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        this.add_child(verticalSeparator);
 
         this.subMainBox = new St.BoxLayout({
             x_expand: true,
@@ -67,6 +70,8 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_expand: true
         });
         this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
+
+        this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
 
         let layout = new Clutter.GridLayout({
             orientation: Clutter.Orientation.VERTICAL,
@@ -147,7 +152,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX, Constants.SeparatorAlignment.HORIZONTAL);
+                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             }
             else {
@@ -308,11 +313,8 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         super.setDefaultMenuView();
 
         this.displayAllApps();
-        if(!Me.settings.get_boolean('windows-disable-pinned-apps')){
-            if(!this.contains(this.pinnedAppsScrollBox))
-                this.add_child(this.pinnedAppsScrollBox);
+        if(!Me.settings.get_boolean('windows-disable-pinned-apps'))
             this.displayPinnedApps();
-        }
 
         let appsScrollBoxAdj = this.pinnedAppsScrollBox.get_vscroll_bar().get_adjustment();
         appsScrollBoxAdj.set_value(0);
@@ -386,14 +388,19 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
 
         const pinnedApps = Me.settings.get_strv('pinned-app-list');
 
-        if(pinnedApps.length < 1){
-            if(this.contains(this.pinnedAppsScrollBox))
+        if (pinnedApps.length < 1) {
+            if (this.contains(this.pinnedAppsScrollBox)) {
+                this.remove_child(this.pinnedAppsVerticalSeparator);
                 this.remove_child(this.pinnedAppsScrollBox);
+            }
+                
             return;
         }
 
-        if(!this.contains(this.pinnedAppsScrollBox))
+        if (!this.contains(this.pinnedAppsScrollBox)) {
+            this.add_child(this.pinnedAppsVerticalSeparator);
             this.add_child(this.pinnedAppsScrollBox);
+        }
 
         const label = this.createLabelRow(_("Pinned"));
         this.pinnedAppsBox.add_child(label);

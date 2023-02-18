@@ -40,9 +40,12 @@ var Menu = class ArcMenu_InsiderLayout extends BaseMenuLayout{
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.FILL,
             vertical: true,
-            style: 'margin-right: 6px; spacing: 6px;'
+            style: 'spacing: 6px;'
         });
         this.add_child(this.actionsBox);
+
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        this.add_child(verticalSeparator);
 
         this._mainBox = new St.BoxLayout({
             x_expand: true,
@@ -111,7 +114,7 @@ var Menu = class ArcMenu_InsiderLayout extends BaseMenuLayout{
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX, Constants.SeparatorAlignment.HORIZONTAL);
+                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             }
             else {

@@ -44,7 +44,6 @@ var Menu = class ArcMenu_TogneeLayout extends BaseMenuLayout{
         });
         this.add_child(this._mainBox);
 
-        // The "Left Box"
         // Contains the app list and the searchbar
         this.appBox = new St.BoxLayout({
             x_expand: true,
@@ -83,12 +82,12 @@ var Menu = class ArcMenu_TogneeLayout extends BaseMenuLayout{
             this.appBox.add_child(this.searchBox);
         }
 
-        // The "Right Box"
-        // Contains some useful shortcuts
+        // Contains shortcutsBox and power buttons
         this.quickBox = new St.BoxLayout({
             vertical: true,
             y_expand: true,
-            y_align: Clutter.ActorAlign.FILL
+            y_align: Clutter.ActorAlign.FILL,
+            style: "spacing: 6px;"
         });
 
         const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
@@ -104,7 +103,7 @@ var Menu = class ArcMenu_TogneeLayout extends BaseMenuLayout{
             y_expand: true,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.FILL,
-            style: "spacing: 6px; padding-bottom: 6px;"
+            style: "spacing: 6px;"
         });
         this.shortcutsScrollBox = this._createScrollBox({
             x_expand: false,
@@ -121,48 +120,28 @@ var Menu = class ArcMenu_TogneeLayout extends BaseMenuLayout{
 
         const haveDirectoryShortcuts = Me.settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
         const haveApplicationShortcuts = Me.settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
-        if(haveDirectoryShortcuts && haveApplicationShortcuts){
+        if (haveDirectoryShortcuts && haveApplicationShortcuts) {
             const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.HORIZONTAL);
             this.shortcutsBox.add_child(separator);
         }
 
         const applicationShortcuts = Me.settings.get_value('application-shortcuts-list').deep_unpack();
-        for(let i = 0; i < applicationShortcuts.length; i++){
+        for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.BUTTON, false);
-            if(shortcutMenuItem.shouldShow)
+            if (shortcutMenuItem.shouldShow)
                 this.shortcutsBox.add_child(shortcutMenuItem);
         }
 
-        // Bottom Section for Power etc...
-        this.actionsScrollBox = new St.ScrollView({
-            x_expand: true,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.END,
-            x_align: Clutter.ActorAlign.CENTER,
-            clip_to_allocation: true
-        });
-        this.actionsScrollBox.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
-
-        //create new section for Leave Button
-        this.actionsBox = new St.BoxLayout({
-            vertical: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            style: "spacing: 6px;"
-        });
-        this.actionsScrollBox.add_actor(this.actionsBox);
-
         let leaveButton;
         const powerDisplayStyle = Me.settings.get_enum('power-display-style');
-        if(powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
+        if (powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
             leaveButton = new MW.PowerOptionsBox(this, true);
         else
             leaveButton = new MW.LeaveButton(this);
 
-        this.actionsBox.add_child(leaveButton);
-
         const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.HORIZONTAL);
-        this.actionsBox.insert_child_at_index(separator, 0);
-        this.quickBox.add_child(this.actionsScrollBox);
+        this.quickBox.add_child(separator);
+        this.quickBox.add_child(leaveButton);
 
         this.updateWidth();
         this.loadCategories();

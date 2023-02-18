@@ -392,8 +392,9 @@ class ArcMenu_Separator extends PopupMenu.PopupBaseMenuItem {
             reactive: false,
             can_focus: false,
         });
-        this.remove_child(this._ornamentLabel);
         this.reactive = true;
+        this.remove_child(this._ornamentLabel);
+
         this.label = new St.Label({
             text: text || '',
             style: 'font-weight: bold'
@@ -403,8 +404,7 @@ class ArcMenu_Separator extends PopupMenu.PopupBaseMenuItem {
 
         this.label.add_style_pseudo_class = () => { return false; };
 
-        this.label.connect('notify::text',
-                            this._syncLabelVisibility.bind(this));
+        this.label.connect('notify::text', this._syncLabelVisibility.bind(this));
         this._syncLabelVisibility();
 
         this._separator = new St.Widget({
@@ -414,34 +414,41 @@ class ArcMenu_Separator extends PopupMenu.PopupBaseMenuItem {
             y_align: Clutter.ActorAlign.CENTER,
         });
         this.add_child(this._separator);
+
         if(separatorAlignment === Constants.SeparatorAlignment.HORIZONTAL){
             this.style = "padding: 0px 5px; margin: 6px 0px;";
-            if(separatorLength === Constants.SeparatorStyle.SHORT)
-                this._separator.style = "margin: 0px 45px;";
-            else if(separatorLength === Constants.SeparatorStyle.MEDIUM)
-                this._separator.style = "margin: 0px 15px;";
-            else if(separatorLength === Constants.SeparatorStyle.LONG){
-                this._separator.style = "margin: 0px 5px;";
-                this.style = "padding: 0px 5px; margin: 1px 0px;";
-            }
-            else if(separatorLength === Constants.SeparatorStyle.MAX)
-                this._separator.style = "margin: 0px; padding: 0px;";
-            else if(separatorLength === Constants.SeparatorStyle.HEADER_LABEL){
-                this._separator.style = "margin: 0px 20px 0px 10px;";
-                this.style = "padding: 5px 15px; margin: 6px 0px;"
+            switch (separatorLength) {
+                case Constants.SeparatorStyle.SHORT:
+                    this._separator.style = "margin: 0px 45px;";
+                    break;
+                case Constants.SeparatorStyle.MEDIUM:
+                    this._separator.style = "margin: 0px 15px;";
+                    break;
+                case Constants.SeparatorStyle.LONG:
+                    this._separator.style = "margin: 0px 5px;";
+                    this.style = "padding: 0px 5px; margin: 1px 0px;";
+                    break;
+                case Constants.SeparatorStyle.MAX:
+                    this._separator.style = "margin: 0px; padding: 0px;";
+                    break;
+                case Constants.SeparatorStyle.HEADER_LABEL:
+                    this._separator.style = "margin: 0px 20px 0px 10px;";
+                    this.style = "padding: 5px 15px; margin: 6px 0px;"
+                    break;
             }
         }
         else if(separatorAlignment === Constants.SeparatorAlignment.VERTICAL){
-            if(separatorLength === Constants.SeparatorStyle.ALWAYS_SHOW){
-                this.style = "padding: 8px 4px; margin: 1px 0px;"
+            if (separatorLength === Constants.SeparatorStyle.LONG) {
+                this._separator.style = "margin: 5px 0px; width: 1px;";
+                this.style = "padding: 5px 0px; margin: 1px 0px;";
             }
-            else{
+            else {
                 this._syncVisibility();
                 Me.settings.connectObject('changed::vert-separator', this._syncVisibility.bind(this), this);
-                this.style = "padding: 0px 4px; margin: 6px 0px;"
+                this.style = "padding: 0px 6px; margin: 6px 0px;"
+                this._separator.style = "margin: 0px; width: 1px; height: -1px;";
             }
 
-            this._separator.style = "margin: 0px; width: 1px; height: -1px;";
             this.remove_child(this.label);
             this.x_expand = this._separator.x_expand = true;
             this.x_align = this._separator.x_align = Clutter.ActorAlign.CENTER;
