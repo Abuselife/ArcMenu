@@ -88,7 +88,7 @@ var Menu = class ArcMenu_InsiderLayout extends BaseMenuLayout{
         this.applicationsScrollBox.add_actor( this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
-        Me.settings.connectObject('changed::insider-extra-buttons', () => this._createExtraButtons());
+        Me.settings.connectObject('changed::insider-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();

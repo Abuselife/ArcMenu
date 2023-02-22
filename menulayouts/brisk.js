@@ -112,7 +112,7 @@ var Menu = class ArcMenu_BriskLayout extends BaseMenuLayout{
             this.add_child(this.searchBox);
         }
 
-        Me.settings.connectObject('changed::brisk-extra-shortcuts', () => this._createExtraShortcuts());
+        Me.settings.connectObject('changed::brisk-extra-shortcuts', () => this._createExtraShortcuts(), this);
         this._createExtraShortcuts();
 
         this.updateWidth();

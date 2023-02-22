@@ -125,7 +125,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             this.externalDevicesBox.add_child(this._placesSections[id]);
         }
 
-        Me.settings.connectObject('changed::windows-extra-buttons', () => this._createExtraButtons());
+        Me.settings.connectObject('changed::windows-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();

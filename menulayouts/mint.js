@@ -122,7 +122,7 @@ var Menu = class ArcMenu_MintLayout extends BaseMenuLayout{
             this.rightPanelParentBox.add_child(this.searchBox);
         }
 
-        Me.settings.connectObject('changed::mint-extra-buttons', () => this._createExtraButtons());
+        Me.settings.connectObject('changed::mint-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();

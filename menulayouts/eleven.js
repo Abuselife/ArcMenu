@@ -142,8 +142,8 @@ var Menu = class ArcMenu_ElevenLayout extends BaseMenuLayout {
         layout.forceGridColumns = 2;
         this.shortcutsBox.add_child(this.shortcutsGrid);
 
-        Me.settings.connectObject('changed::eleven-extra-buttons', () => this._createExtraButtons());
-        Me.settings.connectObject("changed::eleven-disable-frequent-apps", () => this.setDefaultMenuView());
+        Me.settings.connectObject('changed::eleven-extra-buttons', () => this._createExtraButtons(), this);
+        Me.settings.connectObject("changed::eleven-disable-frequent-apps", () => this.setDefaultMenuView(), this);
 
         this._createExtraButtons();
         this.updateStyle();

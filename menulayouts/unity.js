@@ -143,7 +143,7 @@ var Menu = class ArcMenu_UnityLayout extends BaseMenuLayout{
                 this.appShortcuts.push(shortcutMenuItem);
         }
 
-        Me.settings.connectObject('changed::unity-extra-buttons', () => this._createExtraButtons());
+        Me.settings.connectObject('changed::unity-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateStyle();

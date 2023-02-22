@@ -182,7 +182,7 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
     }
 
     set active(active) {
-        if(this.isDestroyed)
+        if(this.isDestroyed || !this.get_stage())
             return;
 
         //Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
@@ -192,23 +192,24 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
         }
 
         let activeChanged = active != this.active;
-        if(activeChanged){
+        if (activeChanged) {
             this._active = active;
-            if(active){
+
+            if (active) {
                 const topSearchResult = this._menuLayout.searchResults?.getTopResult();
-                if(topSearchResult){
+                if (topSearchResult)
                     topSearchResult.remove_style_pseudo_class('active');
-                }
-                if(this._menuLayout.activeMenuItem !== this)
+
+                if (this._menuLayout.activeMenuItem !== this)
                     this._menuLayout.activeMenuItem = this;
 
                 this.add_style_class_name('selected');
-                if(this.can_focus)
+                if (this.can_focus)
                     this.grab_key_focus();
             }
-            else{
+            else {
                 this.remove_style_class_name('selected');
-                if(!this.isActiveCategory)
+                if (!this.isActiveCategory)
                     this.remove_style_pseudo_class('active');
             }
             this.notify('active');
@@ -796,6 +797,7 @@ var PowerOptionsBox = GObject.registerClass(class ArcMenu_PowerOptionsBox extend
             overlay_scrollbars: true,
             clip_to_allocation: true,
         });
+
         this._orientation = vertical ? Clutter.Orientation.VERTICAL : Clutter.Orientation.HORIZONTAL;
 
         const box = new St.BoxLayout({
