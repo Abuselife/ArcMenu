@@ -152,7 +152,7 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
 
         this.arcMenu.connectObject('open-state-changed', (menu, open) =>{
             if(!open)
-                this.cancelPopupTimeout();
+                this._cancelContextMenuTimeOut();
         }, this);
 
         let textureCache = St.TextureCache.get_default();
@@ -246,27 +246,31 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_button_press_event(){
-        let event = Clutter.get_current_event();
-        this.pressed = false;
-        if(event.get_button() === 1){
+    vfunc_button_press_event() {
+        this._pressed = false;
+
+        const event = Clutter.get_current_event();
+        if (event.get_button() === Clutter.BUTTON_PRIMARY) {
             this._menuLayout.blockActivateEvent = false;
-            this.pressed = true;
+            this._pressed = true;
             this.add_style_pseudo_class('active');
-            if(this.hasContextMenu)
-                this.contextMenuTimeOut();
+            if (this.hasContextMenu)
+                this._startContextMenuTimeOut();
         }
-        else if(event.get_button() === 3){
-            this.pressed = true;
+        else if (event.get_button() === Clutter.BUTTON_SECONDARY) {
+            this._pressed = true;
             this.add_style_pseudo_class('active');
         }
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_button_release_event(){
-        let event = Clutter.get_current_event();
-        if(event.get_button() === 1 && !this._menuLayout.blockActivateEvent && this.pressed){
-            this.pressed = false;
+    vfunc_button_release_event() {
+        if (!this._pressed)
+            return Clutter.EVENT_PROPAGATE;
+
+        this._pressed = false;
+        const event = Clutter.get_current_event();
+        if (event.get_button() === Clutter.BUTTON_PRIMARY && !this._menuLayout.blockActivateEvent) {
             this.active = false;
             this._menuLayout.grab_key_focus();
             this.remove_style_pseudo_class('active');
@@ -274,15 +278,15 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
 
             return Clutter.EVENT_STOP;
         }
-        if(event.get_button() === 3 && this.pressed){
-            this.pressed = false;
-            if(this.hasContextMenu)
+        else if (event.get_button() === Clutter.BUTTON_SECONDARY) {
+            if (this.hasContextMenu)
                 this.popupContextMenu();
-            else{
+            else
                 this.remove_style_pseudo_class('active');
-            }
+
             return Clutter.EVENT_STOP;
         }
+
         return Clutter.EVENT_PROPAGATE;
     }
 
@@ -323,48 +327,49 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
         if (state)
             return Clutter.EVENT_PROPAGATE;
 
-        let symbol = keyEvent.keyval;
-        if ( symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
+        const symbol = keyEvent.keyval;
+        if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             this.active = false;
             this._menuLayout.grab_key_focus();
             this.activate(Clutter.get_current_event());
             return Clutter.EVENT_STOP;
         }
-        else if (symbol === Clutter.KEY_Menu && this.hasContextMenu){
+        else if (symbol === Clutter.KEY_Menu && this.hasContextMenu)
             this.popupContextMenu();
-        }
+
         return Clutter.EVENT_PROPAGATE;
     }
 
     vfunc_touch_event(event){
-        if(event.type === Clutter.EventType.TOUCH_END && !this._menuLayout.blockActivateEvent && this.pressed){
-            this.remove_style_pseudo_class('active');
+        if(event.type === Clutter.EventType.TOUCH_END && !this._menuLayout.blockActivateEvent && this._pressed){
             this.active = false;
+            this._pressed = false;
+            this.remove_style_pseudo_class('active');
             this._menuLayout.grab_key_focus();
             this.activate(Clutter.get_current_event());
-            this.pressed = false;
+
             return Clutter.EVENT_STOP;
         }
         else if(event.type === Clutter.EventType.TOUCH_BEGIN && !this._menuLayout.contextMenuManager.activeMenu){
-            this.pressed = true;
+            this._pressed = true;
             this._menuLayout.blockActivateEvent = false;
-            if(this.hasContextMenu)
-                this.contextMenuTimeOut();
+            if (this.hasContextMenu)
+                this._startContextMenuTimeOut();
             this.add_style_pseudo_class('active');
         }
         else if(event.type === Clutter.EventType.TOUCH_BEGIN && this._menuLayout.contextMenuManager.activeMenu){
-            this.pressed = false;
+            this._pressed = false;
             this._menuLayout.blockActivateEvent = false;
             this._menuLayout.contextMenuManager.activeMenu.toggle();
         }
         return Clutter.EVENT_PROPAGATE;
     }
 
-    contextMenuTimeOut(){
-        this._popupTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
-            this.pressed = false;
-            this._popupTimeoutId = null;
-            if(this.hasContextMenu && this._menuLayout.arcMenu.isOpen && !this._menuLayout.blockActivateEvent) {
+    _startContextMenuTimeOut(){
+        this._contextMenuTimeOutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
+            this._pressed = false;
+            this._contextMenuTimeOutId = null;
+            if (this.hasContextMenu && this._menuLayout.arcMenu.isOpen && !this._menuLayout.blockActivateEvent) {
                 this.popupContextMenu();
                 this._menuLayout.contextMenuManager.ignoreRelease();
             }
@@ -372,15 +377,15 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
         });
     }
 
-    cancelPopupTimeout(){
-        if(this._popupTimeoutId){
-            GLib.source_remove(this._popupTimeoutId);
-            this._popupTimeoutId = null;
+    _cancelContextMenuTimeOut(){
+        if(this._contextMenuTimeOutId){
+            GLib.source_remove(this._contextMenuTimeOutId);
+            this._contextMenuTimeOutId = null;
         }
     }
 
     _onDestroy(){
-        this.cancelPopupTimeout();
+        this._cancelContextMenuTimeOut();
         this.isDestroyed = true;
     }
 });
@@ -496,9 +501,9 @@ var ActivitiesMenuItem = GObject.registerClass(class ArcMenu_ActivitiesMenuItem 
     }
 
     activate(event) {
-        this._menuLayout.arcMenu.toggle();
         Main.overview.show();
         super.activate(event);
+        this._menuLayout.arcMenu.toggle();
     }
 });
 
@@ -1439,7 +1444,6 @@ var ShortcutMenuItem = GObject.registerClass(class ArcMenu_ShortcutMenuItem exte
     }
 
     activate(event) {
-        this._menuLayout.arcMenu.toggle();
         switch (this._command) {
             case Constants.ShortcutCommands.LOG_OUT:
             case Constants.ShortcutCommands.LOCK:
@@ -1468,6 +1472,7 @@ var ShortcutMenuItem = GObject.registerClass(class ArcMenu_ShortcutMenuItem exte
                     Util.spawnCommandLine(this._command);
             }
         }
+        this._menuLayout.arcMenu.toggle();
     }
 });
 
@@ -1675,7 +1680,7 @@ var PinnedAppsMenuItem = GObject.registerClass({
         });
     }
 
-    popupContextMenu(){
+    popupContextMenu() {
         if(this.contextMenu == undefined){
             this.contextMenu = new AppContextMenu(this, this._menuLayout);
             if(this._displayType === Constants.DisplayType.GRID)
@@ -1705,7 +1710,7 @@ var PinnedAppsMenuItem = GObject.registerClass({
         if(this.contextMenu && this.contextMenu.isOpen)
             this.contextMenu.toggle();
 
-        this.cancelPopupTimeout();
+        this._cancelContextMenuTimeOut();
 
         this._dragMonitor = {
             dragMotion: this._onDragMotion.bind(this)
