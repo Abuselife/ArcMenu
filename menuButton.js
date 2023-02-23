@@ -99,15 +99,15 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
 
         this._destroyMenuLayout();
 
-        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
             this._menuLayout = Utils.getMenuLayout(this, Me.settings.get_enum('menu-layout'));
 
-            if (this._menuLayout)
+            if (this._menuLayout) {
                 this.arcMenu.box.add_child(this._menuLayout);
-
-            this.setMenuPositionAlignment();
-            this.forceMenuLocation();
-            this.updateHeight();
+                this.setMenuPositionAlignment();
+                this.forceMenuLocation();
+                this.updateHeight();
+            }
 
             this._createMenuLayoutTimeoutID = null;
             return GLib.SOURCE_REMOVE;
@@ -117,9 +117,10 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
     setMenuPositionAlignment(){
         const layout = Me.settings.get_enum('menu-layout');
         const arrowAlignment = 1 - (Me.settings.get_int('menu-position-alignment') / 100);
+        const panelPosition = Me.settings.get_enum('position-in-panel');
 
         if(layout !== Constants.MenuLayout.RUNNER){
-            if(Me.settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
+            if(panelPosition === Constants.MenuPosition.CENTER){
                 this.arcMenuContextMenu._arrowAlignment = arrowAlignment
                 this.arcMenu._arrowAlignment = arrowAlignment
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
@@ -136,7 +137,7 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
         }
         else{
             this.updateArrowSide(St.Side.TOP, false);
-            if(Me.settings.get_enum('position-in-panel') == Constants.MenuPosition.CENTER){
+            if(panelPosition === Constants.MenuPosition.CENTER){
                 this.arcMenuContextMenu._arrowAlignment = arrowAlignment
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
             }
@@ -166,7 +167,9 @@ var MenuButton = GObject.registerClass(class ArcMenu_MenuButton extends PanelMen
 
     forceMenuLocation(){
         const layout = Me.settings.get_enum('menu-layout');
-        if(layout === Constants.MenuLayout.RUNNER || layout === Constants.MenuLayout.RAVEN)
+        if (layout === Constants.MenuLayout.RUNNER ||
+            layout === Constants.MenuLayout.RAVEN ||
+            layout === Constants.MenuLayout.GNOME_OVERVIEW)
             return;
 
         this.arcMenu.actor.remove_style_class_name('bottomOfScreenMenu');

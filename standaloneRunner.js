@@ -62,7 +62,7 @@ var StandaloneRunner = class ArcMenu_StandaloneRunner{
 
         this._destroyMenuLayout();
 
-        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
             const StandaloneRunner = true;
             this._menuLayout = Utils.getMenuLayout(this, Constants.MenuLayout.RUNNER, StandaloneRunner);
             this.arcMenu.box.add_child(this._menuLayout);
@@ -82,11 +82,11 @@ var StandaloneRunner = class ArcMenu_StandaloneRunner{
     toggleMenu(){
         this.closeOtherMenus();
 
-        if(!this.arcMenu.isOpen){
+        if (!this.arcMenu.isOpen)
             this._menuLayout.updateLocation();
-        }
 
         this.arcMenu.toggle();
+
         if (this.arcMenu.isOpen)
             this._menuLayout?.grab_key_focus();
     }

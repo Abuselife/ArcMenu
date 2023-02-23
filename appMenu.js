@@ -83,7 +83,7 @@ var AppContextMenu = class ArcMenu_AppContextMenu extends AppMenu.AppMenu {
         });
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 8);
 
-        Me.settings.connectObject('changed::pinned-app-list', () => this._updateArcMenuPinnedItem(), this);
+        Me.settings.connectObject('changed::pinned-app-list', () => this._updateArcMenuPinnedItem(), this.actor);
         this.desktopExtensionStateChangedId = Main.extensionManager.connect('extension-state-changed', (data, extension) => {
             if (DESKTOP_ICONS_UUIDS.includes(extension.uuid))
                 this._updateDesktopShortcutItem();
@@ -234,8 +234,13 @@ var AppContextMenu = class ArcMenu_AppContextMenu extends AppMenu.AppMenu {
     }
 
     _updateWindowsSection() {
-        if (this._updateWindowsLaterId)
-            Meta.later_remove(this._updateWindowsLaterId);
+        if (this._updateWindowsLaterId) {
+            if (global.compositor.get_laters) {
+                const laters = global.compositor.get_laters();
+                laters.remove(this._updateWindowsLaterId);
+            } else
+                Meta.later_remove(this._updateWindowsLaterId);
+        }
         this._updateWindowsLaterId = 0;
 
         this._windowSection.removeAll();
@@ -328,7 +333,7 @@ var AppContextMenu = class ArcMenu_AppContextMenu extends AppMenu.AppMenu {
     }
 
     _disconnectSignals(){
-        Me.settings.disconnectObject(this);
+        Me.settings.disconnectObject(this.actor);
         this._appSystem.disconnectObject(this.actor);
         this._parentalControlsManager.disconnectObject(this.actor);
         this._appFavorites.disconnectObject(this.actor);
