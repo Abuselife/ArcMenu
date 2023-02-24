@@ -1,7 +1,9 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* exported getMenuLayoutEnum, Menu */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { Clutter, GObject, Shell, St } = imports.gi;
-const { BaseMenuLayout } = Me.imports.menulayouts.baseMenuLayout;
+const {Clutter, GObject, Shell, St} = imports.gi;
+const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const Main = imports.ui.main;
@@ -10,9 +12,11 @@ const PlaceDisplay = Me.imports.placeDisplay;
 const PopupMenu = imports.ui.popupMenu;
 const _ = Gettext.gettext;
 
-function getMenuLayoutEnum() { return Constants.MenuLayout.WINDOWS; }
+function getMenuLayoutEnum() {
+    return Constants.MenuLayout.WINDOWS;
+}
 
-var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
+var Menu = class ArcMenuWindowsLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -26,7 +30,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             column_spacing: 0,
             row_spacing: 0,
             default_menu_width: 315,
-            icon_grid_style: "SmallIconGrid",
+            icon_grid_style: 'SmallIconGrid',
             vertical: false,
             category_icon_size: Constants.LARGE_ICON_SIZE,
             apps_icon_size: Constants.LARGE_ICON_SIZE,
@@ -43,11 +47,12 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.FILL,
             vertical: true,
-            style: 'spacing: 6px;'
+            style: 'spacing: 6px;',
         });
         this.add_child(this.actionsBox);
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.VERTICAL);
         this.add_child(verticalSeparator);
 
         this.subMainBox = new St.BoxLayout({
@@ -55,7 +60,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             y_expand: true,
             y_align: Clutter.ActorAlign.FILL,
             vertical: true,
-            style: 'spacing: 6px;'
+            style: 'spacing: 6px;',
         });
         this.add_child(this.subMainBox);
 
@@ -63,35 +68,36 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            style_class: this._disableFadeEffect ? '' : 'vfade'
+            style_class: this._disableFadeEffect ? '' : 'vfade',
         });
         this.pinnedAppsBox = new St.BoxLayout({
             vertical: true,
-            x_expand: true
+            x_expand: true,
         });
         this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
 
-        this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.VERTICAL);
 
-        let layout = new Clutter.GridLayout({
+        const layout = new Clutter.GridLayout({
             orientation: Clutter.Orientation.VERTICAL,
             column_spacing: 10,
-            row_spacing: 10
+            row_spacing: 10,
         });
         this.pinnedAppsGrid = new St.Widget({
             x_expand: true,
             x_align: Clutter.ActorAlign.CENTER,
-            layout_manager: layout
+            layout_manager: layout,
         });
         layout.hookup_style(this.pinnedAppsGrid);
 
-        this.applicationsBox = new St.BoxLayout({ vertical: true });
+        this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             x_expand: false,
             y_expand: false,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.subMainBox.add_child(this.applicationsScrollBox);
@@ -100,9 +106,10 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
 
         const applicationShortcutsList = Me.settings.get_value('application-shortcuts-list').deep_unpack();
         this.applicationShortcuts = [];
-        for(let i = 0; i < applicationShortcutsList.length; i++){
-            const shortcutMenuItem = this.createMenuItem(applicationShortcutsList[i], Constants.DisplayType.LIST, false);
-            if(shortcutMenuItem.shouldShow)
+        for (let i = 0; i < applicationShortcutsList.length; i++) {
+            const shortcutMenuItem = this.createMenuItem(applicationShortcutsList[i],
+                Constants.DisplayType.LIST, false);
+            if (shortcutMenuItem.shouldShow)
                 this.applicationShortcuts.push(shortcutMenuItem);
         }
 
@@ -112,13 +119,13 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         this.externalDevicesBox = new St.BoxLayout({
             vertical: true,
             x_expand: true,
-            y_expand: true
+            y_expand: true,
         });
         this._placesSections = {};
         this.placesManager = new PlaceDisplay.PlacesManager();
         for (let i = 0; i < Constants.SECTIONS.length; i++) {
-            let id = Constants.SECTIONS[i];
-            this._placesSections[id] = new St.BoxLayout({ vertical: true });
+            const id = Constants.SECTIONS[i];
+            this._placesSections[id] = new St.BoxLayout({vertical: true});
             this.placesManager.setConnection(`${id}-updated`, () => this._redisplayPlaces(id), this);
 
             this._createPlaces(id);
@@ -152,19 +159,20 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG, Constants.SeparatorAlignment.HORIZONTAL);
+                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+                    Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
-            }
-            else {
-                const button = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON, isContainedInCategory);
-                if(button.shouldShow)
+            } else {
+                const button = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON,
+                    isContainedInCategory);
+                if (button.shouldShow)
                     this.actionsBox.add_child(button);
             }
         }
 
         let leaveButton;
         const powerDisplayStyle = Me.settings.get_enum('power-display-style');
-        if(powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
+        if (powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
             leaveButton = new MW.PowerOptionsBox(this, true);
         else
             leaveButton = new MW.LeaveButton(this);
@@ -172,22 +180,22 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         this.actionsBox.add_child(leaveButton);
     }
 
-    updateWidth(setDefaultMenuView){
-        const leftPanelWidth = Me.settings.get_int("left-panel-width");
+    updateWidth(setDefaultMenuView) {
+        const leftPanelWidth = Me.settings.get_int('left-panel-width');
         this.applicationsScrollBox.style = `width: ${leftPanelWidth}px;`;
-        
-        const widthAdjustment = Me.settings.get_int("menu-width-adjustment");
+
+        const widthAdjustment = Me.settings.get_int('menu-width-adjustment');
         let menuWidth = this.default_menu_width + widthAdjustment;
-        //Set a 300px minimum limit for the menu width
+        // Set a 300px minimum limit for the menu width
         menuWidth = Math.max(300, menuWidth);
         this.pinnedAppsScrollBox.style = `width: ${menuWidth}px; margin-left: 6px;`;
         this.menu_width = menuWidth;
 
-        if(setDefaultMenuView)
+        if (setDefaultMenuView)
             this.setDefaultMenuView();
     }
 
-    loadPinnedApps(){
+    loadPinnedApps() {
         this.display_type = Constants.DisplayType.GRID;
         super.loadPinnedApps();
         this.display_type = Constants.DisplayType.LIST;
@@ -196,19 +204,19 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
     _createPlaces(id) {
         const places = this.placesManager.get(id);
 
-        if(places.length === 0)
+        if (places.length === 0)
             return;
-        else if(id === 'bookmarks')
-            this._placesSections[id].add_child(this.createLabelRow(_("Bookmarks")));
-        else if(id === 'devices')
-            this._placesSections[id].add_child(this.createLabelRow(_("Devices")));
-        else if(id === 'network')
-            this._placesSections[id].add_child(this.createLabelRow(_("Network")));
+        else if (id === 'bookmarks')
+            this._placesSections[id].add_child(this.createLabelRow(_('Bookmarks')));
+        else if (id === 'devices')
+            this._placesSections[id].add_child(this.createLabelRow(_('Devices')));
+        else if (id === 'network')
+            this._placesSections[id].add_child(this.createLabelRow(_('Network')));
         else
             return;
 
-        for (let i = 0; i < places.length; i++){
-            let item = new MW.PlaceMenuItem(this, places[i], Constants.DisplayType.LIST);
+        for (let i = 0; i < places.length; i++) {
+            const item = new MW.PlaceMenuItem(this, places[i], Constants.DisplayType.LIST);
             this._placesSections[id].add_child(item);
         }
     }
@@ -223,14 +231,14 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         }
     }
 
-    _createExtrasMenu(){
+    _createExtrasMenu() {
         this.extrasMenu = new PopupMenu.PopupMenu(Main.layoutManager.dummyCursor, 0, St.Side.TOP);
         this.extrasMenu.actor.add_style_class_name('popup-menu arcmenu-menu');
 
         const section = new PopupMenu.PopupMenuSection();
         this.extrasMenu.addMenuItem(section);
 
-        const extrasMenuPopupBox = new St.BoxLayout({ vertical: true });
+        const extrasMenuPopupBox = new St.BoxLayout({vertical: true});
         extrasMenuPopupBox._delegate = extrasMenuPopupBox;
         section.actor.add_child(extrasMenuPopupBox);
 
@@ -239,15 +247,16 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             y_expand: false,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
-            vertical: true
+            vertical: true,
         });
         extrasMenuPopupBox.add_child(headerBox);
 
         this.backButton = new MW.BackButton(this);
-        this.backButton.connect("activate", () => this.toggleExtrasMenu());
+        this.backButton.connect('activate', () => this.toggleExtrasMenu());
         headerBox.add_child(this.backButton);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
+        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.HORIZONTAL);
         headerBox.add_child(separator);
 
         this.computerScrollBox = this._createScrollBox({
@@ -259,17 +268,17 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
 
         extrasMenuPopupBox.add_child(this.computerScrollBox);
 
-        const computerBox = new St.BoxLayout({ vertical: true });
+        const computerBox = new St.BoxLayout({vertical: true});
         this.computerScrollBox.add_actor(computerBox);
 
-        computerBox.add_child(this.createLabelRow(_("Application Shortcuts")));
-        for(let i = 0; i < this.applicationShortcuts.length; i++){
+        computerBox.add_child(this.createLabelRow(_('Application Shortcuts')));
+        for (let i = 0; i < this.applicationShortcuts.length; i++)
             computerBox.add_child(this.applicationShortcuts[i]);
-        }
-        computerBox.add_child(this.createLabelRow(_("Places")));
-        for(let i = 0; i < this.directoryShortcuts.length; i++){
+
+        computerBox.add_child(this.createLabelRow(_('Places')));
+        for (let i = 0; i < this.directoryShortcuts.length; i++)
             computerBox.add_child(this.directoryShortcuts[i]);
-        }
+
         computerBox.add_child(this.externalDevicesBox);
 
         const height = Me.settings.get_int('menu-height');
@@ -279,7 +288,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         this.extrasMenu.actor.hide();
         Main.uiGroup.add_child(this.extrasMenu.actor);
         this.extrasMenu.connect('open-state-changed', (menu, open) => {
-            if(!open){
+            if (!open) {
                 this.extrasButton.active = false;
                 this.extrasButton.sync_hover();
                 this.extrasButton.hovered = this.extrasButton.hover;
@@ -287,8 +296,8 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         });
     }
 
-    toggleExtrasMenu(){
-        let appsScrollBoxAdj = this.computerScrollBox.get_vscroll_bar().get_adjustment();
+    toggleExtrasMenu() {
+        const appsScrollBoxAdj = this.computerScrollBox.get_vscroll_bar().get_adjustment();
         appsScrollBoxAdj.set_value(0);
 
         const themeNode = this.arcMenu.actor.get_theme_node();
@@ -296,41 +305,41 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         let [x, y] = this.arcMenu.actor.get_transformed_position();
         const rise = themeNode.get_length('-arrow-rise');
 
-        if(this.arcMenu._arrowSide != St.Side.TOP)
+        if (this.arcMenu._arrowSide !== St.Side.TOP)
             y -= rise;
-        if(this.arcMenu._arrowSide === St.Side.LEFT)
+        if (this.arcMenu._arrowSide === St.Side.LEFT)
             x += rise;
 
         Main.layoutManager.setDummyCursorGeometry(x, y, 0, 0);
         this.extrasMenu.toggle();
-        if(this.extrasMenu.isOpen){
+        if (this.extrasMenu.isOpen) {
             this.activeMenuItem = this.backButton;
             this.backButton.grab_key_focus();
         }
     }
 
-    setDefaultMenuView(){
+    setDefaultMenuView() {
         super.setDefaultMenuView();
 
         this.displayAllApps();
-        if(!Me.settings.get_boolean('windows-disable-pinned-apps'))
+        if (!Me.settings.get_boolean('windows-disable-pinned-apps'))
             this.displayPinnedApps();
 
-        let appsScrollBoxAdj = this.pinnedAppsScrollBox.get_vscroll_bar().get_adjustment();
+        const appsScrollBoxAdj = this.pinnedAppsScrollBox.get_vscroll_bar().get_adjustment();
         appsScrollBoxAdj.set_value(0);
     }
 
-    displayFrequentApps(){
+    displayFrequentApps() {
         const mostUsed = Shell.AppUsage.get_default().get_most_used();
-        if(mostUsed.length < 1)
+        if (mostUsed.length < 1)
             return;
 
-        const labelRow = this._createLabelWithSeparator(_("Frequent Apps"));
+        const labelRow = this._createLabelWithSeparator(_('Frequent Apps'));
         this.applicationsBox.add_child(labelRow);
 
         const frequentAppsList = [];
         for (let i = 0; i < mostUsed.length; i++) {
-            if (mostUsed[i] && mostUsed[i].get_app_info().should_show()){
+            if (mostUsed[i] && mostUsed[i].get_app_info().should_show()) {
                 const item = new MW.ApplicationMenuItem(this, mostUsed[i], Constants.DisplayType.LIST);
                 frequentAppsList.push(item);
             }
@@ -339,25 +348,25 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         const maxApps = Math.min(8, frequentAppsList.length);
         for (let i = 0; i < maxApps; i++) {
             const item = frequentAppsList[i];
-            if(item.get_parent())
+            if (item.get_parent())
                 item.get_parent().remove_child(item);
             this.applicationsBox.add_actor(item);
-            if(!activeMenuItemSet){
+            if (!activeMenuItemSet) {
                 activeMenuItemSet = true;
                 this.activeMenuItem = item;
             }
         }
     }
 
-    displayAllApps(){
+    displayAllApps() {
         this._clearActorsFromBox();
         this.activeMenuItemSet = false;
 
-        if(!Me.settings.get_boolean('windows-disable-frequent-apps'))
+        if (!Me.settings.get_boolean('windows-disable-frequent-apps'))
             this.displayFrequentApps();
 
         const appList = [];
-        this.applicationsMap.forEach((value,key,map) => {
+        this.applicationsMap.forEach((value, key, _map) => {
             appList.push(key);
         });
         appList.sort((a, b) => {
@@ -366,7 +375,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         this.display_type = Constants.DisplayType.LIST;
         this._displayAppList(appList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
 
-        if(this.activeMenuItemSet)
+        if (this.activeMenuItemSet)
             this.activeMenuItem = this._frequentActiveItem;
     }
 
@@ -377,7 +386,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
         super.loadCategories();
     }
 
-    _clearActorsFromBox(box){
+    _clearActorsFromBox(box) {
         super._clearActorsFromBox(box);
         this.activeCategoryType = Constants.CategoryType.HOME_SCREEN;
     }
@@ -393,7 +402,7 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
                 this.remove_child(this.pinnedAppsVerticalSeparator);
                 this.remove_child(this.pinnedAppsScrollBox);
             }
-                
+
             return;
         }
 
@@ -402,17 +411,17 @@ var Menu = class ArcMenu_WindowsLayout extends BaseMenuLayout{
             this.add_child(this.pinnedAppsScrollBox);
         }
 
-        const label = this.createLabelRow(_("Pinned"));
+        const label = this.createLabelRow(_('Pinned'));
         this.pinnedAppsBox.add_child(label);
 
         this.display_type = Constants.DisplayType.GRID;
         this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.HOME_SCREEN, this.pinnedAppsGrid);
         this.display_type = Constants.DisplayType.LIST;
 
-        if(!this.pinnedAppsBox.contains(this.pinnedAppsGrid))
+        if (!this.pinnedAppsBox.contains(this.pinnedAppsGrid))
             this.pinnedAppsBox.add_child(this.pinnedAppsGrid);
 
-        if(this.activeMenuItemSet)
+        if (this.activeMenuItemSet)
             this.activeMenuItem = this._frequentActiveItem;
     }
-}
+};

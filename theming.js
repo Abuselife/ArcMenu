@@ -1,5 +1,6 @@
+/* exported getStylesheetFiles, createStylesheet, unloadStylesheet,
+   deleteStylesheet, updateStylesheet */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Constants = Me.imports.constants;
 const {Clutter, Gio, GLib, St} = imports.gi;
 
 Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
@@ -7,9 +8,13 @@ Gio._promisify(Gio.File.prototype, 'create_async');
 Gio._promisify(Gio.File.prototype, 'make_directory_async');
 Gio._promisify(Gio.File.prototype, 'delete_async');
 
-function getStylesheetFiles(){
-    const directoryPath = GLib.build_filenamev([GLib.get_home_dir(), ".local/share/arcmenu"]);
-    const stylesheetPath = GLib.build_filenamev([directoryPath, "stylesheet.css"]);
+
+/**
+ *  @returns The stylesheet file
+ */
+function getStylesheetFiles() {
+    const directoryPath = GLib.build_filenamev([GLib.get_home_dir(), '.local/share/arcmenu']);
+    const stylesheetPath = GLib.build_filenamev([directoryPath, 'stylesheet.css']);
 
     const directory = Gio.File.new_for_path(directoryPath);
     const stylesheet = Gio.File.new_for_path(stylesheetPath);
@@ -17,13 +22,16 @@ function getStylesheetFiles(){
     return [directory, stylesheet];
 }
 
-async function createStylesheet(settings){
+/**
+ * @param {Gio.Settings} settings ArcMenu Settings
+ */
+async function createStylesheet(settings) {
     try {
         const [directory, stylesheet] = getStylesheetFiles();
 
-        if(!directory.query_exists(null))
+        if (!directory.query_exists(null))
             await directory.make_directory_async(0, null);
-        if(!stylesheet.query_exists(null))
+        if (!stylesheet.query_exists(null))
             await stylesheet.create_async(Gio.FileCreateFlags.NONE, 0, null);
 
         Me.customStylesheet = stylesheet;
@@ -33,122 +41,132 @@ async function createStylesheet(settings){
     }
 }
 
-function unloadStylesheet(){
-    if(!Me.customStylesheet)
+/**
+ *  @description Unload the custom stylesheet from GNOME shell
+ */
+function unloadStylesheet() {
+    if (!Me.customStylesheet)
         return;
 
-    let theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
+    const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
     theme.unload_stylesheet(Me.customStylesheet);
 }
 
-async function deleteStylesheet(){
+/**
+ *  @description Delete the custom stylesheet file
+ */
+async function deleteStylesheet() {
     unloadStylesheet();
 
     try {
         const [directory, stylesheet] = getStylesheetFiles();
 
-        if(stylesheet.query_exists(null))
+        if (stylesheet.query_exists(null))
             await stylesheet.delete_async(0, null);
-        if(directory.query_exists(null))
+        if (directory.query_exists(null))
             await directory.delete_async(0, null);
-
     } catch (e) {
         if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
             log(`ArcMenu - Error deleting custom stylesheet: ${e}`);
     }
 }
 
-async function updateStylesheet(settings){
-    let stylesheet = Me.customStylesheet;
+/**
+ *
+ * @param {Gio.Settings} settings ArcMenu Settings
+ * @description Update the stylesheet based on the current ArcMenu settings
+ */
+async function updateStylesheet(settings) {
+    const stylesheet = Me.customStylesheet;
 
-    if(!stylesheet){
-        log("ArcMenu - Warning: Custom stylesheet not found! Unable to set contents of custom stylesheet.");
+    if (!stylesheet) {
+        log('ArcMenu - Warning: Custom stylesheet not found! Unable to set contents of custom stylesheet.');
         return;
     }
 
     unloadStylesheet();
 
-    let customMenuThemeCSS = ``;
-    let extraStylingCSS = ``;
+    let customMenuThemeCSS = '';
+    let extraStylingCSS = '';
 
-    let menuBGColor = settings.get_string('menu-background-color');
-    let menuFGColor = settings.get_string('menu-foreground-color');
-    let menuBorderColor = settings.get_string('menu-border-color');
-    let menuBorderWidth = settings.get_int('menu-border-width');
-    let menuBorderRadius = settings.get_int('menu-border-radius');
-    let menuFontSize = settings.get_int('menu-font-size');
-    let menuSeparatorColor = settings.get_string('menu-separator-color');
-    let itemHoverBGColor = settings.get_string('menu-item-hover-bg-color');
-    let itemHoverFGColor = settings.get_string('menu-item-hover-fg-color');
-    let itemActiveBGColor = settings.get_string('menu-item-active-bg-color');
-    let itemActiveFGColor = settings.get_string('menu-item-active-fg-color');
+    const menuBGColor = settings.get_string('menu-background-color');
+    const menuFGColor = settings.get_string('menu-foreground-color');
+    const menuBorderColor = settings.get_string('menu-border-color');
+    const menuBorderWidth = settings.get_int('menu-border-width');
+    const menuBorderRadius = settings.get_int('menu-border-radius');
+    const menuFontSize = settings.get_int('menu-font-size');
+    const menuSeparatorColor = settings.get_string('menu-separator-color');
+    const itemHoverBGColor = settings.get_string('menu-item-hover-bg-color');
+    const itemHoverFGColor = settings.get_string('menu-item-hover-fg-color');
+    const itemActiveBGColor = settings.get_string('menu-item-active-bg-color');
+    const itemActiveFGColor = settings.get_string('menu-item-active-fg-color');
 
-    let [menuRise, menuRiseValue] = settings.get_value('menu-arrow-rise').deep_unpack();
+    const [menuRise, menuRiseValue] = settings.get_value('menu-arrow-rise').deep_unpack();
 
-    let [buttonFG, buttonFGColor] = settings.get_value('menu-button-fg-color').deep_unpack();
-    let [buttonHoverBG, buttonHoverBGColor] = settings.get_value('menu-button-hover-bg-color').deep_unpack();
-    let [buttonHoverFG, buttonHoverFGColor] = settings.get_value('menu-button-hover-fg-color').deep_unpack();
-    let [buttonActiveBG, buttonActiveBGColor] = settings.get_value('menu-button-active-bg-color').deep_unpack();
-    let [buttonActiveFG, buttonActiveFGColor] = settings.get_value('menu-button-active-fg-color').deep_unpack();
-    let [buttonRadius, buttonRadiusValue] = settings.get_value('menu-button-border-radius').deep_unpack();
-    let [buttonWidth, buttonWidthValue] = settings.get_value('menu-button-border-width').deep_unpack();
-    let [buttonBorder, buttonBorderColor] = settings.get_value('menu-button-border-color').deep_unpack();
-    let [searchBorder, searchBorderValue] = settings.get_value('search-entry-border-radius').deep_unpack();
+    const [buttonFG, buttonFGColor] = settings.get_value('menu-button-fg-color').deep_unpack();
+    const [buttonHoverBG, buttonHoverBGColor] = settings.get_value('menu-button-hover-bg-color').deep_unpack();
+    const [buttonHoverFG, buttonHoverFGColor] = settings.get_value('menu-button-hover-fg-color').deep_unpack();
+    const [buttonActiveBG, buttonActiveBGColor] = settings.get_value('menu-button-active-bg-color').deep_unpack();
+    const [buttonActiveFG, buttonActiveFGColor] = settings.get_value('menu-button-active-fg-color').deep_unpack();
+    const [buttonRadius, buttonRadiusValue] = settings.get_value('menu-button-border-radius').deep_unpack();
+    const [buttonWidth, buttonWidthValue] = settings.get_value('menu-button-border-width').deep_unpack();
+    const [buttonBorder, buttonBorderColor] = settings.get_value('menu-button-border-color').deep_unpack();
+    const [searchBorder, searchBorderValue] = settings.get_value('search-entry-border-radius').deep_unpack();
 
-    if(buttonFG){
+    if (buttonFG) {
         extraStylingCSS += `.arcmenu-menu-button{
                                 color: ${buttonFGColor};
                             }`;
     }
-    if(buttonHoverBG){
+    if (buttonHoverBG) {
         extraStylingCSS += `.arcmenu-panel-menu:hover{
                                 box-shadow: inset 0 0 0 100px transparent;
                                 background-color: ${buttonHoverBGColor};
                             }`;
     }
-    if(buttonHoverFG){
+    if (buttonHoverFG) {
         extraStylingCSS += `.arcmenu-panel-menu:hover .arcmenu-menu-button{
                                 color: ${buttonHoverFGColor};
-                            }`
+                            }`;
     }
-    if(buttonActiveFG){
+    if (buttonActiveFG) {
         extraStylingCSS += `.arcmenu-menu-button:active{
                                 color: ${buttonActiveFGColor};
                             }`;
     }
-    if(buttonActiveBG){
+    if (buttonActiveBG) {
         extraStylingCSS += `.arcmenu-panel-menu:active{
                                 box-shadow: inset 0 0 0 100px transparent;
                                 background-color: ${buttonActiveBGColor};
                             }`;
     }
-    if(buttonRadius){
+    if (buttonRadius) {
         extraStylingCSS += `.arcmenu-panel-menu{
                                 border-radius: ${buttonRadiusValue}px;
                             }`;
     }
-    if(buttonWidth){
+    if (buttonWidth) {
         extraStylingCSS += `.arcmenu-panel-menu{
                                 border-width: ${buttonWidthValue}px;
                             }`;
     }
-    if(buttonBorder){
+    if (buttonBorder) {
         extraStylingCSS += `.arcmenu-panel-menu{
                                 border-color: ${buttonBorderColor};
                             }`;
     }
-    if(menuRise){
+    if (menuRise) {
         extraStylingCSS += `.arcmenu-menu{
                                 -arrow-rise: ${menuRiseValue}px;
                             }`;
     }
-    if(searchBorder){
+    if (searchBorder) {
         extraStylingCSS += `#ArcMenuSearchEntry{
                                 border-radius: ${searchBorderValue}px;
                             }`;
     }
 
-    if(settings.get_boolean('override-menu-theme')){
+    if (settings.get_boolean('override-menu-theme')) {
         customMenuThemeCSS = `
         .arcmenu-menu{
             font-size: ${menuFontSize}pt;
@@ -239,40 +257,47 @@ async function updateStylesheet(settings){
 
     const customStylesheetCSS = customMenuThemeCSS + extraStylingCSS;
 
-    if(customStylesheetCSS.length === 0)
+    if (customStylesheetCSS.length === 0)
         return;
 
-    try{
-        let bytes = new GLib.Bytes(customStylesheetCSS);
+    try {
+        const bytes = new GLib.Bytes(customStylesheetCSS);
 
-        const [success, _etag] = await stylesheet.replace_contents_bytes_async(bytes, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+        const [success, etag_] = await stylesheet.replace_contents_bytes_async(bytes, null, false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION, null);
 
-        if(!success){
-            log("ArcMenu - Failed to replace contents of custom stylesheet.");
+        if (!success) {
+            log('ArcMenu - Failed to replace contents of custom stylesheet.');
             return;
         }
 
         Me.customStylesheet = stylesheet;
-        let theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
+        const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
         theme.load_stylesheet(Me.customStylesheet);
-    }
-    catch(e){
+    } catch (e) {
         log(`ArcMenu - Error replacing contents of custom stylesheet: ${e}`);
     }
 }
 
-function modifyColorLuminance(colorString, luminanceAdjustment, overrideAlpha){
+/**
+ *
+ * @param {string} colorString the color to modify
+ * @param {number} luminanceAdjustment luminance adjustment
+ * @param {number} overrideAlpha change the color alpha to this value
+ * @returns a string in rbga() format representing the new modified color
+ */
+function modifyColorLuminance(colorString, luminanceAdjustment, overrideAlpha) {
     const color = Clutter.color_from_string(colorString)[1];
     const [hue, luminance, saturation] = color.to_hls();
     let modifiedLuminance;
 
-    if((luminance >= .85 && luminanceAdjustment > 0) || (luminance <= .15 && luminanceAdjustment < 0))
+    if ((luminance >= .85 && luminanceAdjustment > 0) || (luminance <= .15 && luminanceAdjustment < 0))
         modifiedLuminance = Math.max(Math.min(luminance - luminanceAdjustment, 1), 0);
     else
         modifiedLuminance = Math.max(Math.min(luminance + luminanceAdjustment, 1), 0);
 
     let alpha = (color.alpha / 255).toPrecision(3);
-    if(overrideAlpha)
+    if (overrideAlpha)
         alpha = overrideAlpha;
 
     const modifiedColor = Clutter.color_from_hls(hue, modifiedLuminance, saturation);

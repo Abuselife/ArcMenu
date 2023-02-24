@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable jsdoc/require-jsdoc */
 /*
  * ArcMenu - Application Menu Extension for GNOME
  * Andrew Zaech https://gitlab.com/AndrewZaech
@@ -38,12 +40,11 @@ function enable() {
     if (hideOverviewOnStartup && Main.layoutManager._startingUp) {
         Main.sessionMode.hasOverview = false;
         Main.layoutManager.connect('startup-complete', () => {
-            Main.sessionMode.hasOverview = _realHasOverview
+            Main.sessionMode.hasOverview = _realHasOverview;
         });
         // handle Ubuntu's method
-        if (Main.layoutManager.startInOverview) {
+        if (Main.layoutManager.startInOverview)
             Main.layoutManager.startInOverview = false;
-        }
     }
 
     Me.settings.connect('changed::multi-monitor', () => _reload());
@@ -70,7 +71,7 @@ function enable() {
 function disable() {
     Main.sessionMode.hasOverview = _realHasOverview;
 
-    if(extensionChangedId){
+    if (extensionChangedId) {
         Main.extensionManager.disconnect(extensionChangedId);
         extensionChangedId = null;
     }
@@ -87,21 +88,20 @@ function disable() {
     delete Me.settings;
 }
 
-
 function _connectExtensionSignals() {
-    if(global.dashToPanel)
+    if (global.dashToPanel)
         global.dashToPanel._panelsCreatedId = global.dashToPanel.connect('panels-created', () => _reload());
 
-    if(global.azTaskbar)
+    if (global.azTaskbar)
         global.azTaskbar._panelsCreatedId = global.azTaskbar.connect('panels-created', () => _reload());
 }
 
 function _disconnectExtensionSignals() {
-    if(global.dashToPanel?._panelsCreatedId){
+    if (global.dashToPanel?._panelsCreatedId) {
         global.dashToPanel.disconnect(global.dashToPanel._panelsCreatedId);
         delete global.dashToPanel._panelsCreatedId;
     }
-    if(global.azTaskbar?._panelsCreatedId){
+    if (global.azTaskbar?._panelsCreatedId) {
         global.azTaskbar.disconnect(global.azTaskbar._panelsCreatedId);
         delete global.azTaskbar._panelsCreatedId;
     }
@@ -113,7 +113,7 @@ function _reload() {
 }
 
 function _enableButtons() {
-    let multiMonitor = Me.settings.get_boolean('multi-monitor');
+    const multiMonitor = Me.settings.get_boolean('multi-monitor');
 
     let panelExtensionEnabled = false;
     let panels;
@@ -121,41 +121,43 @@ function _enableButtons() {
     if (global.dashToPanel && global.dashToPanel.panels) {
         panels = global.dashToPanel.panels.map(pw => pw);
         panelExtensionEnabled = true;
-    }
-    else if (global.azTaskbar && global.azTaskbar.panels) {
+    } else if (global.azTaskbar && global.azTaskbar.panels) {
         panels = global.azTaskbar.panels.map(pw => pw);
         panels.unshift(Main.panel);
         panelExtensionEnabled = true;
-    }
-    else 
+    } else {
         panels = [Main.panel];
+    }
 
-    let panelLength = multiMonitor ? panels.length : 1;
+    const panelLength = multiMonitor ? panels.length : 1;
     for (var i = 0; i < panelLength; i++) {
-        //Dash to Panel and AzTaskbar don't store the actual 'panel' in their global 'panels' object
+        // Dash to Panel and AzTaskbar don't store the actual 'panel' in their global 'panels' object
         let panel = panels[i].panel ?? panels[i];
         const panelParent = panels[i].panel ? panels[i] : Main.panel;
 
         let panelBox;
-        if (panels[i].panelBox) //case Dash To Panel
+        if (panels[i].panelBox) // case Dash To Panel
             panelBox = panels[i].panelBox;
-        else if(panels[i].panel) //case AzTaskbar
+        else if (panels[i].panel) // case AzTaskbar
             panelBox = panels[i];
         else
             panelBox = Main.layoutManager.panelBox;
 
-        //Place ArcMenu in main top panel when Dash to Panel setting "Keep original gnome-shell top panel" is on
-        const isStandalone = Me.settings.get_boolean('dash-to-panel-standalone') && global.dashToPanel && panelExtensionEnabled;
-        if(isStandalone && ('isPrimary' in panelParent && panelParent.isPrimary) && panelParent.isStandalone)
+        // Place ArcMenu in main top panel when
+        // Dash to Panel setting "Keep original gnome-shell top panel" is on
+        const isStandalone = Me.settings.get_boolean('dash-to-panel-standalone') &&
+                             global.dashToPanel && panelExtensionEnabled;
+        if (isStandalone && ('isPrimary' in panelParent && panelParent.isPrimary) && panelParent.isStandalone)
             panel = Main.panel;
-    
+
         const isPrimaryPanel = i === 0;
-        const settingsController = new Controller.MenuSettingsController(settingsControllers, panel, panelBox, panelParent, isPrimaryPanel);
+        const settingsController = new Controller.MenuSettingsController(settingsControllers,
+            panel, panelBox, panelParent, isPrimaryPanel);
 
         settingsController.monitorIndex = panelParent.monitor?.index ?? 0;
 
-        if(panelExtensionEnabled)
-            panel._amDestroyId = panel.connect('destroy', () => extensionChangedId ? _disableButton(settingsController) : null);
+        if (panelExtensionEnabled)
+            panel._amDestroyId = panel.connect('destroy', () => _disableButton(settingsController));
 
         settingsController.enableButton();
         settingsController.connectSettingsEvents();
@@ -163,15 +165,15 @@ function _enableButtons() {
     }
 }
 
-function _disableButtons(){
+function _disableButtons() {
     for (let i = settingsControllers.length - 1; i >= 0; --i) {
-        let sc = settingsControllers[i];
+        const sc = settingsControllers[i];
         _disableButton(sc);
     }
 }
 
 function _disableButton(controller) {
-    if(controller.panel?._amDestroyId){
+    if (controller.panel?._amDestroyId) {
         controller.panel.disconnect(controller.panel._amDestroyId);
         delete controller.panel._amDestroyId;
     }

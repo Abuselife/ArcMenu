@@ -1,15 +1,19 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* exported getMenuLayoutEnum, Menu */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { Clutter, GObject, St } = imports.gi;
-const { BaseMenuLayout } = Me.imports.menulayouts.baseMenuLayout;
+const {Clutter, GObject, St} = imports.gi;
+const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const MW = Me.imports.menuWidgets;
 const _ = Gettext.gettext;
 
-function getMenuLayoutEnum() { return Constants.MenuLayout.ENTERPRISE; }
+function getMenuLayoutEnum() {
+    return Constants.MenuLayout.ENTERPRISE;
+}
 
-var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
+var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -40,10 +44,10 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
             vertical: false,
-            style: 'spacing: 6px; margin: 0px 6px; padding: 3px 0px;'
+            style: 'spacing: 6px; margin: 0px 6px; padding: 3px 0px;',
         });
 
-        this.userMenuBox = new St.BoxLayout({ 
+        this.userMenuBox = new St.BoxLayout({
             vertical: false,
             x_expand: true,
         });
@@ -55,12 +59,12 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         this.userMenuIcon.label.set({
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
-            style: "font-weight: bold;",
+            style: 'font-weight: bold;',
         });
 
         this.searchBox.set({
             x_expand: false,
-            y_align: Clutter.ActorAlign.CENTER
+            y_align: Clutter.ActorAlign.CENTER,
         });
 
         this._mainBox = new St.BoxLayout({
@@ -78,10 +82,10 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        this.applicationsBox = new St.BoxLayout({ vertical: true });
+        this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
@@ -93,9 +97,10 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.VERTICAL);
 
-        const horizontalFlip = Me.settings.get_boolean("enable-horizontal-flip");
+        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
@@ -110,35 +115,36 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
 
         this.leftBox.add_child(this.categoriesScrollBox);
-        this.categoriesBox = new St.BoxLayout({ vertical: true });
+        this.categoriesBox = new St.BoxLayout({vertical: true});
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
         let powerOptionsDisplay;
         const powerDisplayStyle = Me.settings.get_enum('power-display-style');
-        if (powerDisplayStyle === Constants.PowerDisplayStyle.MENU)
+        if (powerDisplayStyle === Constants.PowerDisplayStyle.MENU) {
             powerOptionsDisplay = new MW.LeaveButton(this, true);
-        else {
+        } else {
             powerOptionsDisplay = new MW.PowerOptionsBox(this);
             powerOptionsDisplay.set({
                 x_expand: true,
                 x_align: Clutter.ActorAlign.CENTER,
             });
         }
-        this.leftBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL));
+        this.leftBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.HORIZONTAL));
         this.leftBox.add_child(powerOptionsDisplay);
 
         const searchbarLocation = Me.settings.get_enum('searchbar-default-top-location');
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
-        
-        if(searchbarLocation === Constants.SearchbarLocation.TOP){
+        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.HORIZONTAL);
+
+        if (searchbarLocation === Constants.SearchbarLocation.TOP) {
             this.insert_child_at_index(separator, 0);
             this.insert_child_at_index(this.topBox, 0);
-        }
-        else if(searchbarLocation === Constants.SearchbarLocation.BOTTOM){
+        } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.add_child(separator);
             this.add_child(this.topBox);
         }
@@ -151,21 +157,22 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
 
     updateWidth(setDefaultMenuView) {
         const leftPanelWidthOffset = 70;
-        const leftPanelWidth = Me.settings.get_int("left-panel-width") - leftPanelWidthOffset;
+        const leftPanelWidth = Me.settings.get_int('left-panel-width') - leftPanelWidthOffset;
         this.leftBox.style = `width: ${leftPanelWidth}px;`;
 
-        const widthAdjustment = Me.settings.get_int("menu-width-adjustment");
+        const widthAdjustment = Me.settings.get_int('menu-width-adjustment');
         let menuWidth = this.default_menu_width + widthAdjustment;
-        //Set a 300px minimum limit for the menu width
+        // Set a 300px minimum limit for the menu width
         menuWidth = Math.max(300, menuWidth);
         this.applicationsScrollBox.style = `width: ${menuWidth}px;`;
         this.menu_width = menuWidth;
 
-        this.searchBox.style = `width: ${menuWidth - 26}px;`
+        this.searchBox.style = `width: ${menuWidth - 26}px;`;
 
         if (setDefaultMenuView)
             this.setDefaultMenuView();
     }
+
     setDefaultMenuView() {
         super.setDefaultMenuView();
         this.displayCategories();
@@ -179,12 +186,12 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
 
-        const extraCategories = Me.settings.get_value("extra-categories").deep_unpack();
+        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];
             const shouldShow = extraCategories[i][1];
             if (shouldShow) {
-                let categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
+                const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);
             }
         }
@@ -195,4 +202,4 @@ var Menu = class ArcMenu_EnterpriseLayout extends BaseMenuLayout {
     displayCategories() {
         super.displayCategories(this.categoriesBox);
     }
-}
+};

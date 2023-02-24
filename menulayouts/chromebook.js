@@ -1,14 +1,18 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* exported getMenuLayoutEnum, Menu */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { Clutter, GObject, St } = imports.gi;
-const { BaseMenuLayout } = Me.imports.menulayouts.baseMenuLayout;
+const {Clutter, GObject, St} = imports.gi;
+const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
 
-function getMenuLayoutEnum() { return Constants.MenuLayout.CHROMEBOOK; }
+function getMenuLayoutEnum() {
+    return Constants.MenuLayout.CHROMEBOOK;
+}
 
-var Menu = class ArcMenu_ChromebookLayout extends BaseMenuLayout{
+var Menu = class ArcMenuChromebookLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -21,7 +25,7 @@ var Menu = class ArcMenu_ChromebookLayout extends BaseMenuLayout{
             column_spacing: 10,
             row_spacing: 10,
             default_menu_width: 415,
-            icon_grid_style: "SmallIconGrid",
+            icon_grid_style: 'SmallIconGrid',
             vertical: true,
             category_icon_size: Constants.MEDIUM_ICON_SIZE,
             apps_icon_size: Constants.LARGE_ICON_SIZE,
@@ -30,26 +34,25 @@ var Menu = class ArcMenu_ChromebookLayout extends BaseMenuLayout{
             pinned_apps_icon_size: Constants.MEDIUM_ICON_SIZE,
         });
 
-        this.applicationsBox = new St.BoxLayout({ 
+        this.applicationsBox = new St.BoxLayout({
             vertical: true,
-            style: 'padding: 8px 0px;'
+            style: 'padding: 8px 0px;',
         });
         this.applicationsScrollBox = this._createScrollBox({
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
             x_align: Clutter.ActorAlign.START,
-            style_class:  this._disableFadeEffect ? '' : 'vfade',
+            style_class: this._disableFadeEffect ? '' : 'vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.add_child(this.applicationsScrollBox);
 
         const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
-        if(searchBarLocation === Constants.SearchbarLocation.TOP){
+        if (searchBarLocation === Constants.SearchbarLocation.TOP) {
             this.searchBox.add_style_class_name('arcmenu-search-top');
             this.insert_child_at_index(this.searchBox, 0);
-        }
-        else if(searchBarLocation === Constants.SearchbarLocation.BOTTOM){
+        } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.searchBox.add_style_class_name('arcmenu-search-bottom');
             this.add_child(this.searchBox);
         }
@@ -59,7 +62,7 @@ var Menu = class ArcMenu_ChromebookLayout extends BaseMenuLayout{
         this.setDefaultMenuView();
     }
 
-    setDefaultMenuView(){
+    setDefaultMenuView() {
         super.setDefaultMenuView();
         this.displayAllApps();
     }
@@ -69,4 +72,4 @@ var Menu = class ArcMenu_ChromebookLayout extends BaseMenuLayout{
         this.categoryDirectories = new Map();
         super.loadCategories();
     }
-}
+};

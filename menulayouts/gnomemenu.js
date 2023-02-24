@@ -1,15 +1,19 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* exported getMenuLayoutEnum, Menu */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { Clutter, GObject, St } = imports.gi;
-const { BaseMenuLayout } = Me.imports.menulayouts.baseMenuLayout;
+const {Clutter, GObject, St} = imports.gi;
+const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const MW = Me.imports.menuWidgets;
 const _ = Gettext.gettext;
 
-function getMenuLayoutEnum() { return Constants.MenuLayout.GNOME_MENU; }
+function getMenuLayoutEnum() {
+    return Constants.MenuLayout.GNOME_MENU;
+}
 
-var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
+var Menu = class ArcMenuGnomeMenuLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -46,10 +50,10 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
             vertical: true,
         });
 
-        this.applicationsBox = new St.BoxLayout({ vertical: true });
+        this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
@@ -62,8 +66,9 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
-        const horizontalFlip = Me.settings.get_boolean("enable-horizontal-flip");
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.VERTICAL);
+        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
@@ -72,19 +77,19 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.leftBox.add_child(this.categoriesScrollBox);
-        this.categoriesBox = new St.BoxLayout({ vertical: true });
+        this.categoriesBox = new St.BoxLayout({vertical: true});
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
         this.activitiesBox = new St.BoxLayout({
             vertical: true,
             x_expand: true,
             y_expand: true,
-            y_align: Clutter.ActorAlign.END
+            y_align: Clutter.ActorAlign.END,
         });
-        let activities = new MW.ActivitiesMenuItem(this);
+        const activities = new MW.ActivitiesMenuItem(this);
         this.activitiesBox.add_child(activities);
         this.leftBox.add_child(this.activitiesBox);
 
@@ -94,13 +99,13 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
         this.setDefaultMenuView();
     }
 
-    updateWidth(setDefaultMenuView){
+    updateWidth(setDefaultMenuView) {
         const leftPanelWidthOffset = 0;
         const rightPanelWidthOffset = 45;
         super.updateWidth(setDefaultMenuView, leftPanelWidthOffset, rightPanelWidthOffset);
     }
 
-    setDefaultMenuView(){
+    setDefaultMenuView() {
         super.setDefaultMenuView();
         this.displayCategories();
 
@@ -109,16 +114,16 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
         this.setActiveCategory(topCategory);
     }
 
-    loadCategories(){
+    loadCategories() {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
 
-        const extraCategories = Me.settings.get_value("extra-categories").deep_unpack();
+        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
 
-        for(let i = 0; i < extraCategories.length; i++){
+        for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];
             const shouldShow = extraCategories[i][1];
-            if(shouldShow){
+            if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);
             }
@@ -127,7 +132,7 @@ var Menu = class ArcMenu_GnomeMenuLayout extends BaseMenuLayout{
         super.loadCategories();
     }
 
-    displayCategories(){
+    displayCategories() {
         super.displayCategories(this.categoriesBox);
     }
-}
+};

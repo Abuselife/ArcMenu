@@ -1,15 +1,19 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* exported getMenuLayoutEnum, Menu */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { Clutter, GObject, St } = imports.gi;
-const { BaseMenuLayout } = Me.imports.menulayouts.baseMenuLayout;
+const {Clutter, GObject, St} = imports.gi;
+const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const MW = Me.imports.menuWidgets;
 const _ = Gettext.gettext;
 
-function getMenuLayoutEnum() { return Constants.MenuLayout.WHISKER; }
+function getMenuLayoutEnum() {
+    return Constants.MenuLayout.WHISKER;
+}
 
-var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
+var Menu = class ArcMenuWhiskerLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -38,7 +42,7 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
             vertical: false,
-            style: 'spacing: 6px; margin: 0px 10px;'
+            style: 'spacing: 6px; margin: 0px 10px;',
         });
         this.add_child(this.actionsBox);
 
@@ -49,19 +53,21 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
         });
         this.actionsBox.add_child(userMenuItem);
 
-        const settingsButton = this.createMenuItem([_("Settings"), "", "org.gnome.Settings.desktop"], Constants.DisplayType.BUTTON, false);
-        if(settingsButton.shouldShow)
+        const settingsButton = this.createMenuItem([_('Settings'), '', 'org.gnome.Settings.desktop'],
+            Constants.DisplayType.BUTTON, false);
+        if (settingsButton.shouldShow)
             this.actionsBox.add_child(settingsButton);
 
         let powerOptionsBox;
         const powerDisplayStyle = Me.settings.get_enum('power-display-style');
-        if(powerDisplayStyle === Constants.PowerDisplayStyle.MENU)
+        if (powerDisplayStyle === Constants.PowerDisplayStyle.MENU)
             powerOptionsBox = new MW.LeaveButton(this);
         else
             powerOptionsBox = new MW.PowerOptionsBox(this);
         this.actionsBox.add_child(powerOptionsBox);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
+        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.HORIZONTAL);
         this.add_child(separator);
 
         this._mainBox = new St.BoxLayout({
@@ -79,10 +85,10 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
             vertical: true,
         });
 
-        this.applicationsBox = new St.BoxLayout({ vertical: true });
+        this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
@@ -94,9 +100,10 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.VERTICAL);
+        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.VERTICAL);
 
-        const horizontalFlip = Me.settings.get_boolean("enable-horizontal-flip");
+        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
@@ -105,20 +112,19 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
             x_expand: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
-            style_class: (this._disableFadeEffect ? '' : 'small-vfade'),
+            style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
 
         this.leftBox.add_child(this.categoriesScrollBox);
-        this.categoriesBox = new St.BoxLayout({ vertical: true });
+        this.categoriesBox = new St.BoxLayout({vertical: true});
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
         const searchbarLocation = Me.settings.get_enum('searchbar-default-top-location');
-        if(searchbarLocation === Constants.SearchbarLocation.TOP){
+        if (searchbarLocation === Constants.SearchbarLocation.TOP) {
             this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.searchBox.style = "margin-top: 0px; margin-bottom: 6px;";
+            this.searchBox.style = 'margin-top: 0px; margin-bottom: 6px;';
             this.insert_child_at_index(this.searchBox, 0);
-        }
-        else if(searchbarLocation === Constants.SearchbarLocation.BOTTOM){
+        } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.searchBox.add_style_class_name('arcmenu-search-bottom');
             this.add_child(this.searchBox);
         }
@@ -129,13 +135,13 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
         this.setDefaultMenuView();
     }
 
-    updateWidth(setDefaultMenuView){
+    updateWidth(setDefaultMenuView) {
         const leftPanelWidthOffset = 0;
         const rightPanelWidthOffset = 45;
         super.updateWidth(setDefaultMenuView, leftPanelWidthOffset, rightPanelWidthOffset);
     }
 
-    setDefaultMenuView(){
+    setDefaultMenuView() {
         super.setDefaultMenuView();
         this.displayCategories();
 
@@ -144,16 +150,16 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
         this.setActiveCategory(topCategory);
     }
 
-    loadCategories(){
+    loadCategories() {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
 
-        const extraCategories = Me.settings.get_value("extra-categories").deep_unpack();
-        for(let i = 0; i < extraCategories.length; i++){
+        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
+        for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];
             const shouldShow = extraCategories[i][1];
-            if(shouldShow){
-                let categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
+            if (shouldShow) {
+                const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);
             }
         }
@@ -161,7 +167,7 @@ var Menu = class ArcMenu_WhiskerLayout extends BaseMenuLayout{
         super.loadCategories();
     }
 
-    displayCategories(){
+    displayCategories() {
         super.displayCategories(this.categoriesBox);
     }
-}
+};
