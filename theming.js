@@ -244,10 +244,11 @@ async function updateStylesheet(settings) {
         .arcmenu-menu StLabel.hint-text{
             color: ${modifyColorLuminance(menuFGColor, 0, 0.6)};
         }
-        .arcmenu-custom-tooltip{
+        #ArcMenu_Tooltip{
             font-size: ${menuFontSize}pt;
             color: ${menuFGColor};
-            background-color: ${modifyColorLuminance(menuBGColor, 0.05, 1)};
+            background-color: ${modifyColorLuminance(menuBGColor, 0.1, 1)};
+            border: 1px solid ${modifyColorLuminance(menuBorderColor, 0.025, 1)};
         }
         .arcmenu-menu .user-icon{
             border-color: ${modifyColorLuminance(menuFGColor, 0, .7)};

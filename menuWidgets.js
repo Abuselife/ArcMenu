@@ -2,7 +2,7 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const {AccountsService, Atk, Clutter, Gio, GLib, GMenu, GObject, Shell, St} = imports.gi;
+const {AccountsService, Atk, Clutter, Gio, GLib, GMenu, GObject, Pango, Shell, St} = imports.gi;
 const {AppContextMenu} = Me.imports.appMenu;
 const BoxPointer = imports.ui.boxpointer;
 const Constants = Me.imports.constants;
@@ -23,8 +23,7 @@ const TOOLTIP_SHOW_TIME = 150;
 const TOOLTIP_HIDE_TIME = 100;
 
 /**
- *
- * @param {Constants.PowerType }powerType The power type to activate
+ * @param {Constants.PowerType} powerType The power type to activate
  */
 function activatePowerOption(powerType) {
     const systemActions = SystemActions.getDefault();
@@ -58,7 +57,6 @@ function activatePowerOption(powerType) {
 }
 
 /**
- *
  * @param {PowerMenuItem} powerMenuItem Bind visibility of the powermenu item
  */
 function bindPowerItemVisibility(powerMenuItem) {
@@ -515,24 +513,19 @@ class ArcMenuActivitiesMenuItem extends ArcMenuPopupBaseMenuItem {
 });
 
 var Tooltip = GObject.registerClass(
-class ArcMenuTooltip extends St.BoxLayout {
+class ArcMenuTooltip extends St.Label {
     _init(menuButton) {
         super._init({
-            vertical: true,
-            style_class: 'dash-label arcmenu-tooltip arcmenu-custom-tooltip',
+            name: 'ArcMenu_Tooltip',
+            style_class: 'dash-label arcmenu-tooltip',
             opacity: 0,
         });
+        const {clutterText} = this;
+        clutterText.set({
+            line_wrap: true,
+            line_wrap_mode: Pango.WrapMode.WORD_CHAR,
+        });
         this._menuButton = menuButton;
-
-        this.titleLabel = new St.Label({
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-        this.add_child(this.titleLabel);
-
-        this.descriptionLabel = new St.Label({
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-        this.add_child(this.descriptionLabel);
 
         global.stage.add_child(this);
         this.hide();
@@ -550,10 +543,7 @@ class ArcMenuTooltip extends St.BoxLayout {
             return;
         }
         this.sourceActor = sourceActor;
-        this.titleLabel.style = null;
         this.location = location;
-        this.descriptionLabel.hide();
-        this.titleLabel.hide();
 
         this._showTimeout(titleLabel, description, displayType);
     }
@@ -573,38 +563,34 @@ class ArcMenuTooltip extends St.BoxLayout {
             titleText = titleLabel;
         }
 
-        this.titleLabel.text = '';
-        this.descriptionLabel.text = '';
+        this.text = '';
 
         if (displayType !== Constants.DisplayType.BUTTON) {
             if (isEllipsized && description) {
-                this.titleLabel.text = titleText ? _(titleText) : '';
-                this.descriptionLabel.text = description ? _(description) : '';
-                this.titleLabel.style = 'font-weight: bold';
+                const text = `<b>${titleText}</b>\n${description}`;
+                this.clutter_text.set_markup(text);
             } else if (isEllipsized && !description) {
-                this.titleLabel.text = titleText ? _(titleText) : '';
+                this.text = titleText ?? '';
             } else if (!isEllipsized && description) {
-                this.descriptionLabel.text = description ? _(description) : '';
+                this.text = description ?? '';
             }
         } else if (displayType === Constants.DisplayType.BUTTON) {
-            this.titleLabel.text = titleText ? _(titleText) : '';
+            this.text = titleText ?? '';
         }
 
-        return !!(this.titleLabel.text || this.descriptionLabel.text);
+        return !!this.text;
     }
 
     _showTimeout(titleLabel, description, displayType) {
         if (this._useTooltips) {
-            const shouldShow = this._setToolTipText(titleLabel, description, displayType);
-
-            if (!shouldShow)
-                return;
-
             this._menuButton.tooltipShowingID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 750, () => {
-                if (this.titleLabel.text)
-                    this.titleLabel.show();
-                if (this.descriptionLabel.text)
-                    this.descriptionLabel.show();
+                const shouldShow = this._setToolTipText(titleLabel, description, displayType);
+
+                if (!shouldShow) {
+                    this._menuButton.tooltipShowingID = null;
+                    return GLib.SOURCE_REMOVE;
+                }
+
                 this._show();
                 this._menuButton.tooltipShowing = true;
                 this._menuButton.tooltipShowingID = null;

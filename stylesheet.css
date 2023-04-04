@@ -126,7 +126,7 @@
     border-color: rgb(61, 174, 235);
 }
 
-StScrollView .small-vfade{
+.small-vfade{
     -st-vfade-offset: 44px;
 }
 
@@ -162,10 +162,10 @@ StScrollView .small-vfade{
 }
 
 .arcmenu-tooltip{
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     padding: 4px 10px;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-    max-width: 550px;
+    max-width: 450px;
     min-height: 0px;
 }
 

@@ -13,7 +13,7 @@ const _ = Gettext.gettext;
  * @returns '%s Layout Tweaks'
  */
 function getMenuLayoutTweaksName(menuLayout) {
-    for (const styles of Constants.MenuStyles.STYLES) {
+    for (const styles of Constants.MenuStyles) {
         for (const style of styles.MENU_TYPE) {
             if (style.LAYOUT === menuLayout)
                 return _('%s Layout Tweaks').format(_(style.TITLE));

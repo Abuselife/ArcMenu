@@ -25,12 +25,15 @@ class ArcMenuLayoutsPage extends SubPage {
         const currentLayoutGroup = new Adw.PreferencesGroup({
             title: _('Current Menu Layout'),
         });
-        const currentLayoutName = this.getMenuLayoutName(this._settings.get_enum('menu-layout'));
-        const currentLayoutImagePath = this.getMenuLayoutImagePath(this._settings.get_enum('menu-layout'));
+
+        const menuLayoutInfo = this.getMenuLayoutInfo(this._settings.get_enum('menu-layout'));
+
+        const currentLayoutName = menuLayoutInfo.TITLE;
+        const currentLayoutImagePath = menuLayoutInfo.IMAGE;
 
         const currentLayoutBoxRow = new CurrentLayoutRow(currentLayoutName, currentLayoutImagePath);
-
         currentLayoutGroup.add(currentLayoutBoxRow);
+
         this.add(currentLayoutGroup);
 
         const menuLayoutGroup = new Adw.PreferencesGroup({
@@ -38,7 +41,7 @@ class ArcMenuLayoutsPage extends SubPage {
         });
         this.add(menuLayoutGroup);
 
-        Constants.MenuStyles.STYLES.forEach(style => {
+        Constants.MenuStyles.forEach(style => {
             const tile = new Adw.ExpanderRow({
                 title: _('%s Menu Layouts').format(_(style.TITLE)),
                 icon_name: style.IMAGE,
@@ -66,9 +69,11 @@ class ArcMenuLayoutsPage extends SubPage {
                     this.activeLayoutBox.applySelection();
                     this.selectedMenuLayout = widget.menuLayout;
 
-                    currentLayoutBoxRow.label.label = this.getMenuLayoutName(this.selectedMenuLayout);
-                    currentLayoutBoxRow.image.gicon =
-                        Gio.icon_new_for_string(this.getMenuLayoutImagePath(this.selectedMenuLayout));
+                    const newMenuLayoutInfo = this.getMenuLayoutInfo(this.selectedMenuLayout);
+
+                    currentLayoutBoxRow.label.label = newMenuLayoutInfo.TITLE;
+                    currentLayoutBoxRow.image.gicon = Gio.icon_new_for_string(newMenuLayoutInfo.IMAGE);
+
                     this.expandedRow.expanded = false;
                     this.emit('response', Gtk.ResponseType.APPLY);
                 }
@@ -83,34 +88,14 @@ class ArcMenuLayoutsPage extends SubPage {
         });
     }
 
-    getMenuLayoutName(index) {
-        for (const styles of Constants.MenuStyles.STYLES) {
+    getMenuLayoutInfo(index) {
+        for (const styles of Constants.MenuStyles) {
             for (const style of styles.MENU_TYPE) {
                 if (style.LAYOUT === index)
-                    return _(style.TITLE);
+                    return style;
             }
         }
-        return '';
-    }
-
-    getMenuLayoutTweaksName(index) {
-        for (const styles of Constants.MenuStyles.STYLES) {
-            for (const style of styles.MENU_TYPE) {
-                if (style.LAYOUT === index)
-                    return _('%s Layout Tweaks').format(_(style.TITLE));
-            }
-        }
-        return '';
-    }
-
-    getMenuLayoutImagePath(index) {
-        for (const styles of Constants.MenuStyles.STYLES) {
-            for (const style of styles.MENU_TYPE) {
-                if (style.LAYOUT === index)
-                    return style.IMAGE;
-            }
-        }
-        return '';
+        return null;
     }
 });
 
@@ -137,7 +122,6 @@ var LayoutsBox = GObject.registerClass({
             if (currentMenuLayout === selectedLayout.layout)
                 return;
 
-            this.selectedLayout?.setActive(false);
             this.selectedLayout = selectedLayout;
             this.menuLayout = selectedLayout.layout;
 
@@ -146,7 +130,7 @@ var LayoutsBox = GObject.registerClass({
 
         this.styles.forEach(style => {
             const currentMenuLayout = this._settings.get_enum('menu-layout');
-            const layoutTile = new PW.MenuLayoutTile(style.TITLE, style.IMAGE, style.LAYOUT);
+            const layoutTile = new PW.MenuLayoutTile(style);
             this.add(layoutTile);
 
             if (currentMenuLayout === style.LAYOUT) {
@@ -160,17 +144,13 @@ var LayoutsBox = GObject.registerClass({
         const currentMenuLayout = this._settings.get_enum('menu-layout');
         this.unselect_all();
 
-        if (this.selectedLayout && currentMenuLayout !== this.selectedLayout.layout) {
-            this.selectedLayout.setActive(false);
+        if (this.selectedLayout && currentMenuLayout !== this.selectedLayout.layout)
             this.selectedLayout = null;
-        }
     }
 
     applySelection() {
-        if (this.selectedLayout) {
+        if (this.selectedLayout)
             this.select_child(this.selectedLayout);
-            this.selectedLayout.setActive(true);
-        }
     }
 });
 
@@ -201,7 +181,7 @@ class ArcMenuMenuLayoutRow extends Gtk.Box {
             hexpand: false,
             halign: Gtk.Align.CENTER,
             gicon: Gio.icon_new_for_string(imagePath),
-            pixel_size: 125,
+            pixel_size: 145,
         });
 
         this.label = new Gtk.Label({

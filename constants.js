@@ -385,49 +385,147 @@ var MenuLayout = {
 };
 
 var TraditionalMenus = [
-    {IMAGE: 'menu-arcmenu-symbolic', TITLE: _('ArcMenu'), LAYOUT: MenuLayout.ARCMENU},
-    {IMAGE: 'menu-brisk-symbolic', TITLE: _('Brisk'), LAYOUT: MenuLayout.BRISK},
-    {IMAGE: 'menu-whisker-symbolic', TITLE: _('Whisker'), LAYOUT: MenuLayout.WHISKER},
-    {IMAGE: 'menu-gnomemenu-symbolic', TITLE: _('GNOME Menu'), LAYOUT: MenuLayout.GNOME_MENU},
-    {IMAGE: 'menu-mint-symbolic', TITLE: _('Mint'), LAYOUT: MenuLayout.MINT},
-    {IMAGE: 'menu-budgie-symbolic', TITLE: _('Budgie'), LAYOUT: MenuLayout.BUDGIE},
+    {
+        LAYOUT: MenuLayout.ARCMENU,
+        TITLE: _('ArcMenu'),
+        IMAGE: 'menu-arcmenu-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.BRISK,
+        TITLE: _('Brisk'),
+        IMAGE: 'menu-brisk-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.WHISKER,
+        TITLE: _('Whisker'),
+        IMAGE: 'menu-whisker-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.GNOME_MENU,
+        TITLE: _('GNOME Menu'),
+        IMAGE: 'menu-gnomemenu-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.MINT,
+        TITLE: _('Mint'),
+        IMAGE: 'menu-mint-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.BUDGIE,
+        TITLE: _('Budgie'),
+        IMAGE: 'menu-budgie-symbolic',
+    },
 ];
 
 var ModernMenus = [
-    {IMAGE: 'menu-unity-symbolic', TITLE: _('Unity'), LAYOUT: MenuLayout.UNITY},
-    {IMAGE: 'menu-plasma-symbolic', TITLE: _('Plasma'), LAYOUT: MenuLayout.PLASMA},
-    {IMAGE: 'menu-tognee-symbolic', TITLE: _('tognee'), LAYOUT: MenuLayout.TOGNEE},
-    {IMAGE: 'menu-insider-symbolic', TITLE: _('Insider'), LAYOUT: MenuLayout.INSIDER},
-    {IMAGE: 'menu-redmond-symbolic', TITLE: _('Redmond'), LAYOUT: MenuLayout.REDMOND},
-    {IMAGE: 'menu-windows-symbolic', TITLE: _('Windows'), LAYOUT: MenuLayout.WINDOWS},
-    {IMAGE: 'menu-eleven-symbolic', TITLE: _('11'), LAYOUT: MenuLayout.ELEVEN},
-    {IMAGE: 'menu-az-symbolic', TITLE: _('a.z.'), LAYOUT: MenuLayout.AZ},
-    {IMAGE: 'menu-enterprise-symbolic', TITLE: _('Enterprise'), LAYOUT: MenuLayout.ENTERPRISE},
+    {
+        LAYOUT: MenuLayout.UNITY,
+        TITLE: _('Unity'),
+        IMAGE: 'menu-unity-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.PLASMA,
+        TITLE: _('Plasma'),
+        IMAGE: 'menu-plasma-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.TOGNEE,
+        TITLE: _('tognee'),
+        IMAGE: 'menu-tognee-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.INSIDER,
+        TITLE: _('Insider'),
+        IMAGE: 'menu-insider-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.REDMOND,
+        TITLE: _('Redmond'),
+        IMAGE: 'menu-redmond-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.WINDOWS,
+        TITLE: _('Windows'),
+        IMAGE: 'menu-windows-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.ELEVEN,
+        TITLE: _('11'),
+        IMAGE: 'menu-eleven-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.AZ,
+        TITLE: _('a.z.'),
+        IMAGE: 'menu-az-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.ENTERPRISE,
+        TITLE: _('Enterprise'),
+        IMAGE: 'menu-enterprise-symbolic',
+    },
 ];
 
 var TouchMenus = [
-    {IMAGE: 'menu-elementary-symbolic', TITLE: _('Elementary'), LAYOUT: MenuLayout.ELEMENTARY},
-    {IMAGE: 'menu-chromebook-symbolic', TITLE: _('Chromebook'), LAYOUT: MenuLayout.CHROMEBOOK},
+    {
+        LAYOUT: MenuLayout.ELEMENTARY,
+        TITLE: _('Elementary'),
+        IMAGE: 'menu-elementary-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.CHROMEBOOK,
+        TITLE: _('Chromebook'),
+        IMAGE: 'menu-chromebook-symbolic',
+    },
 ];
 
 var LauncherMenus = [
-    {IMAGE: 'menu-runner-symbolic', TITLE: _('Runner'), LAYOUT: MenuLayout.RUNNER},
-    {IMAGE: 'menu-gnomeoverview-symbolic', TITLE: _('GNOME Overview'), LAYOUT: MenuLayout.GNOME_OVERVIEW},
+    {
+        LAYOUT: MenuLayout.RUNNER,
+        TITLE: _('Runner'),
+        IMAGE: 'menu-runner-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.GNOME_OVERVIEW,
+        TITLE: _('GNOME Overview'),
+        IMAGE: 'menu-gnomeoverview-symbolic',
+    },
 ];
 
 var AlternativeMenus = [
-    {IMAGE: 'menu-raven-symbolic', TITLE: _('Raven'), LAYOUT: MenuLayout.RAVEN},
+    {
+        LAYOUT: MenuLayout.RAVEN,
+        TITLE: _('Raven'),
+        IMAGE: 'menu-raven-symbolic',
+    },
 ];
 
-var MenuStyles = {
-    STYLES: [
-        {IMAGE: 'menustyle-traditional-symbolic', TITLE: _('Traditional'), MENU_TYPE: TraditionalMenus},
-        {IMAGE: 'menustyle-modern-symbolic', TITLE: _('Modern'), MENU_TYPE: ModernMenus},
-        {IMAGE: 'menustyle-touch-symbolic', TITLE: _('Touch'), MENU_TYPE: TouchMenus},
-        {IMAGE: 'menustyle-launcher-symbolic', TITLE: _('Launcher'), MENU_TYPE: LauncherMenus},
-        {IMAGE: 'menustyle-alternative-symbolic', TITLE: _('Alternative'), MENU_TYPE: AlternativeMenus},
-    ],
-};
+var MenuStyles = [
+    {
+        MENU_TYPE: TraditionalMenus,
+        TITLE: _('Traditional'),
+        IMAGE: 'menustyle-traditional-symbolic',
+    },
+    {
+        MENU_TYPE: ModernMenus,
+        TITLE: _('Modern'),
+        IMAGE: 'menustyle-modern-symbolic',
+    },
+    {
+        MENU_TYPE: TouchMenus,
+        TITLE: _('Touch'),
+        IMAGE: 'menustyle-touch-symbolic',
+    },
+    {
+        MENU_TYPE: LauncherMenus,
+        TITLE: _('Launcher'),
+        IMAGE: 'menustyle-launcher-symbolic',
+    },
+    {
+        MENU_TYPE: AlternativeMenus,
+        TITLE: _('Alternative'),
+        IMAGE: 'menustyle-alternative-symbolic',
+    },
+];
 
 var ArcMenuLogoSymbolic = `${Me.path}/media/icons/menu_icons/arcmenu-logo-symbolic.svg`;
 
