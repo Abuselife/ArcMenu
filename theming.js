@@ -247,8 +247,8 @@ async function updateStylesheet(settings) {
         #ArcMenu_Tooltip{
             font-size: ${menuFontSize}pt;
             color: ${menuFGColor};
-            background-color: ${modifyColorLuminance(menuBGColor, 0.1, 1)};
-            border: 1px solid ${modifyColorLuminance(menuBorderColor, 0.025, 1)};
+            background-color: ${modifyColorLuminance(menuBGColor, -0.125, 1)};
+            border: 1px solid ${modifyColorLuminance(menuBorderColor, 0.025)};
         }
         .arcmenu-menu .user-icon{
             border-color: ${modifyColorLuminance(menuFGColor, 0, .7)};
