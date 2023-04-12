@@ -490,7 +490,7 @@ var MenuSettingsController = class {
     }
 
     _isButtonEnabled() {
-        return this.panel.statusArea['ArcMenu'] !== null;
+        return this.panel && this.panel.statusArea['ArcMenu'] !== null;
     }
 
     destroy() {
@@ -520,10 +520,10 @@ var MenuSettingsController = class {
         this._settingsConnections.destroy();
         this._settingsConnections = null;
 
-        if (this.panel === undefined)
-            this._menuButton.destroy();
-        else if (this._isButtonEnabled())
+        if (this._isButtonEnabled())
             this._disableButton();
+        else
+            this._menuButton.destroy();
 
         if (this.isPrimaryPanel) {
             this._overrideOverlayKey.destroy();
