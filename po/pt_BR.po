@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Arc Menu\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-15 12:11-0500\n"
-"PO-Revision-Date: 2023-04-10 12:03-0300\n"
+"PO-Revision-Date: 2023-04-13 07:21-0300\n"
 "Last-Translator: Perry Werneck <perry.werneck@gmail.com>\n"
 "Language-Team: Brazilian Portuguese <perry.werneck@gmail.com>\n"
 "Language: pt_BR\n"
@@ -30,7 +30,7 @@ msgstr "%d valor de tema default"
 #: settings/Menu/LayoutsPage.js:99 settings/SettingsUtils.js:12
 #, javascript-format
 msgid "%s Layout Tweaks"
-msgstr ""
+msgstr "%s ajustes de layout"
 
 #: settings/Menu/LayoutsPage.js:43
 #, javascript-format
@@ -394,7 +394,7 @@ msgstr "Computador"
 
 #: menuWidgets.js:738
 msgid "Configure Runner"
-msgstr ""
+msgstr "Configurar 'Runner'"
 
 #: appMenu.js:65 appMenu.js:189
 msgid "Create Desktop Shortcut"
@@ -433,19 +433,16 @@ msgid "Dash to Panel Settings"
 msgstr "Configurações do Dash to Panel"
 
 #: settings/GeneralPage.js:34
-#, fuzzy
 msgid "Dash to Panel may conflict with this setting"
-msgstr "Configurações do Dash to Panel"
+msgstr "Dash to Panel pode conflitar com essa opção"
 
 #: settings/Menu/ListPinnedPage.js:424
-#, fuzzy
 msgid "Dash to Panel or App Icons Taskbar"
-msgstr "A extensão Dash to Panel não está rodando!"
+msgstr "Extensão Dash to Panel ou App Icons Taskbar"
 
 #: settings/GeneralPage.js:96
-#, fuzzy
 msgid "Dash to Panel or App Icons Taskbar extension required"
-msgstr "A extensão Dash to Panel não está rodando!"
+msgstr "Necessário ativar a extensão Dash to Panel"
 
 #: settings/Menu/LayoutTweaksPage.js:543 settings/Menu/LayoutTweaksPage.js:578
 #: settings/Menu/LayoutTweaksPage.js:659 settings/Menu/LayoutTweaksPage.js:753
@@ -466,9 +463,8 @@ msgid "Directory"
 msgstr "Diretórios"
 
 #: settings/Menu/VisualSettings.js:204
-#, fuzzy
 msgid "Directory / Application / Other Shortcuts, Power Menu"
-msgstr "Selecionar atalhos dos aplicativos"
+msgstr "Diretório / Aplicação / Outros atalhos, Menu de Energia"
 
 #: settings/MenuPage.js:110
 msgid "Directory Shortcuts"
@@ -488,7 +484,7 @@ msgstr "Desabilitar Aplicativos fixados"
 
 #: settings/Menu/FineTunePage.js:93
 msgid "Disable ScrollView Fade Effects"
-msgstr ""
+msgstr "Desabilitar efeitos de 'fade' ao rolar"
 
 #: settings/Menu/FineTunePage.js:107
 msgid "Disable Tooltips"
@@ -511,6 +507,8 @@ msgid ""
 "Display quick links of extra categories on the home page\n"
 "Must also be enabled in 'Menu -> Extra Categories' section"
 msgstr ""
+"Mostrar links rápidos ou categorias extras na página principal\n"
+"Precisa ser habilitado em 'Menu -> Categorias extras'"
 
 #: settings/MenuButtonPage.js:405
 msgid "Distro Icons"
@@ -538,7 +536,7 @@ msgstr "Editar atalho"
 
 #: menuWidgets.js:2283
 msgid "Eject Drive"
-msgstr ""
+msgstr "Ejetar dispositivo"
 
 #: placeDisplay.js:225
 #, javascript-format
@@ -584,9 +582,8 @@ msgid "Extra Large"
 msgstr "Extra Largo"
 
 #: settings/Menu/SearchOptionsPage.js:24
-#, fuzzy
 msgid "Extra Search Providers"
-msgstr "Provedores de pesquisa"
+msgstr "Provedores de pesquisa extras"
 
 #: settings/Menu/LayoutTweaksPage.js:368 settings/Menu/LayoutTweaksPage.js:371
 #: settings/Menu/LayoutTweaksPage.js:677 settings/Menu/LayoutTweaksPage.js:796
@@ -625,7 +622,6 @@ msgid "Files"
 msgstr "Arquivos"
 
 #: settings/MenuPage.js:74
-#, fuzzy
 msgid "Fine Tune"
 msgstr "Ajuste fino"
 
@@ -640,9 +636,8 @@ msgstr "Tamanho da fonte"
 #: settings/Menu/ThemePage.js:157 settings/Menu/ThemePage.js:183
 #: settings/Menu/ThemePage.js:189 settings/MenuButtonPage.js:209
 #: settings/MenuButtonPage.js:215 settings/MenuButtonPage.js:221
-#, fuzzy
 msgid "Foreground Color"
-msgstr "Cor de primeiro plano do menu"
+msgstr "Cor de primeiro plano"
 
 #: menulayouts/eleven.js:68
 msgid "Frequent"
@@ -683,12 +678,11 @@ msgstr "Git Commit"
 
 #: settings/Menu/LayoutTweaksPage.js:436 settings/Menu/LayoutTweaksPage.js:590
 msgid "Grid"
-msgstr ""
+msgstr "Grade"
 
 #: settings/Menu/VisualSettings.js:184
-#, fuzzy
 msgid "Grid Menu Items"
-msgstr "Substituir tema do menu"
+msgstr "Items do menu em grade"
 
 #: settings/Menu/LayoutTweaksPage.js:488 settings/Menu/VisualSettings.js:35
 msgid "Height"
@@ -704,7 +698,7 @@ msgstr "Oculto"
 
 #: settings/GeneralPage.js:145
 msgid "Hide Overview on Startup"
-msgstr ""
+msgstr "Ocultar 'overview' na inicialização"
 
 #: settings/Menu/SearchOptionsPage.js:69
 msgid "Highlight search result terms"
@@ -776,18 +770,16 @@ msgid "Left Super Key"
 msgstr "Tecla Super esquerda"
 
 #: settings/Menu/VisualSettings.js:55
-#, fuzzy
 msgid "Left-Panel Width"
-msgstr "Painel-esquerdo"
+msgstr "Largura do painel esquerdo"
 
 #: settings/MenuButtonPage.js:575
-#, fuzzy
 msgid "Legal disclaimer for Distro Icons"
 msgstr "Aviso legal para ícones de distribuição"
 
 #: settings/Menu/LayoutTweaksPage.js:435 settings/Menu/LayoutTweaksPage.js:589
 msgid "List"
-msgstr ""
+msgstr "Lista"
 
 #: gnome43/searchProviders/openWindows.js:26 searchProviders/openWindows.js:26
 msgid "List of open windows across all workspaces"
@@ -811,14 +803,12 @@ msgid "Lock"
 msgstr "Bloquear"
 
 #: constants.js:240 menuButton.js:619 settings/Menu/ListPinnedPage.js:372
-#, fuzzy
 msgid "Log Out..."
-msgstr "Encerrar sessão"
+msgstr "Encerrar sessão..."
 
 #: settings/Menu/ThemingDialog.js:14
-#, fuzzy
 msgid "Manage Themes"
-msgstr "Salvar tema"
+msgstr "Gerenciar temas"
 
 #: settings/Menu/SearchOptionsPage.js:88
 msgid "Max Search Results"
@@ -846,9 +836,8 @@ msgid "Menu Button Appearance"
 msgstr "Aparência do botão Menu"
 
 #: settings/MenuButtonPage.js:156
-#, fuzzy
 msgid "Menu Button Icon"
-msgstr "Botão do menu"
+msgstr "Ícone do botão do menu"
 
 #: settings/Menu/ListPinnedPage.js:358
 msgid "Menu Button Settings"
@@ -860,12 +849,11 @@ msgstr "Estilo do botão Menu"
 
 #: settings/Menu/VisualSettings.js:156
 msgid "Menu Distance from Panel and Screen Edge"
-msgstr ""
+msgstr "Distância entre o menu e o canto do painel e tela"
 
 #: settings/Menu/ThemePage.js:176
-#, fuzzy
 msgid "Menu Items Styling"
-msgstr "Configurações do menu"
+msgstr "Estilo dos ítems do menu"
 
 #: settings/MenuPage.js:40
 msgid "Menu Layout"
@@ -884,9 +872,8 @@ msgid "Menu Size"
 msgstr "Tamanho do Menu"
 
 #: settings/Menu/ThemePage.js:149
-#, fuzzy
 msgid "Menu Styling"
-msgstr "Configurações do menu"
+msgstr "Estilizar menu"
 
 #: settings/MenuPage.js:54
 msgid "Menu Theme"
@@ -894,19 +881,16 @@ msgstr "Tema do menu"
 
 #: settings/Menu/ThemePage.js:50 settings/Menu/ThemingDialog.js:21
 #: settings/Menu/ThemingDialog.js:29 settings/Menu/ThemingDialog.js:94
-#, fuzzy
 msgid "Menu Themes"
-msgstr "Tema do menu"
+msgstr "Temas do menu"
 
 #: settings/Menu/ListPinnedPage.js:356
-#, fuzzy
 msgid "Menu Theming"
 msgstr "Tema do menu"
 
 #: settings/MenuPage.js:64
-#, fuzzy
 msgid "Menu Visual Appearance"
-msgstr "Aparência do botão Menu"
+msgstr "Aparência do Menu"
 
 #: constants.js:390
 msgid "Mint"
@@ -926,7 +910,7 @@ msgstr "Modificar"
 
 #: settings/MenuPage.js:171
 msgid "Modify ArcMenu Context Menu"
-msgstr ""
+msgstr "Modificar menu de contexto do ArcMenu"
 
 #: settings/GeneralPage.js:200
 msgid "Modify Hotkey"
@@ -934,12 +918,11 @@ msgstr "Modificar tecla de atalho"
 
 #: settings/MenuPage.js:55
 msgid "Modify menu colors, font size, and border"
-msgstr ""
+msgstr "Modificar cores, tamanho da fonte e borda do menu"
 
 #: menulayouts/baseMenuLayout.js:439
-#, fuzzy
 msgid "More Recent Files..."
-msgstr "Arquivos recentes"
+msgstr "Arquivos mais recentes..."
 
 #: settings/Menu/LayoutTweaksPage.js:122
 msgid "Mouse Click"
@@ -983,18 +966,16 @@ msgid "No results."
 msgstr "Sem resultados."
 
 #: settings/Menu/VisualSettings.js:98 settings/Menu/VisualSettings.js:184
-#, fuzzy
 msgid "Non-Traditional Layouts"
-msgstr "Largura tradicional"
+msgstr "Layouts não padrão"
 
 #: settings/Menu/LayoutTweaksPage.js:740
 msgid "Nothing Yet!"
 msgstr "Nada ainda!"
 
 #: settings/AboutPage.js:93
-#, fuzzy
 msgid "OS Name"
-msgstr "Nome:"
+msgstr "Nome do OS"
 
 #: settings/Menu/ListOtherPage.js:41 settings/Menu/VisualSettings.js:110
 #: settings/Menu/VisualSettings.js:176 settings/Menu/VisualSettings.js:249
@@ -1014,47 +995,40 @@ msgid "Open on Primary Monitor"
 msgstr "Abrir no monitorp primário"
 
 #: settings/Menu/ListOtherPage.js:45
-#, fuzzy
 msgid "Override Display Style"
-msgstr "Estilo do display"
+msgstr "Substituir estilo do display"
 
 #: settings/Menu/VisualSettings.js:170
-#, fuzzy
 msgid "Override Icon Sizes"
-msgstr "Tamanho do ícone"
+msgstr "Substituir tamanhos de ícone"
 
 #: settings/Menu/VisualSettings.js:114
 msgid "Override Menu Location"
 msgstr "Substituir localização do menu"
 
 #: settings/Menu/VisualSettings.js:155
-#, fuzzy
 msgid "Override Menu Rise"
-msgstr "Substituir tema do menu"
+msgstr "Substituir menu 'subir'"
 
 #: settings/Menu/ThemePage.js:42
-#, fuzzy
 msgid "Override Theme"
-msgstr "Substituir tema do menu"
+msgstr "Substituir tema"
 
 #: settings/Menu/VisualSettings.js:171
-#, fuzzy
 msgid "Override the icon size of various menu items"
-msgstr "Substitui o tema da extensão ArcMenu"
+msgstr "Substituir tamanho de ícones de vários itens do menu"
 
 #: settings/MenuButtonPage.js:103
 msgid "Padding"
-msgstr ""
+msgstr "Preenchimento"
 
 #: settings/GeneralPage.js:20
-#, fuzzy
 msgid "Panel Display Options"
-msgstr "Opções de apresentação"
+msgstr "Opções do painel de apresentação"
 
 #: settings/Menu/ListPinnedPage.js:360
-#, fuzzy
 msgid "Panel Extension Settings"
-msgstr "A extensão Dash to Panel não está rodando!"
+msgstr "Configurações do painel"
 
 #: settings/Menu/ListPinnedPage.js:390
 msgid "Pictures"
@@ -1098,33 +1072,28 @@ msgid "Position on Monitor"
 msgstr "Posição no Monitor"
 
 #: settings/Menu/ListOtherPage.js:42
-#, fuzzy
 msgid "Power Buttons"
-msgstr "Opções de energia"
+msgstr "Botões de energia"
 
 #: settings/Menu/VisualSettings.js:217
 msgid "Power Buttons, Unity Bottom Bar, Mint Side Bar, etc"
-msgstr ""
+msgstr "Botões de energia, Barra inferior Unity, Barra lateral Mint, etc"
 
 #: settings/Menu/ListOtherPage.js:43
-#, fuzzy
 msgid "Power Menu"
-msgstr "Menu tognee"
+msgstr "Menu de energia"
 
 #: menuButton.js:609 menuWidgets.js:835 menuWidgets.js:854
-#, fuzzy
 msgid "Power Off / Log Out"
-msgstr "Desligar"
+msgstr "Desligar / Encerrar sessão"
 
 #: settings/Menu/ListOtherPage.js:38
-#, fuzzy
 msgid "Power Off / Log Out Buttons"
-msgstr "Desligar"
+msgstr "Botões de Desligar / Encerrar sessão"
 
 #: constants.js:243 menuButton.js:614 settings/Menu/ListPinnedPage.js:373
-#, fuzzy
 msgid "Power Off..."
-msgstr "Desligar"
+msgstr "Desligar..."
 
 #: settings/Menu/ListPinnedPage.js:362 settings/MenuPage.js:142
 msgid "Power Options"
@@ -1159,22 +1128,20 @@ msgstr "Redmont"
 
 #: prefsWidgets.js:272
 msgid "Remove"
-msgstr ""
+msgstr "Remover"
 
 #: menuWidgets.js:2329
-#, fuzzy
 msgid "Remove from Recent"
-msgstr "Remover dos favoritos"
+msgstr "Remover dos recentes"
 
 #: settings/Menu/SubPage.js:59 settings/MenuButtonPage.js:36
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "Reset all %s settings?"
-msgstr "Redefinir todas as configurações"
+msgstr "Redefinir todas as configurações %s"
 
 #: settings/Menu/SubPage.js:54 settings/MenuButtonPage.js:28
-#, fuzzy
 msgid "Reset settings"
-msgstr "Redefinir todas as configurações"
+msgstr "Redefinir configurações"
 
 #: constants.js:242 menuButton.js:613 settings/Menu/ListPinnedPage.js:374
 msgid "Restart..."
@@ -1182,7 +1149,7 @@ msgstr "Reiniciar..."
 
 #: settings/Menu/ThemePage.js:43 settings/MenuButtonPage.js:205
 msgid "Results may vary with third party themes"
-msgstr ""
+msgstr "Resultador podem váriar com temas de terceiros"
 
 #: settings/GeneralPage.js:44 settings/GeneralPage.js:70
 #: settings/Menu/LayoutTweaksPage.js:604
@@ -1190,13 +1157,12 @@ msgid "Right"
 msgstr "Direita"
 
 #: settings/Menu/VisualSettings.js:76
-#, fuzzy
 msgid "Right-Panel Width"
-msgstr "Painel direito"
+msgstr "Largura do painel esquerdo"
 
 #: settings/Menu/LayoutTweaksPage.js:149
 msgid "Round"
-msgstr ""
+msgstr "Redondo"
 
 #: settings/Menu/ListPinnedPage.js:346
 msgid "Run Command..."
@@ -1212,42 +1178,36 @@ msgid "Save"
 msgstr "Salvar"
 
 #: settings/AboutPage.js:164
-#, fuzzy
 msgid "Save Settings"
-msgstr "Configurações do menu"
+msgstr "Salvar configurações"
 
 #: settings/Menu/ThemingDialog.js:413
 msgid "Save Theme"
 msgstr "Salvar tema"
 
 #: settings/Menu/ThemingDialog.js:384
-#, fuzzy
 msgid "Save Theme As..."
-msgstr "Salvar tema"
+msgstr "Salvar tema como..."
 
 #: settings/Menu/ThemingDialog.js:268
-#, fuzzy
 msgid "Save Themes"
-msgstr "Salvar tema"
+msgstr "Salvar temas"
 
 #: settings/Menu/ThemePage.js:122
-#, fuzzy
 msgid "Save as Theme"
-msgstr "Salvar tema"
+msgstr "Salvar como tema"
 
 #: settings/Menu/SearchOptionsPage.js:131
-#, fuzzy
 msgid "Search Box Border Radius"
-msgstr "Raio dos cantos"
+msgstr "Raio dos cantos da caixa de pesquisa"
 
 #: settings/Menu/SearchOptionsPage.js:57 settings/MenuPage.js:132
 msgid "Search Options"
 msgstr "Opções de pesquisa"
 
 #: settings/Menu/LayoutTweaksPage.js:438 settings/Menu/LayoutTweaksPage.js:592
-#, fuzzy
 msgid "Search Results Display Style"
-msgstr "Estilo do display"
+msgstr "Estilo do display dos resultados de pesquisa"
 
 #: settings/Menu/SearchOptionsPage.js:35
 msgid "Search for open windows across all workspaces"
@@ -1282,9 +1242,8 @@ msgid "Select an Icon"
 msgstr "Selecione um ícone"
 
 #: settings/Menu/ListPinnedPage.js:364 settings/Menu/ListPinnedPage.js:370
-#, fuzzy
 msgid "Separator"
-msgstr "Cor do separador"
+msgstr "Separador"
 
 #: settings/Menu/ThemePage.js:172
 msgid "Separator Color"
@@ -1303,9 +1262,8 @@ msgid "Settings"
 msgstr "Configurações"
 
 #: settings/MenuPage.js:90
-#, fuzzy
 msgid "Settings specific to the current menu layout"
-msgstr "Ajustes para o layout do menu atual"
+msgstr "Ajustes específicos do layout do menu atual"
 
 #: settings/GeneralPage.js:302
 msgid "Shift"
@@ -1325,7 +1283,6 @@ msgid "Show Activities Button"
 msgstr "Mostrar botão atividades"
 
 #: settings/Menu/ListPinnedPage.js:348
-#, fuzzy
 msgid "Show All Apps"
 msgstr "Exibir todos os aplicativos"
 
@@ -1334,14 +1291,12 @@ msgid "Show Application Descriptions"
 msgstr "Exibir descrições dos aplicativos"
 
 #: settings/Menu/LayoutTweaksPage.js:283
-#, fuzzy
 msgid "Show Apps Grid"
 msgstr "Exibir grade de aplicativos"
 
 #: menuButton.js:595 settings/Menu/ListPinnedPage.js:363
-#, fuzzy
 msgid "Show Desktop"
-msgstr "Mostrar detalhes"
+msgstr "Mostrar área de trabalho"
 
 #: settings/Menu/LayoutTweaksPage.js:526
 msgid "Show Frequent Apps"
@@ -1352,9 +1307,8 @@ msgid "Show Hidden Recent Files"
 msgstr "Mostrar arquivos recentes ocultos"
 
 #: settings/Menu/FineTunePage.js:37
-#, fuzzy
 msgid "Show Search Result Descriptions"
-msgstr "Exibir descrições dos aplicativos"
+msgstr "Exibir descrições dos resultados de pesquisa"
 
 #: settings/Menu/VisualSettings.js:177 settings/Menu/VisualSettings.js:180
 #: settings/Menu/VisualSettings.js:251
@@ -1367,7 +1321,7 @@ msgstr "Programas"
 
 #: settings/Menu/FineTunePage.js:65 settings/Menu/FineTunePage.js:76
 msgid "Some icon themes may not include selected icon type"
-msgstr ""
+msgstr "Alguns temas de ícone podem não incluir o tipo selecionado"
 
 #: settings/Menu/LayoutTweaksPage.js:150 settings/Menu/VisualSettings.js:177
 #: settings/Menu/VisualSettings.js:178 settings/Menu/VisualSettings.js:179
@@ -1411,9 +1365,8 @@ msgid "Text and Icon"
 msgstr "Texto e ícone"
 
 #: settings/Menu/ThemingDialog.js:396
-#, fuzzy
 msgid "Theme Name"
-msgstr "Nome do tema de cores"
+msgstr "Nome do tema"
 
 #: settings/Menu/ListPinnedPage.js:558
 msgid "Title"
@@ -1437,9 +1390,8 @@ msgid "Traditional"
 msgstr "Tradicional"
 
 #: settings/Menu/VisualSettings.js:56 settings/Menu/VisualSettings.js:77
-#, fuzzy
 msgid "Traditional Layouts"
-msgstr "Largura tradicional"
+msgstr "Layouts tradicionaiss"
 
 #: constants.js:427
 msgid "Tweaks"
@@ -1451,7 +1403,7 @@ msgstr "Ubuntu Dash"
 
 #: menuWidgets.js:2281
 msgid "Unmount Drive"
-msgstr ""
+msgstr "Desmontar dispositivo"
 
 #: appMenu.js:197 appMenu.js:233
 msgid "Unpin from ArcMenu"
@@ -1460,6 +1412,8 @@ msgstr "Desafixar do ArcMenu"
 #: settings/GeneralPage.js:113
 msgid "Useful with Dash to Panel setting 'Keep original gnome-shell top panel'"
 msgstr ""
+"Útil com a configuração 'Keep original gnome-shell top panel' do Dash to "
+"Panel"
 
 #: settings/Menu/LayoutTweaksPage.js:113
 msgid "Vertical Separator"
@@ -1471,12 +1425,11 @@ msgstr "Vídeos"
 
 #: settings/MenuPage.js:166
 msgid "What should show on the context menu?"
-msgstr ""
+msgstr "O que deve aparecer no menu de contexto?"
 
 #: settings/MenuPage.js:84
-#, fuzzy
 msgid "What should show on the menu?"
-msgstr "Como o menu deve aparentar?"
+msgstr "O que deve aparecer no meny?"
 
 #: constants.js:388
 msgid "Whisker"
@@ -1496,13 +1449,12 @@ msgid "Width Offset"
 msgstr "Offset da largura"
 
 #: settings/AboutPage.js:106
-#, fuzzy
 msgid "Windowing System"
-msgstr "Estilo Windows 10"
+msgstr "Sistema de janelas"
 
 #: constants.js:399
 msgid "Windows"
-msgstr "Janelas"
+msgstr "Windows"
 
 #: constants.js:401
 msgid "a.z."
