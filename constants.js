@@ -359,6 +359,7 @@ var DistroIcons = [
     {PATH: `${DistroIconsPath}distro-zorin-symbolic.svg`, NAME: 'Zorin OS'},
     {PATH: `${DistroIconsPath}distro-endeavour-symbolic.svg`, NAME: 'Endeavour'},
     {PATH: `${DistroIconsPath}distro-nobara-symbolic.svg`, NAME: 'Nobara'},
+    {PATH: `${DistroIconsPath}distro-pardus-symbolic.svg`, NAME: 'Pardus'},
 ];
 
 var MenuLayout = {
@@ -592,6 +593,7 @@ var DistroIconsDisclaimer = '<i>All brand icons are trademarks of their respecti
     '\n\n•   <b>MX Linux©</b> - 2020 - Linux - is the registered trademark of Linus Torvalds ' +
                 'in the U.S. and other countries.' +
     '\n\n•   <b>Red Hat, Inc.©</b> - Copyright 2020 name and logo' +
+    '\n\n•   <b>Pardus</b> - name and logo are copyright © 2003-2023 by TUBITAK ULAKBIM' +
     '\n\n•   <b>ZORIN OS</b> - The "Z" logomark is a registered trademark of Zorin Technology Group Ltd. ' +
                 'Copyright © 2019 - 2021 Zorin Technology Group Ltd';
 
