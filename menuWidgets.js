@@ -1616,7 +1616,7 @@ var PinnedAppsMenuItem = GObject.registerClass({
         this.gridLocation = [-1, -1];
         this._iconString = this._icon;
 
-        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${Me.path}/media/icons/arcmenu-logo-symbolic.svg`)
+        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${Me.path}/icons/arcmenu-logo-symbolic.svg`)
             this._iconString = Constants.ArcMenuLogoSymbolic;
 
         if (this._app && this._iconString === '') {
@@ -2001,7 +2001,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
             provider.activateResult(metaInfo.id, terms);
             if (metaInfo.clipboardText)
                 St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, metaInfo.clipboardText);
-        } else  if (metaInfo.id.endsWith('.desktop')) {
+        } else if (metaInfo.id.endsWith('.desktop')) {
             const app = Shell.AppSystem.get_default().lookup_app(metaInfo.id);
             if (app.can_open_new_window())
                 app.open_new_window(-1);

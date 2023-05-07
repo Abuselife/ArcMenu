@@ -238,14 +238,14 @@ function getCategoryDetails(currentCategory) {
 
         if (!currentCategory.get_icon()) {
             gicon = null;
-            fallbackIcon = Gio.icon_new_for_string(`${Me.path}/media/icons/menu_icons/category_icons/applications-other-symbolic.svg`);
+            fallbackIcon = Gio.icon_new_for_string(`${Me.path}/icons/category_icons/applications-other-symbolic.svg`);
             return [name, gicon, fallbackIcon];
         }
 
         gicon = currentCategory.get_icon();
 
         const iconString = `${currentCategory.get_icon().to_string()}-symbolic.svg`;
-        fallbackIcon = Gio.icon_new_for_string(`${Me.path}/media/icons/menu_icons/category_icons/${iconString}`);
+        fallbackIcon = Gio.icon_new_for_string(`${Me.path}/icons/category_icons/${iconString}`);
 
         return [name, gicon, fallbackIcon];
     }
@@ -276,18 +276,19 @@ function getPowerTypeFromShortcutCommand(command) {
 
 function getMenuButtonIcon(settings, path) {
     const iconType = settings.get_enum('menu-button-icon');
+    const iconDirectory = `${Me.path}/icons/hicolor/16x16/actions/`;
 
     if (iconType === Constants.MenuIconType.CUSTOM) {
         if (path && GLib.file_test(path, GLib.FileTest.IS_REGULAR))
             return path;
     } else if (iconType === Constants.MenuIconType.DISTRO_ICON) {
         const iconEnum = settings.get_int('distro-icon');
-        const iconPath = Me.path + Constants.DistroIcons[iconEnum].PATH;
+        const iconPath = `${iconDirectory + Constants.DistroIcons[iconEnum].PATH}.svg`;
         if (GLib.file_test(iconPath, GLib.FileTest.IS_REGULAR))
             return iconPath;
     } else {
         const iconEnum = settings.get_int('arc-menu-icon');
-        const iconPath = Me.path + Constants.MenuIcons[iconEnum].PATH;
+        const iconPath = `${iconDirectory + Constants.MenuIcons[iconEnum].PATH}.svg`;
         if (Constants.MenuIcons[iconEnum].PATH === 'view-app-grid-symbolic')
             return 'view-app-grid-symbolic';
         else if (GLib.file_test(iconPath, GLib.FileTest.IS_REGULAR))

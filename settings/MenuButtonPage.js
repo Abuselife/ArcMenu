@@ -389,12 +389,7 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         this.pageGroup.add(arcMenuIconsFlowBox);
 
         Constants.MenuIcons.forEach(icon => {
-            let iconName = icon.PATH;
-
-            if (icon.PATH !== 'view-app-grid-symbolic')
-                iconName = iconName.replace(Constants.MenuIconsPath, '').replace('.svg', '');
-
-            const iconTile = new PW.MenuButtonIconTile(iconName);
+            const iconTile = new PW.MenuButtonIconTile(icon.PATH);
             arcMenuIconsFlowBox.add(iconTile);
         });
 
@@ -418,10 +413,7 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         });
 
         Constants.DistroIcons.forEach(icon => {
-            let iconName = icon.PATH;
-            iconName = iconName.replace(Constants.DistroIconsPath, '').replace('.svg', '');
-
-            const iconTile = new PW.MenuButtonIconTile(iconName, icon.NAME);
+            const iconTile = new PW.MenuButtonIconTile(icon.PATH, icon.NAME);
             distroIconsFlowBox.add(iconTile);
         });
         distroIconsGroup.add(distroIconsFlowBox);

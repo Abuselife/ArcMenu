@@ -2,7 +2,7 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const {Adw, GdkPixbuf, GObject, Gtk} = imports.gi;
+const {Adw, Gio, GObject, Gtk} = imports.gi;
 const Constants = Me.imports.constants;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
@@ -381,12 +381,10 @@ class ArcMenuHotkeyDialog extends Gtk.Window {
         });
         vbox.append(keyLabel);
 
-        const pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(`${Me.path}/media/icons/prefs_icons/keyboard-symbolic.svg`, 256, 72);
-        const keyboardImage = Gtk.Picture.new_for_pixbuf(pixbuf);
-        keyboardImage.hexpand = true;
-        keyboardImage.vexpand = true;
-        keyboardImage.halign = Gtk.Align.CENTER;
-        keyboardImage.valign = Gtk.Align.CENTER;
+        const keyboardImage = new Gtk.Image({
+            icon_name: 'settings-keyboard',
+            pixel_size: 256,
+        });
         vbox.append(keyboardImage);
 
         const resultsRow = new Adw.ActionRow({

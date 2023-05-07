@@ -81,10 +81,11 @@ function setVisiblePage(window, settings) {
 
 function fillPreferencesWindow(window) {
     const settings = ExtensionUtils.getSettings();
+    const iconPath = `${Me.path}/icons`;
 
     const iconTheme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default());
-    if (!iconTheme.get_search_path().includes(`${Me.path}/media/icons/prefs_icons`))
-        iconTheme.add_search_path(`${Me.path}/media/icons/prefs_icons`);
+    if (!iconTheme.get_search_path().includes(iconPath))
+        iconTheme.add_search_path(iconPath);
 
     window.set_search_enabled(true);
     window.can_navigate_back = true;
