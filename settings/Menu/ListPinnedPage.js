@@ -238,7 +238,7 @@ class ArcMenuListPinnedPage extends SubPage {
         row.title = GLib.markup_escape_text(row.shortcut_name, -1);
 
         if (row.shortcut_command.endsWith('.desktop') && !appInfo) {
-            row.gicon = Gio.icon_new_for_string('settings-warning-symbolic');
+            row.gicon = Gio.icon_new_for_string('dialog-warning-symbolic');
             row.title = `<b><i>${_('Invalid Shortcut')}</i></b> - ${row.title ? _(row.title) : row.shortcut_command}`;
             row.css_classes = ['error'];
         } else {
