@@ -6,7 +6,7 @@ EXTRA_MODULES = appMenu.js constants.js controller.js menuButton.js menuWidgets.
 
 TOLOCALIZE = $(EXTRA_MODULES) gnome43/* menulayouts/* settings/*
 
-EXTRA_DIRECTORIES = gnome43 media menulayouts searchProviders settings
+EXTRA_DIRECTORIES = gnome43 icons menulayouts searchProviders settings
 
 MSGSRC = $(wildcard po/*.po)
 ifeq ($(strip $(DESTDIR)),)
