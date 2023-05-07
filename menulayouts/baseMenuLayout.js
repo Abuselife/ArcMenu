@@ -353,7 +353,7 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     setNewAppIndicator() {
         const disabled = Me.settings.get_boolean('disable-recently-installed-apps');
-        if (!disabled) {
+        if (!disabled && this.categoryDirectories) {
             for (const categoryMenuItem of this.categoryDirectories.values()) {
                 categoryMenuItem.setNewAppIndicator(false);
                 for (let i = 0; i < categoryMenuItem.appList.length; i++) {
