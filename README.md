@@ -135,6 +135,8 @@ Linux - is the registered trademark of Linus Torvalds in the U.S. and other coun
 
 * **ZORIN OS** - The "Z" logomark is a registered trademark of Zorin Technology Group Ltd. Copyright © 2019 - 2021 Zorin Technology Group Ltd
 
+* **Pardus** - Pardus is a trademark of the TUBITAK ULAKBIM. Copyright © 2003–2023 TUBITAK ULAKBIM
+
 </p>
 </details>
 
