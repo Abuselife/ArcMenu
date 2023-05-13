@@ -230,7 +230,7 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             return;
         }
 
-        this.searchResults.setTerms([]);
+        this.searchResults?.setTerms([]);
 
         if (this.applicationsMap) {
             this.applicationsMap.forEach((value, _key, _map) => {
