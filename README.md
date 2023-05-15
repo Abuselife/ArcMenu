@@ -71,7 +71,7 @@ Additional credits:
 
 **@[MorganAntonsson](https://gitlab.com/MorganAntonsson) - Swedish** | **@[jiri.doubravsky](https://gitlab.com/jiri.doubravsky), @[panmourovaty](https://gitlab.com/panmourovaty), @[Amerey ](https://gitlab.com/Amerey.eu) - Czech** | **@[juanlucer](https://gitlab.com/juanlucer), @[pjunyent](https://gitlab.com/pjunyent), @[Sergio](https://gitlab.com/IngrownMink4) - Spanish** | **@[plesry](https://gitlab.com/plesry) - Chinese (Taiwan)** | **@[Vombato](https://gitlab.com/Vombato), @[matguidi](https://gitlab.com/matguidi) - Italian**
 
-**@[skygmin](https://gitlab.com/skygmin), @[doufu3344](https://gitlab.com/doufu3344) - Simplified Chinese** | **@[Vistaus](https://gitlab.com/Vistaus), @[vinno97](https://gitlab.com/vinno97) - Dutch** | **@[artnay](https://gitlab.com/artnay) - Finnish** |  **@[rimasx](https://gitlab.com/rimasx) - Estonian** | **@[stevendobay](https://gitlab.com/stevendobay) - Hungarian** 
+**@[skygmin](https://gitlab.com/skygmin), @[doufu3344](https://gitlab.com/doufu3344) - Simplified Chinese** | **@[Vistaus](https://gitlab.com/Vistaus), @[vinno97](https://gitlab.com/vinno97) - Dutch** | **@[artnay](https://gitlab.com/artnay) - Finnish** |  **@[rimasx](https://gitlab.com/rimasx) - Estonian** | **@[stevendobay](https://gitlab.com/stevendobay), @[Balázs Meskó](https://gitlab.com/meskobalazs) - Hungarian** 
 
 **@[omeritzics](https://gitlab.com/omeritzics) - Hebrew** | **@[prescott66](https://gitlab.com/prescott66) - Slovak** | **@[Mejans](https://gitlab.com/Mejans), @[Quentin](https://gitlab.com/quenty_occitania) - Occitan** | **@[KY4LU](https://gitlab.com/mjkim__) - Korean** |  **@[sayuri](https://gitlab.com/sayuri-), @[helabasa](https://gitlab.com/helabasa) - Sinhalese**
 
