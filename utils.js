@@ -235,18 +235,22 @@ function getCategoryDetails(currentCategory) {
         return [name, gicon, fallbackIcon];
     } else {
         name = currentCategory.get_name();
+        const categoryIcon = currentCategory.get_icon();
+        const fallbackIconDirectory = `${Me.path}/icons/category-icons/`;
 
-        if (!currentCategory.get_icon()) {
+        if (!categoryIcon) {
             gicon = null;
-            fallbackIcon = Gio.icon_new_for_string(`${Me.path}/icons/category_icons/applications-other-symbolic.svg`);
+            fallbackIcon = Gio.icon_new_for_string(`${fallbackIconDirectory}applications-other-symbolic.svg`);
             return [name, gicon, fallbackIcon];
         }
 
-        gicon = currentCategory.get_icon();
+        const categoryIconName = categoryIcon.to_string();
+        const symbolicName = `${categoryIconName}-symbolic`;
+        const symbolicIconFile = `${symbolicName}.svg`;
 
-        const iconString = `${currentCategory.get_icon().to_string()}-symbolic.svg`;
-        fallbackIcon = Gio.icon_new_for_string(`${Me.path}/icons/category_icons/${iconString}`);
+        gicon = categoryIcon;
 
+        fallbackIcon = Gio.icon_new_for_string(`${fallbackIconDirectory}${symbolicIconFile}`);
         return [name, gicon, fallbackIcon];
     }
 }
