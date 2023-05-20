@@ -358,6 +358,7 @@ var DistroIcons = [
     {PATH: 'distro-endeavour-symbolic', NAME: 'Endeavour'},
     {PATH: 'distro-nobara-symbolic', NAME: 'Nobara'},
     {PATH: 'distro-pardus-symbolic', NAME: 'Pardus'},
+    {PATH: 'distro-cachyos-symbolic', NAME: 'CachyOS'},
 ];
 
 var MenuLayout = {
