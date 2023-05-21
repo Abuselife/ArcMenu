@@ -152,9 +152,9 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
 
         this.updateStyle();
         this.updateWidth();
+        this._createCategoriesMenu();
         this.loadCategories();
         this.loadPinnedApps();
-        this._createCategoriesMenu();
 
         this.setDefaultMenuView();
     }
@@ -239,7 +239,6 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
 
         categoriesPopupBox.style = `max-height: ${height}px`;
 
-        this._displayCategories();
         this.subMenuManager.addMenu(this.categoriesMenu);
         this.categoriesMenu.actor.hide();
         Main.uiGroup.add_child(this.categoriesMenu.actor);
@@ -303,9 +302,11 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         }
 
         super.loadCategories();
+        this._displayCategories();
     }
 
     _displayCategories() {
+        this.categoriesBox.destroy_all_children();
         let hasExtraCategory = false;
         let separatorAdded = false;
 
