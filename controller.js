@@ -373,6 +373,7 @@ var MenuSettingsController = class {
         switch (menuButtonAppearance) {
         case Constants.MenuButtonAppearance.TEXT:
             menuButtonWidget.showText();
+            menuButtonWidget.setLabelStyle(null);
             break;
         case Constants.MenuButtonAppearance.ICON_TEXT:
             menuButtonWidget.showIconText();
