@@ -20,6 +20,11 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     _init(panel, panelBox, panelParent) {
         super._init(0.5, null, true);
 
+        this.set({
+            x_expand: false,
+            y_expand: false,
+        });
+
         this._panel = panel;
         this._panelBox = panelBox;
         this._panelParent = panelParent;
