@@ -85,26 +85,7 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
-        this.actionsContainerBox = new St.BoxLayout({
-            x_expand: true,
-            y_expand: true,
-            x_align: Clutter.ActorAlign.FILL,
-            y_align: Clutter.ActorAlign.END,
-            vertical: false,
-        });
-        this._mainBox.add_child(this.actionsContainerBox);
-
-        this.actionsBox = new St.BoxLayout({
-            x_expand: true,
-            y_expand: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            y_align: Clutter.ActorAlign.CENTER,
-            vertical: false,
-            style: 'spacing: 10px;',
-        });
-        this.actionsContainerBox.add_child(this.actionsBox);
-
-        this.widgetBox = new St.BoxLayout({
+        this._widgetBox = new St.BoxLayout({
             x_expand: false,
             y_expand: false,
             x_align: Clutter.ActorAlign.CENTER,
@@ -113,9 +94,8 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
             style_class: 'datemenu-displays-box',
             style: 'margin: 0px; spacing: 10px; padding-bottom: 6px;',
         });
-
-        this._weatherItem = new MW.WeatherSection(this);
-        this._clocksItem = new MW.WorldClocksSection(this);
+        this._mainBox.add_child(this._widgetBox);
+        this._widgetBox.hide();
 
         this.appShortcuts = [];
         this.shortcutsBox = new St.BoxLayout({
@@ -137,8 +117,26 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
             layout_manager: layout,
         });
         layout.hookup_style(this.shortcutsGrid);
-
         this.shortcutsBox.add_child(this.shortcutsGrid);
+
+        this.actionsContainerBox = new St.BoxLayout({
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.END,
+            vertical: false,
+        });
+        this._mainBox.add_child(this.actionsContainerBox);
+
+        this.actionsBox = new St.BoxLayout({
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            vertical: false,
+            style: 'spacing: 10px;',
+        });
+        this.actionsContainerBox.add_child(this.actionsBox);
 
         const applicationShortcuts = Me.settings.get_value('application-shortcuts-list').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
@@ -148,7 +146,11 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         }
 
         Me.settings.connectObject('changed::unity-extra-buttons', () => this._createExtraButtons(), this);
+        Me.settings.connectObject('changed::enable-clock-widget-unity', () => this._updateWidgets(), this);
+        Me.settings.connectObject('changed::enable-weather-widget-unity', () => this._updateWidgets(), this);
+
         this._createExtraButtons();
+        this._updateWidgets();
 
         this.updateStyle();
         this.updateWidth();
@@ -157,6 +159,27 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         this.loadPinnedApps();
 
         this.setDefaultMenuView();
+    }
+
+    _updateWidgets() {
+        const clockWidgetEnabled = Me.settings.get_boolean('enable-clock-widget-unity');
+        const weatherWidgetEnabled = Me.settings.get_boolean('enable-weather-widget-unity');
+
+        if (clockWidgetEnabled && !this._clocksItem) {
+            this._clocksItem = new MW.WorldClocksSection(this);
+            this._widgetBox.add_child(this._clocksItem);
+        } else if (!clockWidgetEnabled && this._clocksItem) {
+            this._clocksItem.destroy();
+            this._clocksItem = null;
+        }
+
+        if (weatherWidgetEnabled && !this._weatherItem) {
+            this._weatherItem = new MW.WeatherSection(this);
+            this._widgetBox.add_child(this._weatherItem);
+        } else if (!weatherWidgetEnabled && this._weatherItem) {
+            this._weatherItem.destroy();
+            this._weatherItem = null;
+        }
     }
 
     _createExtraButtons() {
@@ -331,8 +354,6 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         else
             this._clearActorsFromBox();
 
-        this._mainBox.remove_child(this.actionsContainerBox);
-
         this.activeCategoryName = _('Pinned');
         this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
         this.activeCategoryName = _('Shortcuts');
@@ -341,16 +362,13 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         if (!this.applicationsBox.contains(this.shortcutsBox))
             this.applicationsBox.add_child(this.shortcutsBox);
 
-        this.widgetBox.remove_all_children();
+        this._widgetBox.hide();
 
-        if (Me.settings.get_boolean('enable-clock-widget-unity'))
-            this.widgetBox.add_child(this._clocksItem);
-        if (Me.settings.get_boolean('enable-weather-widget-unity'))
-            this.widgetBox.add_child(this._weatherItem);
-        if (!this._mainBox.contains(this.widgetBox))
-            this._mainBox.add_child(this.widgetBox);
+        const clockWidgetEnabled = Me.settings.get_boolean('enable-clock-widget-unity');
+        const weatherWidgetEnabled = Me.settings.get_boolean('enable-weather-widget-unity');
 
-        this._mainBox.add_child(this.actionsContainerBox);
+        if (clockWidgetEnabled || weatherWidgetEnabled)
+            this._widgetBox.show();
     }
 
     displayRecentFiles() {
@@ -368,8 +386,8 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
     _clearActorsFromBox(box) {
         if (this.categoriesMenu.isOpen)
             this.categoriesMenu.toggle();
-        if (this._mainBox.contains(this.widgetBox))
-            this._mainBox.remove_child(this.widgetBox);
+
+        this._widgetBox.hide();
 
         super._clearActorsFromBox(box);
     }

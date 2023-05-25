@@ -43,6 +43,9 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
 
         Me.settings.connectObject('changed::raven-position', () => this._updatePosition(), this);
 
+        Me.settings.connectObject('changed::enable-clock-widget-raven', () => this._updateWidgets(), this);
+        Me.settings.connectObject('changed::enable-weather-widget-raven', () => this._updateWidgets(), this);
+
         this.updateLocation();
 
         // store old ArcMenu variables
@@ -111,7 +114,7 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
-        this.weatherBox = new St.BoxLayout({
+        this._widgetBox = new St.BoxLayout({
             x_expand: true,
             y_expand: true,
             x_align: Clutter.ActorAlign.FILL,
@@ -119,16 +122,7 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
             vertical: true,
             style: 'margin: 0px 10px 10px 10px; spacing: 10px;',
         });
-
-        this._weatherItem = new MW.WeatherSection(this);
-        this._clocksItem = new MW.WorldClocksSection(this);
-        this._clocksItem.set({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.FILL,
-        });
-
-        this.weatherBox.add_child(this._clocksItem);
-        this.weatherBox.add_child(this._weatherItem);
+        this._mainBox.add_child(this._widgetBox);
 
         this.appShortcuts = [];
         this.shortcutsBox = new St.BoxLayout({
@@ -160,6 +154,7 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
                 this.appShortcuts.push(shortcutMenuItem);
         }
 
+        this._updateWidgets();
         this.updateLocation();
         this.updateWidth();
         this._updatePosition();
@@ -167,6 +162,31 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
         this.loadPinnedApps();
 
         this.setDefaultMenuView();
+    }
+
+    _updateWidgets() {
+        const clockWidgetEnabled = Me.settings.get_boolean('enable-clock-widget-raven');
+        const weatherWidgetEnabled = Me.settings.get_boolean('enable-weather-widget-raven');
+
+        if (clockWidgetEnabled && !this._clocksItem) {
+            this._clocksItem = new MW.WorldClocksSection(this);
+            this._clocksItem.set({
+                x_expand: true,
+                x_align: Clutter.ActorAlign.FILL,
+            });
+            this._widgetBox.add_child(this._clocksItem);
+        } else if (!clockWidgetEnabled && this._clocksItem) {
+            this._clocksItem.destroy();
+            this._clocksItem = null;
+        }
+
+        if (weatherWidgetEnabled && !this._weatherItem) {
+            this._weatherItem = new MW.WeatherSection(this);
+            this._widgetBox.add_child(this._weatherItem);
+        } else if (!weatherWidgetEnabled && this._weatherItem) {
+            this._weatherItem.destroy();
+            this._weatherItem = null;
+        }
     }
 
     _updatePosition() {
@@ -271,18 +291,12 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
         if (!this.applicationsBox.contains(this.shortcutsBox))
             this.applicationsBox.add_child(this.shortcutsBox);
 
-        const actors = this.weatherBox.get_children();
-        for (let i = 0; i < actors.length; i++)
-            this.weatherBox.remove_child(actors[i]);
+        this._widgetBox.hide();
+        const clockWidgetEnabled = Me.settings.get_boolean('enable-clock-widget-raven');
+        const weatherWidgetEnabled = Me.settings.get_boolean('enable-weather-widget-raven');
 
-        if (Me.settings.get_boolean('enable-clock-widget-raven'))
-            this.weatherBox.add_child(this._clocksItem);
-
-        if (Me.settings.get_boolean('enable-weather-widget-raven'))
-            this.weatherBox.add_child(this._weatherItem);
-
-        if (!this._mainBox.contains(this.weatherBox))
-            this._mainBox.add_child(this.weatherBox);
+        if (clockWidgetEnabled || weatherWidgetEnabled)
+            this._widgetBox.show();
     }
 
     displayRecentFiles() {
@@ -299,8 +313,7 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
     }
 
     _clearActorsFromBox(box) {
-        if (this._mainBox.contains(this.weatherBox))
-            this._mainBox.remove_child(this.weatherBox);
+        this._widgetBox.hide();
 
         super._clearActorsFromBox(box);
     }
