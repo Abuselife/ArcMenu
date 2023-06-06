@@ -1,13 +1,13 @@
 {
-"uuid": "arcmenu@arcmenu.com",
-"settings-schema": "org.gnome.shell.extensions.arcmenu",
-"gettext-domain": "arcmenu",
-"name": "ArcMenu",
-"description": "Application Menu Extension for GNOME",
-"version": 45,
-"shell-version": [ "42", "43", "44" ],
-"url": "https://gitlab.com/arcmenu/ArcMenu",
-"donations": {
-    "paypal": "azaech"
-}
+  "uuid": "arcmenu@arcmenu.com",
+  "settings-schema": "org.gnome.shell.extensions.arcmenu",
+  "gettext-domain": "arcmenu",
+  "name": "ArcMenu",
+  "description": "Application Menu Extension for GNOME",
+  "version": 45,
+  "shell-version": [ "42", "43", "44" ],
+  "url": "https://gitlab.com/arcmenu/ArcMenu",
+  "donations": {
+      "paypal": "azaech"
+  }
 }
