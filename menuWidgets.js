@@ -206,6 +206,7 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
                 if (topSearchResult)
                     topSearchResult.remove_style_pseudo_class('active');
 
+                // track the active menu item for keyboard navigation
                 if (this._menuLayout.activeMenuItem !== this)
                     this._menuLayout.activeMenuItem = this;
 
@@ -2163,11 +2164,11 @@ class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     activate(event) {
-        this.displayAppList();
-
         super.activate(event);
         if (this._menuLayout.supports_category_hover_activation)
             this._menuLayout.setActiveCategory(this);
+
+        this.displayAppList();
     }
 
     _clearLeaveEventTimeout() {

@@ -675,9 +675,6 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.activeCategoryItem = categoryItem;
         this.activeCategoryItem.isActiveCategory = true;
         this.activeCategoryItem.add_style_pseudo_class('active');
-
-        this._futureActiveItem = categoryItem;
-        this.activeMenuItem = categoryItem;
     }
 
     populateFrequentAppsList(categoryMenuItem) {
@@ -809,12 +806,10 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     set activeMenuItem(item) {
+        // track the active menu item for keyboard navigation
         const itemChanged = item !== this._activeMenuItem;
-        if (itemChanged) {
+        if (itemChanged)
             this._activeMenuItem = item;
-            if (this.arcMenu.isOpen && item && this.supports_category_hover_activation)
-                item.grab_key_focus();
-        }
     }
 
     _onSearchBoxChanged(searchBox, searchString) {
