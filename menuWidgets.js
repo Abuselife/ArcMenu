@@ -404,7 +404,9 @@ class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
             can_focus: false,
         });
         this.reactive = true;
-        this.remove_child(this._ornamentLabel);
+
+        if (this._ornamentLabel)
+            this.remove_child(this._ornamentLabel);
 
         this.label = new St.Label({
             text: text || '',
