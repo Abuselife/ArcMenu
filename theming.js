@@ -172,7 +172,7 @@ async function updateStylesheet(settings) {
             font-size: ${menuFontSize}pt;
             color: ${menuFGColor};
         }
-       .arcmenu-menu .popup-menu-content {
+        .arcmenu-menu .popup-menu-content {
             background-color: ${menuBGColor};
             border-color: ${menuBorderColor};
             border-width: ${menuBorderWidth}px;
@@ -193,6 +193,9 @@ async function updateStylesheet(settings) {
         }
         .arcmenu-menu StScrollBar StButton#vhandle:active, .arcmenu-menu StScrollBar StButton#hhandle:active {
             background-color: ${modifyColorLuminance(menuBGColor, 0.25)};
+        }
+        .arcmenu-menu .popup-menu-item {
+            color: ${menuFGColor};
         }
         .arcmenu-menu .popup-menu-item:focus, .arcmenu-menu .popup-menu-item:hover,
         .arcmenu-menu .popup-menu-item:checked, .arcmenu-menu .popup-menu-item.selected,
