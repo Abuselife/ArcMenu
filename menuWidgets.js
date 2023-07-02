@@ -192,7 +192,7 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
             return;
 
         // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
-        if (this._menuLayout.blockActiveState) {
+        if (this.hover && this._menuLayout.blockHoverState) {
             this.hover = false;
             return;
         }
@@ -230,22 +230,22 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
     }
 
     _onHover() {
-        if (this.hover && (this.label || this.tooltipText)) {
+        if (!this._menuLayout.blockHoverState && this.hover && (this.label || this.tooltipText)) {
             const tooltipTitle = this.label || this.tooltipText;
             let {description} = this;
             if (this._app)
                 description = this._app.get_description();
             this._menuButton.tooltip.showTooltip(this, this.tooltipLocation, tooltipTitle,
                 description, this._displayType ? this._displayType : -1);
-        } else if (!this.hover) {
+        } else if (!this.hover || this._menuLayout.blockHoverState) {
             this._menuButton.tooltip.hide();
         }
     }
 
     vfunc_motion_event() {
         // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
-        if (this._menuLayout.blockActiveState) {
-            this._menuLayout.blockActiveState = false;
+        if (this._menuLayout.blockHoverState) {
+            this._menuLayout.blockHoverState = false;
             this.hover = true;
         }
         return Clutter.EVENT_PROPAGATE;
@@ -306,6 +306,7 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
 
         super.vfunc_key_focus_out();
         this.active = false;
+        this.hover = false;
     }
 
     activate(event) {
@@ -1735,7 +1736,7 @@ var PinnedAppsMenuItem = GObject.registerClass({
         DND.addDragMonitor(this._dragMonitor);
         this._parentBox = this.get_parent();
         const p = this._parentBox.get_transformed_position();
-        [this.posX, this.posY]  = p;
+        [this.posX, this.posY] = p;
 
         this.opacity = 55;
         this.get_allocation_box();

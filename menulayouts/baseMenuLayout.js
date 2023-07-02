@@ -687,7 +687,7 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     _clearActorsFromBox(box) {
-        this.blockActiveState = true;
+        this.blockHoverState = true;
         this.recentFilesManager?.cancelCurrentQueries();
         if (!box) {
             box = this.applicationsBox;
@@ -838,7 +838,7 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
                 // Used to prevent the top search result from instantly changing
                 // if users mouse is over a differnt menu item.
-                this.blockActiveState = true;
+                this.blockHoverState = true;
 
                 this.searchResults.setTerms(searchString.split(/\s+/));
             }
@@ -893,6 +893,9 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     _onMainBoxKeyPress(actor, event) {
+        // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
+        this.blockHoverState = true;
+
         const symbol = event.get_key_symbol();
         const unicode = Clutter.keysym_to_unicode(symbol);
 

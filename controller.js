@@ -15,7 +15,8 @@ var MenuSettingsController = class {
     constructor(settingsControllers, panel, panelBox, panelParent, isPrimaryPanel) {
         this.panel = panel;
 
-        global.toggleArcMenu = () => this.toggleMenus();
+        if (!global.toggleArcMenu)
+            global.toggleArcMenu = () => this.toggleMenus();
 
         this._settingsConnections = new Utils.SettingsConnectionsHandler();
 

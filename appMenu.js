@@ -8,6 +8,7 @@ const {ExtensionState} = ExtensionUtils;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
+const Utils =  Me.imports.utils;
 const _ = Gettext.gettext;
 
 const DESKTOP_ICONS_UUIDS = [
@@ -24,6 +25,14 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         this._enableFavorites = true;
         this._showSingleWindows = true;
         this.actor.add_style_class_name('arcmenu-menu app-menu');
+
+        this._scrollBox = new St.ScrollView({
+            clip_to_allocation: true,
+            hscrollbar_policy: St.PolicyType.NEVER,
+            vscrollbar_policy: St.PolicyType.AUTOMATIC,
+        });
+        this._boxPointer.bin.set_child(this._scrollBox);
+        this._scrollBox.add_actor(this.box);
 
         Main.uiGroup.add_child(this.actor);
         this._menuLayout.contextMenuManager.addMenu(this);
@@ -89,7 +98,71 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
                     this._updateDesktopShortcutItem();
             });
 
+        this.connect('active-changed', () => this._activeChanged());
         this.connect('destroy', () => this._onDestroy());
+    }
+
+    _activeChanged() {
+        if (this._activeMenuItem)
+            Utils.ensureActorVisibleInScrollView(this._activeMenuItem);
+    }
+
+    open(animate) {
+        if (this._menuButton.tooltipShowingID) {
+            GLib.source_remove(this._menuButton.tooltipShowingID);
+            this._menuButton.tooltipShowingID = null;
+            this._menuButton.tooltipShowing = false;
+        }
+        if (this.sourceActor.tooltip) {
+            this.sourceActor.tooltip.hide();
+            this._menuButton.tooltipShowing = false;
+        }
+
+        // clear the max height style for next recalculation
+        this._scrollBox.style = null;
+
+        const {needsScrollbar, maxHeight} = this._needsScrollbar();
+        this._scrollBox.style = `max-height: ${maxHeight}px;`;
+
+        this._scrollBox.vscrollbar_policy =
+            needsScrollbar ? St.PolicyType.AUTOMATIC : St.PolicyType.NEVER;
+
+        if (needsScrollbar)
+            this.actor.add_style_pseudo_class('scrolled');
+        else
+            this.actor.remove_style_pseudo_class('scrolled');
+
+        super.open(animate);
+        this.sourceActor.add_style_pseudo_class('active');
+    }
+
+    _needsScrollbar() {
+        const monitorIndex = Main.layoutManager.findIndexForActor(this.sourceActor);
+
+        this._sourceExtents = this.sourceActor.get_transformed_extents();
+        this._workArea = Main.layoutManager.getWorkAreaForMonitor(monitorIndex);
+
+        const sourceTopLeft = this._sourceExtents.get_top_left();
+        const sourceBottomRight = this._sourceExtents.get_bottom_right();
+        const [, , , boxHeight] = this._scrollBox.get_preferred_size();
+        const workarea = this._workArea;
+
+        switch (this._arrowSide) {
+        case St.Side.TOP: {
+            const maxHeight = (workarea.y + workarea.height) - sourceBottomRight.y - 16;
+            if (sourceBottomRight.y + boxHeight > workarea.y + workarea.height)
+                return {needsScrollbar: true, maxHeight};
+            return {needsScrollbar: false, maxHeight};
+        }
+        case St.Side.BOTTOM: {
+            const maxHeight = sourceTopLeft.y - workarea.y - 16;
+            if (sourceTopLeft.y - boxHeight < workarea.y)
+                return {needsScrollbar: true, maxHeight};
+            return {needsScrollbar: false, maxHeight};
+        }
+        default:
+            return {needsScrollbar: false, maxHeight: 0};
+        }
     }
 
     _onDestroy() {
@@ -342,21 +415,6 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         this._appFavorites.disconnectObject(this.actor);
         global.settings.disconnectObject(this.actor);
         global.disconnectObject(this.actor);
-    }
-
-    open(animate) {
-        if (this._menuButton.tooltipShowingID) {
-            GLib.source_remove(this._menuButton.tooltipShowingID);
-            this._menuButton.tooltipShowingID = null;
-            this._menuButton.tooltipShowing = false;
-        }
-        if (this.sourceActor.tooltip) {
-            this.sourceActor.tooltip.hide();
-            this._menuButton.tooltipShowing = false;
-        }
-
-        super.open(animate);
-        this.sourceActor.add_style_pseudo_class('active');
     }
 
     close(animate) {

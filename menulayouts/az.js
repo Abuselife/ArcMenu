@@ -224,6 +224,10 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
 
     setGridLayout(displayType, spacing, setStyle = true) {
         if (setStyle) {
+            if (displayType === Constants.DisplayType.LIST)
+                this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'small-vfade';
+            else
+                this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'vfade';
             this.applicationsGrid.x_align = displayType === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
                 : Clutter.ActorAlign.CENTER;
         }
