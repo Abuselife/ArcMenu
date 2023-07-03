@@ -9,6 +9,39 @@ const Main = imports.ui.main;
 const MenuLayouts = Me.imports.menulayouts;
 const _ = Gettext.gettext;
 
+const InterfaceXml = `<node>
+  <interface name="com.Extensions.ArcMenu">
+    <method name="ToggleArcMenu"/>
+  </interface>
+</node>`;
+
+var DBusService = class {
+    constructor() {
+        this.ToggleArcMenu = () => {};
+
+        this._dbusExportedObject = Gio.DBusExportedObject.wrapJSObject(InterfaceXml, this);
+
+        const onBusAcquired = (connection, _name) => {
+            try {
+                this._dbusExportedObject.export(connection, '/com/Extensions/ArcMenu');
+            } catch (error) {
+                global.log(`ArcMenu Error - onBusAcquired export failed: ${error}`);
+            }
+        };
+
+        function onNameAcquired() { }
+        function onNameLost() { }
+
+        this._ownerId = Gio.bus_own_name(Gio.BusType.SESSION, 'com.Extensions.ArcMenu', Gio.BusNameOwnerFlags.NONE,
+            onBusAcquired, onNameAcquired, onNameLost);
+    }
+
+    destroy() {
+        this._dbusExportedObject.unexport();
+        Gio.bus_unown_name(this._ownerId);
+    }
+};
+
 function activateHibernateOrSleep(powerType) {
     const loginManager = imports.misc.loginManager.getLoginManager();
     let callName, activateCall;

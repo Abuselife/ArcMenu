@@ -14,17 +14,20 @@ const Utils = Me.imports.utils;
 var MenuSettingsController = class {
     constructor(settingsControllers, panel, panelBox, panelParent, isPrimaryPanel) {
         this.panel = panel;
-
-        if (!global.toggleArcMenu)
-            global.toggleArcMenu = () => this.toggleMenus();
-
-        this._settingsConnections = new Utils.SettingsConnectionsHandler();
-
         this.currentMonitorIndex = 0;
         this.isPrimaryPanel = isPrimaryPanel;
 
-        this._menuButton = new MenuButton(this.panel, panelBox, panelParent);
+        // Allow other extensions and DBus command to open/close ArcMenu
+        if (!global.toggleArcMenu) {
+            global.toggleArcMenu = () => this.toggleMenus();
+            this._service = new Utils.DBusService();
+            this._service.ToggleArcMenu = () => {
+                this.toggleMenus();
+            };
+        }
 
+        this._settingsConnections = new Utils.SettingsConnectionsHandler();
+        this._menuButton = new MenuButton(this.panel, panelBox, panelParent);
         this._settingsControllers = settingsControllers;
 
         if (this.isPrimaryPanel) {
@@ -35,6 +38,7 @@ var MenuSettingsController = class {
             this._initRecentAppsTracker();
             this._inputSourceManagerOverride();
         }
+
         this._setButtonAppearance();
         this._setButtonText();
         this._setButtonIcon();
@@ -496,6 +500,12 @@ var MenuSettingsController = class {
     }
 
     destroy() {
+        if (this._service) {
+            this._service.destroy();
+            this._service = null;
+        }
+        delete global.toggleArcMenu;
+
         if (this._inputSourceManagerProto) {
             this._inputSourceManagerProto._getCurrentWindow = this._origGetCurrentWindow;
             delete this._inputSourceManagerProto;
@@ -533,6 +543,5 @@ var MenuSettingsController = class {
         }
 
         this._menuButton = null;
-        delete global.toggleArcMenu;
     }
 };
