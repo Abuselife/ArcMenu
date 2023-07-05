@@ -198,7 +198,7 @@ class ArcMenuVisualSettingsPage extends SubPage {
         iconsSizeFrame.add(gridIconsSizeRow);
 
         const customGridIconButton = new Gtk.Button({
-            icon_name: 'settings-symbolic',
+            icon_name: 'emblem-system-symbolic',
             valign: Gtk.Align.CENTER,
             visible: gridIconsSizeRow.selected === Constants.GridIconSize.CUSTOM,
         });
