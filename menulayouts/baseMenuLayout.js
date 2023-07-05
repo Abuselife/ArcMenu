@@ -60,9 +60,9 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         'default-menu-width': GObject.ParamSpec.uint(
             'default-menu-width', 'default-menu-width', 'default-menu-width',
             GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
-        'icon-grid-style': GObject.ParamSpec.string(
-            'icon-grid-style', 'icon-grid-style', 'icon-grid-style',
-            GObject.ParamFlags.READWRITE, ''),
+        'icon-grid-size': GObject.ParamSpec.uint(
+            'icon-grid-size', 'icon-grid-size', 'icon-grid-size',
+            GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
         'category-icon-size': GObject.ParamSpec.uint(
             'category-icon-size', 'category-icon-size', 'category-icon-size',
             GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
@@ -178,28 +178,11 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     getIconWidthFromSetting() {
-        let gridIconWidth;
+        const gridIconPadding = 10;
         const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
 
-        if (iconSizeEnum === Constants.GridIconSize.DEFAULT) {
-            return this.getIconWidthFromStyleClass(this.icon_grid_style);
-        } else {
-            Constants.GridIconInfo.forEach(info => {
-                if (iconSizeEnum === info.ENUM)
-                    gridIconWidth = info.SIZE;
-            });
-        }
-        return gridIconWidth;
-    }
-
-    getIconWidthFromStyleClass(name) {
-        let gridIconWidth;
-
-        Constants.GridIconInfo.forEach(info => {
-            if (name === info.NAME)
-                gridIconWidth = info.SIZE;
-        });
-        return gridIconWidth;
+        const {width, height_, iconSize_} = Utils.getGridIconSize(iconSizeEnum, this.icon_grid_size);
+        return width + gridIconPadding;
     }
 
     resetScrollBarPosition() {

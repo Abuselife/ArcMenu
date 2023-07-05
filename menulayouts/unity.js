@@ -30,7 +30,7 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
             row_spacing: 15,
             vertical: true,
             default_menu_width: 750,
-            icon_grid_style: 'LargeIconGrid',
+            icon_grid_size: Constants.GridIconSize.LARGE,
             category_icon_size: Constants.MEDIUM_ICON_SIZE,
             apps_icon_size: Constants.EXTRA_LARGE_ICON_SIZE,
             quicklinks_icon_size: Constants.EXTRA_SMALL_ICON_SIZE,
@@ -297,7 +297,7 @@ var Menu = class ArcMenuUnityLayout extends BaseMenuLayout {
         borderRadius /= scaleFactor;
 
         const borderRadiusStyle = `border-radius: 0px 0px ${borderRadius}px ${borderRadius}px;`;
-        const style = `margin: 0px; spacing: 0px; background-color: rgba(10, 10, 15, 0.1); padding: 5px 5px;
+        const style = `margin: 6px 0px 0px 0px; spacing: 0px; background-color: rgba(10, 10, 15, 0.1); padding: 5px 5px;
                        border-color: rgba(186, 196,201, 0.2); border-top-width: 1px;`;
 
         this.actionsContainerBox.style = style + borderRadiusStyle;

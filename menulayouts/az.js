@@ -29,7 +29,7 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
             row_spacing: 4,
             vertical: true,
             default_menu_width: 460,
-            icon_grid_style: 'LargeRectIconGrid',
+            icon_grid_size: Constants.GridIconSize.LARGE_RECT,
             category_icon_size: Constants.MEDIUM_ICON_SIZE,
             apps_icon_size: Constants.LARGE_ICON_SIZE,
             quicklinks_icon_size: Constants.EXTRA_SMALL_ICON_SIZE,

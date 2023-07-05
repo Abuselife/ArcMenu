@@ -138,7 +138,7 @@ var MenuSettingsController = class {
                 'menu-item-category-icon-size', 'category-icon-type', 'shortcut-icon-type',
                 'arcmenu-extra-categories-links', 'arcmenu-extra-categories-links-location',
                 'runner-show-frequent-apps', 'default-menu-view-redmond', 'disable-recently-installed-apps',
-                'runner-search-display-style', 'raven-search-display-style'],
+                'runner-search-display-style', 'raven-search-display-style', 'custom-grid-icon-size'],
             this._recreateMenuLayout.bind(this)
         );
 

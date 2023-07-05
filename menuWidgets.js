@@ -1415,10 +1415,8 @@ class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
             iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
         else
             iconSizeEnum = Me.settings.get_enum('quicklinks-item-icon-size');
-        let defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
-            : this._menuLayout.quicklinks_icon_size;
-        let iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
 
+        let defaultIconSize, iconSize;
         if (this._displayType === Constants.DisplayType.BUTTON) {
             iconSizeEnum = Me.settings.get_enum('button-item-icon-size');
             defaultIconSize = this._menuLayout.buttons_icon_size;
@@ -1426,8 +1424,12 @@ class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
             this.style = `min-width: ${iconSize}px; min-height: ${iconSize}px;`;
         } else if (this._displayType === Constants.DisplayType.GRID) {
             iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
-            const defaultIconStyle = this._menuLayout.icon_grid_style;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconStyle);
+            defaultIconSize = this._menuLayout.icon_grid_size;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+        } else {
+            defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
+                : this._menuLayout.quicklinks_icon_size;
+            iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
         }
 
         return new St.Icon({
@@ -1681,14 +1683,14 @@ var PinnedAppsMenuItem = GObject.registerClass({
     createIcon() {
         let iconSize;
         if (this._displayType === Constants.DisplayType.GRID) {
-            const IconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
-            const defaultIconStyle = this._menuLayout.icon_grid_style;
-            iconSize = Utils.getGridIconSize(IconSizeEnum, defaultIconStyle);
+            const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+            const defaultIconSize = this._menuLayout.icon_grid_size;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
-            const IconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            const iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
                 : this._menuLayout.pinned_apps_icon_size;
-            iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
+            iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
         }
 
         return new St.Icon({
@@ -1943,15 +1945,15 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this._displayType === Constants.DisplayType.GRID) {
             this._iconBin.x_align = Clutter.ActorAlign.CENTER;
 
-            const IconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
-            const defaultIconStyle = this._menuLayout.icon_grid_style;
-            iconSize = Utils.getGridIconSize(IconSizeEnum, defaultIconStyle);
+            const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+            const defaultIconSize = this._menuLayout.icon_grid_size;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
-            const IconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            const iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ||
                 this.isSearchResult ? this._menuLayout.apps_icon_size
                 : this._menuLayout.pinned_apps_icon_size;
-            iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
+            iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
         }
         const icon = this.isSearchResult ? this.metaInfo['createIcon'](iconSize)
             : this._app.create_icon_texture(iconSize);

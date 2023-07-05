@@ -22,7 +22,7 @@ var Menu = class ArcMenuRunnerLayout extends BaseMenuLayout {
     }
 
     constructor(menuButton, isStandalone) {
-        let displayType, searchDisplayType, columnSpacing, rowSpacing, defaultMenuWidth, iconGridStyle;
+        let displayType, searchDisplayType, columnSpacing, rowSpacing, defaultMenuWidth, iconGridSize;
         const searchDisplayStyle = Me.settings.get_enum('runner-search-display-style');
 
         if (searchDisplayStyle === Constants.DisplayType.LIST) {
@@ -31,14 +31,14 @@ var Menu = class ArcMenuRunnerLayout extends BaseMenuLayout {
             columnSpacing = 0;
             rowSpacing = 0;
             defaultMenuWidth = null;
-            iconGridStyle = null;
+            iconGridSize = null;
         } else {
             displayType = Constants.DisplayType.GRID;
             searchDisplayType = Constants.DisplayType.GRID;
             columnSpacing = 15;
             rowSpacing = 15;
             defaultMenuWidth = Me.settings.get_int('runner-menu-width');
-            iconGridStyle = 'LargeIconGrid';
+            iconGridSize = Constants.GridIconSize.LARGE;
         }
 
         super(menuButton, {
@@ -49,7 +49,7 @@ var Menu = class ArcMenuRunnerLayout extends BaseMenuLayout {
             row_spacing: rowSpacing,
             vertical: true,
             default_menu_width: defaultMenuWidth,
-            icon_grid_style: iconGridStyle,
+            icon_grid_size: iconGridSize,
             category_icon_size: Constants.MEDIUM_ICON_SIZE,
             apps_icon_size: Constants.EXTRA_SMALL_ICON_SIZE,
             quicklinks_icon_size: Constants.EXTRA_SMALL_ICON_SIZE,

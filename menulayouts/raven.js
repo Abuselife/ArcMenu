@@ -28,7 +28,7 @@ var Menu = class ArcMenuRavenLayout extends BaseMenuLayout {
             column_spacing: 10,
             row_spacing: 10,
             default_menu_width: 415,
-            icon_grid_style: 'SmallIconGrid',
+            icon_grid_size: Constants.GridIconSize.SMALL,
             vertical: false,
             supports_category_hover_activation: true,
             category_icon_size: Constants.EXTRA_SMALL_ICON_SIZE,

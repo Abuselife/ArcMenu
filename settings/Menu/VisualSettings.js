@@ -6,6 +6,8 @@ const {Adw, GLib, GObject, Gtk} = imports.gi;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
 
+const Constants = Me.imports.constants;
+const PW = Me.imports.prefsWidgets;
 const Settings = Me.imports.settings;
 const {SubPage} = Settings.Menu.SubPage;
 
@@ -181,6 +183,7 @@ class ArcMenuVisualSettingsPage extends SubPage {
         iconSizes.append(`${_('Small')} - ${_('Wide')}`);
         iconSizes.append(`${_('Medium')} - ${_('Wide')}`);
         iconSizes.append(`${_('Large')} - ${_('Wide')}`);
+        iconSizes.append(_('Custom'));
         const gridIconsSizeRow = new Adw.ComboRow({
             title: `${_('Grid Menu Items')} <i><span size="small">(${_('Non-Traditional Layouts')})</span></i>`,
             subtitle: _('Apps, Pinned Apps, Shortcuts, Grid Search Results'),
@@ -189,9 +192,28 @@ class ArcMenuVisualSettingsPage extends SubPage {
         });
         gridIconsSizeRow.use_markup = true;
         gridIconsSizeRow.connect('notify::selected', widget => {
+            customGridIconButton.visible = widget.selected === Constants.GridIconSize.CUSTOM;
             this._settings.set_enum('menu-item-grid-icon-size', widget.selected);
         });
         iconsSizeFrame.add(gridIconsSizeRow);
+
+        const customGridIconButton = new Gtk.Button({
+            icon_name: 'settings-symbolic',
+            valign: Gtk.Align.CENTER,
+            visible: gridIconsSizeRow.selected === Constants.GridIconSize.CUSTOM,
+        });
+        gridIconsSizeRow.add_suffix(customGridIconButton);
+        customGridIconButton.connect('clicked', () => {
+            const dialog = new CustomGridIconDialogWindow(this._settings, this);
+            dialog.show();
+            dialog.connect('response', (_w, response) => {
+                if (response === Gtk.ResponseType.APPLY) {
+                    this._settings.set_value('custom-grid-icon-size', new GLib.Variant('a{si}',
+                        {'width': dialog.iconWidth, 'height': dialog.iconHeight, 'iconSize': dialog.iconSize}));
+                }
+                dialog.destroy();
+            });
+        });
 
         const menuItemIconSizeRow = this.createIconSizeRow({
             title: _('Applications'),
@@ -269,5 +291,87 @@ class ArcMenuVisualSettingsPage extends SubPage {
             this._settings.set_enum(rowDetails.setting, widget.selected);
         });
         return iconsSizeRow;
+    }
+});
+
+var CustomGridIconDialogWindow = GObject.registerClass(
+class ArcMenuCustomGridIconDialogWindow extends PW.DialogWindow {
+    _init(settings, parent) {
+        super._init(_('Custom Grid Icon Size'), parent);
+        this.set_default_size(600, 325);
+        this.search_enabled = false;
+        this._settings = settings;
+        const {width, height, iconSize} = this._settings.get_value('custom-grid-icon-size').deep_unpack();
+        this.iconWidth = width;
+        this.iconHeight = height;
+        this.iconSize = iconSize;
+
+        const widthRow = new Adw.ActionRow({
+            title: _('Width'),
+        });
+        const widthSpinButton = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 60, upper: 250, step_increment: 1, page_increment: 50, page_size: 0,
+            }),
+            climb_rate: 1,
+            digits: 0,
+            numeric: true,
+            valign: Gtk.Align.CENTER,
+        });
+        widthSpinButton.set_value(this.iconWidth);
+        widthSpinButton.connect('value-changed', widget => {
+            this.iconWidth = widget.get_value();
+        });
+        widthRow.add_suffix(widthSpinButton);
+        this.pageGroup.add(widthRow);
+
+        const heightRow = new Adw.ActionRow({
+            title: _('Height'),
+        });
+        const heightSpinButton = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 60, upper: 250, step_increment: 1, page_increment: 50, page_size: 0,
+            }),
+            climb_rate: 1,
+            digits: 0,
+            numeric: true,
+            valign: Gtk.Align.CENTER,
+        });
+        heightSpinButton.set_value(this.iconHeight);
+        heightSpinButton.connect('value-changed', widget => {
+            this.iconHeight = widget.get_value();
+        });
+        heightRow.add_suffix(heightSpinButton);
+        this.pageGroup.add(heightRow);
+
+        const sizeRow = new Adw.ActionRow({
+            title: _('Icon Size'),
+        });
+        const sizeSpinButton = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 24, upper: 250, step_increment: 1, page_increment: 50, page_size: 0,
+            }),
+            climb_rate: 1,
+            digits: 0,
+            numeric: true,
+            valign: Gtk.Align.CENTER,
+        });
+        sizeSpinButton.set_value(this.iconSize);
+        sizeSpinButton.connect('value-changed', widget => {
+            this.iconSize = widget.get_value();
+        });
+        sizeRow.add_suffix(sizeSpinButton);
+        this.pageGroup.add(sizeRow);
+
+        const applyButton = new Gtk.Button({
+            label: _('Apply'),
+            halign: Gtk.Align.END,
+            css_classes: ['suggested-action'],
+        });
+
+        applyButton.connect('clicked', () => {
+            this.emit('response', Gtk.ResponseType.APPLY);
+        });
+        this.pageGroup.set_header_suffix(applyButton);
     }
 });

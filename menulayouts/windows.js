@@ -30,7 +30,7 @@ var Menu = class ArcMenuWindowsLayout extends BaseMenuLayout {
             column_spacing: 0,
             row_spacing: 0,
             default_menu_width: 315,
-            icon_grid_style: 'SmallIconGrid',
+            icon_grid_size: Constants.GridIconSize.SMALL,
             vertical: false,
             category_icon_size: Constants.LARGE_ICON_SIZE,
             apps_icon_size: Constants.LARGE_ICON_SIZE,

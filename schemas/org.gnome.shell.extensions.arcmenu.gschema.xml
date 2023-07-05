@@ -108,6 +108,7 @@
         <value value="4" nick="Small_Rect"/>
         <value value="5" nick="Medium_Rect"/>
         <value value="6" nick="Large_Rect"/>
+        <value value="7" nick="Custom"/>
     </enum>
     <enum id='org.gnome.shell.extensions.arcmenu.category-icon-type'>
         <value value="0" nick="Full_Color"/>
@@ -594,6 +595,11 @@
       <default>'Default'</default>
       <summary>Size of the menu grid icons.</summary>
       <description>Size of the menu grid icon.</description>
+    </key>
+    <key name="custom-grid-icon-size" type="a{si}">
+      <default>{'width': 108, 'height': 108, 'iconSize': 62}</default>
+      <summary>Custom "grid icon" size (width, height, iconSize).</summary>
+      <description>Custom "grid icon" size (width, height, iconSize).</description>
     </key>
     <key name="button-item-icon-size" enum="org.gnome.shell.extensions.arcmenu.icon-sizes">
       <default>'Default'</default>

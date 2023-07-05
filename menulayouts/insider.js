@@ -29,7 +29,7 @@ var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
             column_spacing: 10,
             row_spacing: 10,
             default_menu_width: 525,
-            icon_grid_style: 'SmallIconGrid',
+            icon_grid_size: Constants.GridIconSize.SMALL,
             vertical: false,
             category_icon_size: Constants.MEDIUM_ICON_SIZE,
             apps_icon_size: Constants.LARGE_ICON_SIZE,

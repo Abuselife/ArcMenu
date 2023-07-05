@@ -30,6 +30,7 @@ var DBusService = class {
         };
 
         function onNameAcquired() { }
+
         function onNameLost() { }
 
         this._ownerId = Gio.bus_own_name(Gio.BusType.SESSION, 'com.Extensions.ArcMenu', Gio.BusNameOwnerFlags.NONE,
@@ -153,16 +154,17 @@ function convertToGridLayout(item) {
     const icon = item._iconBin;
 
     const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
-    const defaultIconStyle = menuLayout.icon_grid_style;
-    const gridIconStyle = getGridIconStyle(iconSizeEnum, defaultIconStyle);
+    const defaultIconSize = menuLayout.icon_grid_size;
+    const {width, height, _iconSize} = getGridIconSize(iconSizeEnum, defaultIconSize);
 
     if (item._ornamentLabel)
         item.remove_child(item._ornamentLabel);
 
+    item.add_style_class_name('ArcMenuIconGrid');
     item.set({
         vertical: true,
-        name: gridIconStyle,
         tooltipLocation: Constants.TooltipLocation.BOTTOM_CENTERED,
+        style: `width: ${width}px; height: ${height}px;`,
     });
 
     icon?.set({
@@ -216,39 +218,24 @@ function getIconSize(iconSizeEnum, defaultIconSize) {
     }
 }
 
-function getGridIconSize(iconSizeEnum, defaultIconStyle) {
-    let iconSize;
-    if (iconSizeEnum === Constants.GridIconSize.DEFAULT) {
-        Constants.GridIconInfo.forEach(info => {
-            if (info.NAME === defaultIconStyle)
-                iconSize = info.ICON_SIZE;
-        });
-    } else {
-        iconSize = Constants.GridIconInfo[iconSizeEnum - 1].ICON_SIZE;
+function getGridIconSize(iconSizeEnum, defaultIconSize) {
+    if (iconSizeEnum === Constants.GridIconSize.CUSTOM) {
+        const {width, height, iconSize} = Me.settings.get_value('custom-grid-icon-size').deep_unpack();
+        return {width, height, iconSize};
     }
 
-    return iconSize;
-}
+    if (iconSizeEnum === Constants.GridIconSize.DEFAULT)
+        iconSizeEnum = defaultIconSize;
 
-function getGridIconStyle(iconSizeEnum, defaultIconStyle) {
-    switch (iconSizeEnum) {
-    case Constants.GridIconSize.DEFAULT:
-        return defaultIconStyle;
-    case Constants.GridIconSize.SMALL:
-        return 'SmallIconGrid';
-    case Constants.GridIconSize.MEDIUM:
-        return 'MediumIconGrid';
-    case Constants.GridIconSize.LARGE:
-        return 'LargeIconGrid';
-    case Constants.GridIconSize.SMALL_RECT:
-        return 'SmallRectIconGrid';
-    case Constants.GridIconSize.MEDIUM_RECT:
-        return 'MediumRectIconGrid';
-    case Constants.GridIconSize.LARGE_RECT:
-        return 'LargeRectIconGrid';
-    default:
-        return defaultIconStyle;
-    }
+    let width, height, iconSize;
+    Constants.GridIconInfo.forEach(info => {
+        if (iconSizeEnum === info.ENUM) {
+            width = info.WIDTH;
+            height = info.HEIGHT;
+            iconSize = info.ICON_SIZE;
+        }
+    });
+    return {width, height, iconSize};
 }
 
 function getCategoryDetails(currentCategory) {
