@@ -222,7 +222,6 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
     _syncFolder(folderMenuItem) {
         const {folderSettings} = folderMenuItem;
         const name = _getFolderName(folderSettings);
-        // const apps = folder.get_strv('apps');
 
         const foldersData = Me.settings.get_value('pop-folders-data').deep_unpack();
         const folderEntryId = folderMenuItem.folder_id;
@@ -247,7 +246,6 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
 
         let usedApps = [];
 
-        // use GNOME settings
         const folders = this._folderSettings.get_strv('folder-children');
         folders.forEach(id => {
             const path = `${this._folderSettings.path}folders/${id}/`;
@@ -257,8 +255,6 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
             });
 
             const name = _getFolderName(folderSettings);
-            // const apps = folder.get_strv('apps');
-
             const categoryMenuItem = new MW.GroupFolderMenuItem(this, folderSettings, {
                 folder_name: name,
                 folder_id: id,
@@ -318,7 +314,6 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
         const folders = this._folderSettings.get_strv('folder-children');
         folders.push(newFolderId);
 
-        // Create the new folder
         const newFolderPath = this._folderSettings.path.concat('folders/', newFolderId, '/');
         let newFolderSettings;
         try {
@@ -483,8 +478,6 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
             let item = this.applicationsMap.get(app);
             if (!item) {
                 item = new MW.ApplicationMenuItem(this, app, this.display_type);
-                // todo set applicationmenuitem's folder
-                // makes the item re-orderable via drag n drop
                 this.applicationsMap.set(app, item);
             }
             item.setFolderGroup(folderMenuItem);

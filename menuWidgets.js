@@ -2311,7 +2311,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         this.contextMenu.close();
         const dialog = new ModalDialog.ModalDialog();
         const content = new Dialog.MessageDialogContent({
-            title: _(`Permanently delete '${this.folder_name}' folder?`),
+            title: _("Permanently delete '%s' folder?").format(this.folder_name),
         });
         dialog.contentLayout.add_child(content);
 
@@ -2339,7 +2339,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         this.contextMenu.close();
         const dialog = new ModalDialog.ModalDialog();
         const content = new Dialog.MessageDialogContent({
-            title: _(`Rename '${this.folder_name}' folder`),
+            title: _("Rename '%s' folder?").format(this.folder_name),
         });
         dialog.contentLayout.add_child(content);
 
