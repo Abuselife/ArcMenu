@@ -263,14 +263,20 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
                 folder_name: name,
                 folder_id: id,
             });
-            foldersData[id] = name;
-            this.categoryDirectories.set(id, categoryMenuItem);
-
             this._loadFolderApps(categoryMenuItem);
-            usedApps = usedApps.concat(categoryMenuItem.appList);
 
-            folderSettings.connectObject('changed', () =>
-                this._syncFolder(categoryMenuItem), categoryMenuItem);
+            // Don't display empty folders
+            if (categoryMenuItem.appList.length > 0) {
+                foldersData[id] = name;
+                this.categoryDirectories.set(id, categoryMenuItem);
+
+                usedApps = usedApps.concat(categoryMenuItem.appList);
+
+                folderSettings.connectObject('changed', () =>
+                    this._syncFolder(categoryMenuItem), categoryMenuItem);
+            } else {
+                categoryMenuItem.destroy();
+            }
         });
 
         Me.settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
