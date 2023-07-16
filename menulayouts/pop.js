@@ -150,6 +150,10 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
             const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.add_child(this.categoriesContainer);
+            this.categoriesContainer.set({
+                y_align: Clutter.ActorAlign.START,
+                y_expand: false,
+            });
             this.add_child(separator);
 
             this.add_child(this.applicationsScrollBox);

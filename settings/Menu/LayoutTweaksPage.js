@@ -249,7 +249,7 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         };
 
         const defaultViewRow = new Adw.ComboRow({
-            title: _('Default Folder View'),
+            title: _('Default View'),
         });
 
         populateComboRow();
@@ -263,6 +263,7 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         });
 
         tweaksGroup.add(defaultViewRow);
+        tweaksGroup.add(this._createSearchBarLocationRow());
     }
 
     _loadElevenTweaks() {
