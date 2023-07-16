@@ -95,6 +95,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         case Constants.MenuLayout.ENTERPRISE:
             this._loadEnterpriseTweaks();
             break;
+        case Constants.MenuLayout.POP:
+            this._loadPopTweaks();
+            break;
         default:
             this._loadPlaceHolderTweaks();
             break;
@@ -221,6 +224,45 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createFlipHorizontalRow());
         tweaksGroup.add(this._createVertSeparatorRow());
         this.add(tweaksGroup);
+    }
+
+    _loadPopTweaks() {
+        const tweaksGroup = new Adw.PreferencesGroup();
+        this.add(tweaksGroup);
+
+        const populateComboRow = () => {
+            const folderNamesList = new Gtk.StringList();
+
+            const foldersData = this._settings.get_value('pop-folders-data').deep_unpack();
+            const defaultViewName = this._settings.get_string('pop-default-view');
+            let defaultViewIndex;
+            let count = 0;
+            for (const [key, value] of Object.entries(foldersData)) {
+                if (key === defaultViewName)
+                    defaultViewIndex = count;
+
+                folderNamesList.append(value);
+                count++;
+            }
+            defaultViewRow.model = folderNamesList;
+            defaultViewRow.selected = defaultViewIndex;
+        };
+
+        const defaultViewRow = new Adw.ComboRow({
+            title: _('Default Folder View'),
+        });
+
+        populateComboRow();
+
+        this._settings.connect('changed::pop-folders-data', () => populateComboRow());
+
+        defaultViewRow.connect('notify::selected', widget => {
+            const foldersData = this._settings.get_value('pop-folders-data').deep_unpack();
+            const selectedId = Object.keys(foldersData).find(key => foldersData[key] === widget.selected_item.string);
+            this._settings.set_string('pop-default-view', selectedId);
+        });
+
+        tweaksGroup.add(defaultViewRow);
     }
 
     _loadElevenTweaks() {

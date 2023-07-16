@@ -199,9 +199,9 @@ var BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         }
     }
 
-    reloadApplications() {
+    reloadApplications(forceReload = false) {
         // Only reload applications if the menu is closed.
-        if (this.arcMenu.isOpen) {
+        if (!forceReload && this.arcMenu.isOpen) {
             this.reloadQueued = true;
             if (!this._reloadAppsOnMenuClosedID) {
                 this._reloadAppsOnMenuClosedID = this.arcMenu.connect('menu-closed', () => {

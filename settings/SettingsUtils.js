@@ -22,28 +22,6 @@ function getMenuLayoutTweaksName(menuLayout) {
     return '';
 }
 
-var MenuLayout = {
-    ARCMENU: 0,
-    BRISK: 1,
-    WHISKER: 2,
-    GNOME_MENU: 3,
-    MINT: 4,
-    ELEMENTARY: 5,
-    GNOME_OVERVIEW: 6,
-    REDMOND: 7,
-    UNITY: 8,
-    BUDGIE: 9,
-    INSIDER: 10,
-    RUNNER: 11,
-    CHROMEBOOK: 12,
-    RAVEN: 13,
-    TOGNEE: 14,
-    PLASMA: 15,
-    WINDOWS: 16,
-    ELEVEN: 17,
-    AZ: 18,
-};
-
 /**
  *
  * @param {Array} rows the array of setting rows to show/hide
@@ -91,6 +69,7 @@ function setVisibleRows(rows, menuLayout) {
     case Constants.MenuLayout.ELEMENTARY:
     case Constants.MenuLayout.CHROMEBOOK:
     case Constants.MenuLayout.RUNNER:
+    case Constants.MenuLayout.POP:
         rows[Constants.SettingsPage.PINNED_APPS].visible = false;
         rows[Constants.SettingsPage.APPLICATION_SHORTCUTS].visible = false;
         rows[Constants.SettingsPage.DIRECTORY_SHORTCUTS].visible = false;

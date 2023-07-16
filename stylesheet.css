@@ -6,6 +6,15 @@
     margin: 0px;
 }
 
+.ArcMenuGroupFolder{
+    border: 2px solid rgba(0, 0, 0, 0);
+}
+
+.ArcMenuIconGrid:drop {
+    border: 2px solid rgba(53, 132, 228, 0.8);
+    background-color: rgba(53, 132, 228, 0.2);
+}
+
 .bottomOfScreenMenu{
     margin-bottom: 0px;
 }

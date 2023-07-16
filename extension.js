@@ -22,7 +22,6 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const Constants = Me.imports.constants;
 const Controller = Me.imports.controller;
-
 const Main = imports.ui.main;
 const Theming = Me.imports.theming;
 

@@ -21,6 +21,7 @@
         <value value='17' nick='Eleven'/>
         <value value='18' nick='AZ'/>
         <value value='19' nick='Enterprise'/>
+        <value value='20' nick='Pop'/>
     </enum>
     <enum id='org.gnome.shell.extensions.arcmenu.forcemenulocation'>
         <value value='0' nick='Off'/>
@@ -761,6 +762,16 @@
       <default>[["", "", "org.gnome.Nautilus.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"]]</default>
       <summary>List of Windows Layout extra buttons</summary>
       <description>List of Windows Layout extra buttons</description>
+    </key>
+    <key name="pop-folders-data" type="a{ss}">
+      <default>{}</default>
+      <summary>List of org.gnome.desktop.app-folders id:name</summary>
+      <description>List of org.gnome.desktop.app-folders id:name</description>
+    </key>
+    <key name="pop-default-view" type="s">
+      <default>'Library Home'</default>
+      <summary>The folder to display when opening the POP layout</summary>
+      <description>The folder to display when opening the POP layout</description>
     </key>
     <key name="prefs-visible-page" type="i">
       <default>0</default>

@@ -148,6 +148,7 @@ var GridIconSize = {
     MEDIUM_RECT: 5,
     LARGE_RECT: 6,
     CUSTOM: 7,
+    EXTRA_LARGE: 8,
 };
 
 var GridIconInfo = [
@@ -157,6 +158,7 @@ var GridIconInfo = [
     {ENUM: GridIconSize.SMALL_RECT, WIDTH: 85, HEIGHT: 70, ICON_SIZE: 28},
     {ENUM: GridIconSize.MEDIUM_RECT, WIDTH: 92, HEIGHT: 78, ICON_SIZE: 34},
     {ENUM: GridIconSize.LARGE_RECT, WIDTH: 95, HEIGHT: 85, ICON_SIZE: 42},
+    {ENUM: GridIconSize.EXTRA_LARGE, WIDTH: 148, HEIGHT: 148, ICON_SIZE: 68},
 ];
 
 var ICON_HIDDEN = 0;
@@ -383,6 +385,7 @@ var MenuLayout = {
     ELEVEN: 17,
     AZ: 18,
     ENTERPRISE: 19,
+    POP: 20,
 };
 
 var TraditionalMenus = [
@@ -463,6 +466,11 @@ var ModernMenus = [
         LAYOUT: MenuLayout.ENTERPRISE,
         TITLE: _('Enterprise'),
         IMAGE: 'menu-enterprise-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.POP,
+        TITLE: _('POP'),
+        IMAGE: 'menu-pop-symbolic',
     },
 ];
 
