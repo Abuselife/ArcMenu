@@ -25,12 +25,10 @@ var ListSearchResult = GObject.registerClass(
 class ArcMenuListSearchResult extends MW.ApplicationMenuItem {
     _init(provider, metaInfo, resultsView) {
         const menuLayout = resultsView._menuLayout;
-        const app = appSys.lookup_app(metaInfo['id']);
         metaInfo['provider-id'] = provider.id;
 
-        super._init(menuLayout, app, Constants.DisplayType.LIST, metaInfo);
+        super._init(menuLayout, null, Constants.DisplayType.LIST, metaInfo);
 
-        this.app = app;
         this.searchType = this._menuLayout.search_display_type;
         this.metaInfo = metaInfo;
         this.provider = provider;
@@ -46,7 +44,7 @@ class ArcMenuListSearchResult extends MW.ApplicationMenuItem {
             this._highlightTerms();
         }
 
-        if (!this.app && this.metaInfo['description'])
+        if (this.metaInfo['description'])
             this.description = this.metaInfo['description'].split('\n')[0];
     }
 

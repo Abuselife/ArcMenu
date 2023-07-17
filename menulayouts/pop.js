@@ -358,6 +358,9 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
     }
 
     removeAppFromFolder(app, folder) {
+        if (!folder)
+            return;
+
         const appId = app.id;
         const isHomeFolder = folder.home_folder;
         const folderAppList = folder.appList;

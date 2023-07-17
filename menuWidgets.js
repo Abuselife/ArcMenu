@@ -1934,7 +1934,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         this.connect('key-focus-in', () => this.removeIndicator());
 
         const isDraggable = this._menuLayout.draggableApps;
-        if (isDraggable) {
+        if (isDraggable && this._app) {
             this.pivot_point = new Graphene.Point({x: 0.5, y: 0.5});
             this._draggable = DND.makeDraggable(this, {timeoutThreshold: 400});
 
@@ -2004,7 +2004,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     _onDragMotion(dragEvent) {
-        if (this.folderMenuItem.home_folder)
+        if (!this.folderMenuItem || this.folderMenuItem.home_folder)
             return DND.DragMotionResult.CONTINUE;
 
         const layoutManager = this._parentBox.layout_manager;
@@ -2052,7 +2052,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     acceptDrop(source) {
-        if (!source === this)
+        if (!source === this || !this.folderMenuItem)
             return false;
 
         const layoutManager = this._parentBox.layout_manager;
