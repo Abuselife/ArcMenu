@@ -504,7 +504,9 @@ var MenuSettingsController = class {
             this._service.destroy();
             this._service = null;
         }
-        delete global.toggleArcMenu;
+
+        if (global.toggleArcMenu)
+            delete global.toggleArcMenu;
 
         if (this._inputSourceManagerProto) {
             this._inputSourceManagerProto._getCurrentWindow = this._origGetCurrentWindow;
