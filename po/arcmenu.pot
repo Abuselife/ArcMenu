@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-16 11:42-0400\n"
+"POT-Creation-Date: 2023-07-17 17:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -232,15 +232,15 @@ msgstr ""
 msgid "Files"
 msgstr ""
 
-#: gnome43/search.js:670 search.js:683
+#: gnome43/search.js:668 search.js:681
 msgid "Searching..."
 msgstr ""
 
-#: gnome43/search.js:672 search.js:685
+#: gnome43/search.js:670 search.js:683
 msgid "No results."
 msgstr ""
 
-#: gnome43/search.js:751 search.js:764
+#: gnome43/search.js:749 search.js:762
 #, javascript-format
 msgid "+ %d more"
 msgstr ""
@@ -299,7 +299,7 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#: menuWidgets.js:1152 menuWidgets.js:3162 menulayouts/plasma.js:124
+#: menuWidgets.js:1152 menuWidgets.js:3169 menulayouts/plasma.js:124
 msgid "Apps"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 
 #: menuWidgets.js:2314
 #, javascript-format
-msgid "Permanently delete '%s' folder?"
+msgid "Permanently delete %s folder?"
 msgstr ""
 
 #: menuWidgets.js:2319
@@ -336,19 +336,19 @@ msgstr ""
 
 #: menuWidgets.js:2342
 #, javascript-format
-msgid "Rename '%s' folder?"
+msgid "Rename %s folder"
 msgstr ""
 
-#: menuWidgets.js:2358
+#: menuWidgets.js:2376
 msgid "Cancel"
 msgstr ""
 
-#: menuWidgets.js:2366 settings/GeneralPage.js:401
+#: menuWidgets.js:2384 settings/GeneralPage.js:401
 #: settings/Menu/ListPinnedPage.js:635 settings/Menu/VisualSettings.js:367
 msgid "Apply"
 msgstr ""
 
-#: menuWidgets.js:2723 menulayouts/az.js:75 menulayouts/eleven.js:65
+#: menuWidgets.js:2730 menulayouts/az.js:75 menulayouts/eleven.js:65
 #: menulayouts/insider.js:175 menulayouts/plasma.js:119 menulayouts/raven.js:63
 #: menulayouts/raven.js:238 menulayouts/raven.js:286 menulayouts/redmond.js:79
 #: menulayouts/redmond.js:82 menulayouts/redmond.js:85 menulayouts/unity.js:42
@@ -356,19 +356,19 @@ msgstr ""
 msgid "Pinned"
 msgstr ""
 
-#: menuWidgets.js:2885
+#: menuWidgets.js:2892
 msgid "Unmount Drive"
 msgstr ""
 
-#: menuWidgets.js:2887
+#: menuWidgets.js:2894
 msgid "Eject Drive"
 msgstr ""
 
-#: menuWidgets.js:2933
+#: menuWidgets.js:2940
 msgid "Remove from Recent"
 msgstr ""
 
-#: menuWidgets.js:3012
+#: menuWidgets.js:3019
 msgid "Search…"
 msgstr ""
 

@@ -2311,7 +2311,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         this.contextMenu.close();
         const dialog = new ModalDialog.ModalDialog();
         const content = new Dialog.MessageDialogContent({
-            title: _("Permanently delete '%s' folder?").format(this.folder_name),
+            title: _('Permanently delete %s folder?').format(this.folder_name),
         });
         dialog.contentLayout.add_child(content);
 
@@ -2339,7 +2339,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         this.contextMenu.close();
         const dialog = new ModalDialog.ModalDialog();
         const content = new Dialog.MessageDialogContent({
-            title: _("Rename '%s' folder?").format(this.folder_name),
+            title: _('Rename %s folder').format(this.folder_name),
         });
         dialog.contentLayout.add_child(content);
 
@@ -2347,12 +2347,30 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
             style_class: 'folder-name-entry',
             text: this.folder_name,
             reactive: true,
+            can_focus: true,
         });
         entry.clutter_text.set({
             x_expand: true,
             x_align: Clutter.ActorAlign.CENTER,
         });
         content.add_child(entry);
+        dialog.setInitialKeyFocus(entry);
+
+        const saveName = () => {
+            const newFolderName = entry.text.trim();
+
+            if (newFolderName.length === 0 || newFolderName === this.folder_name) {
+                dialog.close();
+                return;
+            }
+
+            this.folderSettings.set_string('name', newFolderName);
+            this.folderSettings.set_boolean('translate', false);
+            dialog.close();
+        };
+
+        entry.clutter_text.set_selection(0, -1);
+        entry.clutter_text.connect('activate', () => saveName());
 
         dialog.addButton({
             label: _('Cancel'),
@@ -2364,18 +2382,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         });
         dialog.addButton({
             label: _('Apply'),
-            action: () => {
-                const newFolderName = entry.text.trim();
-
-                if (newFolderName.length === 0 || newFolderName === this.folder_name) {
-                    dialog.close();
-                    return;
-                }
-
-                this.folderSettings.set_string('name', newFolderName);
-                this.folderSettings.set_boolean('translate', false);
-                dialog.close();
-            },
+            action: () => saveName(),
             default: false,
             key: null,
         });
