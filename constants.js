@@ -469,7 +469,7 @@ var ModernMenus = [
     },
     {
         LAYOUT: MenuLayout.POP,
-        TITLE: _('POP'),
+        TITLE: _('Pop'),
         IMAGE: 'menu-pop-symbolic',
     },
 ];
