@@ -1,18 +1,19 @@
-/* exported getStylesheetFiles, createStylesheet, unloadStylesheet,
-   deleteStylesheet, updateStylesheet */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {Clutter, Gio, GLib, St} = imports.gi;
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import St from 'gi://St';
 
 Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
 Gio._promisify(Gio.File.prototype, 'create_async');
 Gio._promisify(Gio.File.prototype, 'make_directory_async');
 Gio._promisify(Gio.File.prototype, 'delete_async');
 
-
 /**
  *  @returns The stylesheet file
  */
-function getStylesheetFiles() {
+export function getStylesheetFiles() {
     const directoryPath = GLib.build_filenamev([GLib.get_home_dir(), '.local/share/arcmenu']);
     const stylesheetPath = GLib.build_filenamev([directoryPath, 'stylesheet.css']);
 
@@ -25,7 +26,8 @@ function getStylesheetFiles() {
 /**
  * @param {Gio.Settings} settings ArcMenu Settings
  */
-async function createStylesheet(settings) {
+export async function createStylesheet(settings) {
+    const extension = Extension.lookupByURL(import.meta.url);
     try {
         const [directory, stylesheet] = getStylesheetFiles();
 
@@ -34,7 +36,7 @@ async function createStylesheet(settings) {
         if (!stylesheet.query_exists(null))
             await stylesheet.create_async(Gio.FileCreateFlags.NONE, 0, null);
 
-        Me.customStylesheet = stylesheet;
+        extension.customStylesheet = stylesheet;
         updateStylesheet(settings);
     } catch (e) {
         log(`ArcMenu - Error creating custom stylesheet: ${e}`);
@@ -44,18 +46,19 @@ async function createStylesheet(settings) {
 /**
  *  @description Unload the custom stylesheet from GNOME shell
  */
-function unloadStylesheet() {
-    if (!Me.customStylesheet)
+export function unloadStylesheet() {
+    const extension = Extension.lookupByURL(import.meta.url);
+    if (!extension.customStylesheet)
         return;
 
     const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-    theme.unload_stylesheet(Me.customStylesheet);
+    theme.unload_stylesheet(extension.customStylesheet);
 }
 
 /**
  *  @description Delete the custom stylesheet file
  */
-async function deleteStylesheet() {
+export async function deleteStylesheet() {
     unloadStylesheet();
 
     try {
@@ -76,8 +79,9 @@ async function deleteStylesheet() {
  * @param {Gio.Settings} settings ArcMenu Settings
  * @description Update the stylesheet based on the current ArcMenu settings
  */
-async function updateStylesheet(settings) {
-    const stylesheet = Me.customStylesheet;
+export async function updateStylesheet(settings) {
+    const extension = Extension.lookupByURL(import.meta.url);
+    const stylesheet = extension.customStylesheet;
 
     if (!stylesheet) {
         log('ArcMenu - Warning: Custom stylesheet not found! Unable to set contents of custom stylesheet.');
@@ -282,9 +286,9 @@ async function updateStylesheet(settings) {
             return;
         }
 
-        Me.customStylesheet = stylesheet;
+        extension.customStylesheet = stylesheet;
         const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-        theme.load_stylesheet(Me.customStylesheet);
+        theme.load_stylesheet(extension.customStylesheet);
     } catch (e) {
         log(`ArcMenu - Error replacing contents of custom stylesheet: ${e}`);
     }

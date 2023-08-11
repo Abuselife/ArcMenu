@@ -1,14 +1,17 @@
-/* exported RecentFilesManager */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const {Gtk, Gio} = imports.gi;
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 
 Gio._promisify(Gio.File.prototype, 'query_info_async');
 
-var RecentFilesManager = class ArcMenuRecentFilesManager {
+export const RecentFilesManager = class ArcMenuRecentFilesManager {
     constructor() {
         this._recentManager = new Gtk.RecentManager();
         this._queryCancellables = [];
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
     }
 
     getRecentFiles() {
@@ -38,7 +41,7 @@ var RecentFilesManager = class ArcMenuRecentFilesManager {
 
             if (fileInfo) {
                 const isHidden = fileInfo.get_attribute_boolean('standard::is-hidden');
-                const showHidden = Me.settings.get_boolean('show-hidden-recent-files');
+                const showHidden = this._settings.get_boolean('show-hidden-recent-files');
 
                 if (isHidden && !showHidden)
                     return {error: `${recentFile.get_display_name()} is hidden.`};

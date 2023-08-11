@@ -1,17 +1,15 @@
-/* exported VisualSettingsPage */
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Adw from 'gi://Adw';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 
-const {Adw, GLib, GObject, Gtk} = imports.gi;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as Constants from '../../constants.js';
+import * as PW from '../../prefsWidgets.js';
+import {SubPage} from './SubPage.js';
 
-const Constants = Me.imports.constants;
-const PW = Me.imports.prefsWidgets;
-const Settings = Me.imports.settings;
-const {SubPage} = Settings.Menu.SubPage;
+import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-var VisualSettingsPage = GObject.registerClass(
+export const VisualSettingsPage = GObject.registerClass(
 class ArcMenuVisualSettingsPage extends SubPage {
     _init(settings, params) {
         super._init(settings, params);

@@ -1,17 +1,16 @@
-/* exported LayoutTweaksPage */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {Adw, GObject, Gtk} = imports.gi;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const {SettingsUtils} = Me.imports.settings;
-const _ = Gettext.gettext;
+import Adw from 'gi://Adw';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 
-const Settings = Me.imports.settings;
-const {SubPage} = Settings.Menu.SubPage;
-const {ListPinnedPage} = Me.imports.settings.Menu.ListPinnedPage;
-const {ListOtherPage} = Me.imports.settings.Menu.ListOtherPage;
+import * as Constants from '../../constants.js';
+import {ListPinnedPage} from './ListPinnedPage.js';
+import {ListOtherPage} from './ListOtherPage.js';
+import * as SettingsUtils from '../SettingsUtils.js';
+import {SubPage} from './SubPage.js';
 
-var LayoutTweaksPage = GObject.registerClass(
+import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+export const LayoutTweaksPage = GObject.registerClass(
 class ArcMenuLayoutTweaksPage extends SubPage {
     _init(settings, params) {
         super._init(settings, params);
@@ -21,7 +20,8 @@ class ArcMenuLayoutTweaksPage extends SubPage {
     }
 
     setActiveLayout(menuLayout) {
-        this.headerLabel.title = _(SettingsUtils.getMenuLayoutTweaksName(menuLayout));
+        const layoutName = SettingsUtils.getMenuLayoutName(menuLayout);
+        this.headerLabel.title = _('%s Layout Tweaks').format(_(layoutName));
 
         for (const child of this.page.children)
             this.page.remove(child);

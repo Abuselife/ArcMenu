@@ -1,11 +1,9 @@
-/* exported RecentFilesSearchProvider */
-const {Gio, St} = imports.gi;
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const Main = imports.ui.main;
+import Gio from 'gi://Gio';
+import St from 'gi://St';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 /**
  * @param {char} mimeType The MIME type of the resource
@@ -18,7 +16,7 @@ function createIcon(mimeType, size) {
         : new St.Icon({icon_name: 'icon-missing', icon_size: size});
 }
 
-var RecentFilesSearchProvider = class {
+export const RecentFilesSearchProvider = class {
     constructor(recentFilesManager) {
         this.id = 'arcmenu.recent-files';
         this.isRemoteProvider = true;
@@ -35,7 +33,7 @@ var RecentFilesSearchProvider = class {
         };
     }
 
-    getResultMetas(fileUris, callback) {
+    getResultMetas(fileUris) {
         const metas = fileUris.map(fileUri => {
             const rf = this._getRecentFile(fileUri);
             const file = Gio.File.new_for_uri(rf.get_uri());
@@ -47,34 +45,35 @@ var RecentFilesSearchProvider = class {
             } : undefined;
         }).filter(m => m?.name !== undefined && m?.name !== null);
 
-        callback(metas);
+        return new Promise(resolve => resolve(metas));
     }
 
     filterResults(results, maxNumber) {
         return results.slice(0, maxNumber);
     }
 
-    getInitialResultSet(terms, callback, _cancellable) {
+    async getInitialResultSet(terms, _cancellable) {
         this.recentFilesManager.cancelCurrentQueries();
         this._recentFiles = [];
-
         const recentFiles = this.recentFilesManager.getRecentFiles();
 
-        for (const file of recentFiles) {
-            this.recentFilesManager.queryInfoAsync(file).then(result => {
+        await Promise.all(recentFiles.map(async file => {
+            try {
+                const result = await this.recentFilesManager.queryInfoAsync(file);
                 const recentFile = result.recentFile;
 
-                if (recentFile) {
+                if (recentFile)
                     this._recentFiles.push(recentFile);
-                    callback(this._getFilteredFileUris(terms, this._recentFiles));
-                }
-            }).catch(error => log(error));
-        }
+            } catch (e) {
+                log(e);
+            }
+        }));
+
+        return this._getFilteredFileUris(terms, this._recentFiles);
     }
 
-    getSubsearchResultSet(previousResults, terms, callback, _cancellable) {
-        const recentFiles = previousResults.map(fileUri => this._getRecentFile(fileUri)).filter(rf => rf !== undefined);
-        callback(this._getFilteredFileUris(terms, recentFiles));
+    getSubsearchResultSet(previousResults, terms, cancellable) {
+        return this.getInitialResultSet(terms, cancellable);
     }
 
     activateResult(fileUri, _terms) {

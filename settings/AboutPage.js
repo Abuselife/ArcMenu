@@ -1,18 +1,17 @@
-/* exported AboutPage */
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Adw from 'gi://Adw';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 
-const {Adw, Gdk, Gio, GLib, GObject, Gtk} = imports.gi;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as Config from 'resource:///org/gnome/Shell/Extensions/js/misc/config.js';
 
-const PAYPAL_LINK = `https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=53CWA7NR743WC&item_name=Support+${Me.metadata.name}&source=url`;
-const PROJECT_DESCRIPTION = _('Application Menu Extension for GNOME');
-const PROJECT_IMAGE = 'settings-arcmenu-logo';
-const SCHEMA_PATH = '/org/gnome/shell/extensions/arcmenu/';
+import * as Constants from '../constants.js';
 
-var AboutPage = GObject.registerClass(
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+export const AboutPage = GObject.registerClass(
 class ArcMenuAboutPage extends Adw.PreferencesPage {
     _init(settings) {
         super._init({
@@ -20,6 +19,13 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
             icon_name: 'help-about-symbolic',
             name: 'AboutPage',
         });
+
+        const Me = ExtensionPreferences.lookupByURL(import.meta.url);
+        const PAYPAL_LINK = `https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=53CWA7NR743WC&item_name=Support+${Me.metadata.name}&source=url`;
+        const PROJECT_DESCRIPTION = _('Application Menu Extension for GNOME');
+        const PROJECT_IMAGE = 'settings-arcmenu-logo';
+        const SCHEMA_PATH = '/org/gnome/shell/extensions/arcmenu/';
+
         this._settings = settings;
 
         // Project Logo, title, description-------------------------------------
@@ -83,7 +89,7 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
             title: _('GNOME Version'),
         });
         gnomeVersionRow.add_suffix(new Gtk.Label({
-            label: imports.misc.config.PACKAGE_VERSION.toString(),
+            label: Config.PACKAGE_VERSION.toString(),
             css_classes: ['dim-label'],
         }));
         infoGroup.add(gnomeVersionRow);

@@ -1,20 +1,16 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const {Clutter, GObject, Shell, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const MW = Me.imports.menuWidgets;
-const PlaceDisplay = Me.imports.placeDisplay;
-const _ = Gettext.gettext;
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
+import * as PlaceDisplay from '../placeDisplay.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.PLASMA;
-}
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
+export const Layout = class PlasmaLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -116,7 +112,8 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
         layout.hookup_style(this.grid);
         this.navigateBox.add_child(this.grid);
 
-        this.pinnedAppsButton = new MW.PlasmaMenuItem(this, _('Pinned'), Constants.ArcMenuLogoSymbolic);
+        const extension = Extension.lookupByURL(import.meta.url);
+        this.pinnedAppsButton = new MW.PlasmaMenuItem(this, _('Pinned'), `${extension.path}/${Constants.ArcMenuLogoSymbolic}`);
         this.pinnedAppsButton.connect('activate', () => this.displayPinnedApps());
         this.grid.layout_manager.attach(this.pinnedAppsButton, 0, 0, 1, 1);
         this.pinnedAppsButton.set_style_pseudo_class('active-item');
@@ -135,7 +132,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
 
         this.categoryHeader = new MW.PlasmaCategoryHeader(this);
 
-        const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.searchBox.style = 'margin: 3px 10px 5px 10px;';
             this.topBox.style = 'padding-top: 0.5em;';
@@ -181,7 +178,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
             this.add_child(this.navigateBoxContainer);
         }
 
-        const applicationShortcutsList = Me.settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcutsList = this._settings.get_value('application-shortcuts-list').deep_unpack();
         this.applicationShortcuts = [];
         for (let i = 0; i < applicationShortcutsList.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcutsList[i],
@@ -190,7 +187,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
                 this.applicationShortcuts.push(shortcutMenuItem);
         }
 
-        const directoryShortcutsList = Me.settings.get_value('directory-shortcuts-list').deep_unpack();
+        const directoryShortcutsList = this._settings.get_value('directory-shortcuts-list').deep_unpack();
         this._loadPlaces(directoryShortcutsList);
 
         this.externalDevicesBox = new St.BoxLayout({
@@ -204,7 +201,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
         for (let i = 0; i < Constants.SECTIONS.length; i++) {
             const id = Constants.SECTIONS[i];
             this._placesSections[id] = new St.BoxLayout({vertical: true});
-            this.placesManager.setConnection(`${id}-updated`, () => this._redisplayPlaces(id), this);
+            this.placesManager.connectObject(`${id}-updated`, () => this._redisplayPlaces(id), this);
 
             this._createPlaces(id);
             this.externalDevicesBox.add_child(this._placesSections[id]);
@@ -250,7 +247,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
         this.hasPinnedApps = true;
-        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
+        const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];
@@ -329,7 +326,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
         this.hasSessionOption = false;
         this.hasSystemOption = false;
 
-        const powerOptions = Me.settings.get_value('power-options').deep_unpack();
+        const powerOptions = this._settings.get_value('power-options').deep_unpack();
         for (let i = 0; i < powerOptions.length; i++) {
             const powerType = powerOptions[i][0];
             const shouldShow = powerOptions[i][1];
@@ -398,7 +395,7 @@ var Menu = class ArcMenuPlasmaLayout extends BaseMenuLayout {
         if (this.contains(this.categoryHeader))
             this.remove_child(this.categoryHeader);
 
-        const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM)
             this.insert_child_at_index(this.categoryHeader, 1);
         else

@@ -1,12 +1,12 @@
-/* exported OpenWindowSearchProvider */
-const {Gio, St, Shell} = imports.gi;
 
-const Main = imports.ui.main;
-const {getWindows} = imports.ui.altTab;
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import Gio from 'gi://Gio';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
+import Shell from 'gi://Shell';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 /**
  * @param {Gio.App} app The app
@@ -18,7 +18,7 @@ function createIcon(app, size) {
         : new St.Icon({icon_name: 'icon-missing', icon_size: size});
 }
 
-var OpenWindowSearchProvider = class {
+export const OpenWindowSearchProvider = class {
     constructor() {
         this.id = 'arcmenu.open-windows';
         this.isRemoteProvider = true;
@@ -35,7 +35,7 @@ var OpenWindowSearchProvider = class {
         };
     }
 
-    getResultMetas(winIds, callback) {
+    getResultMetas(winIds) {
         const metas = winIds.map(winId => {
             const aw = this._getAppWindow(winId);
             return aw ? {
@@ -48,14 +48,14 @@ var OpenWindowSearchProvider = class {
             } : undefined;
         }).filter(m => m?.name !== undefined && m?.name !== null);
 
-        callback(metas);
+        return new Promise(resolve => resolve(metas));
     }
 
     filterResults(results, maxNumber) {
         return results.slice(0, maxNumber);
     }
 
-    getInitialResultSet(terms, callback, _cancellable) {
+    getInitialResultSet(terms, _cancellable) {
         this._appWindows = getWindows(null).map(window => {
             return {
                 window,
@@ -63,12 +63,14 @@ var OpenWindowSearchProvider = class {
             };
         });
 
-        callback(this._getFilteredWindowIds(terms, this._appWindows));
+        return new Promise(resolve => {
+            const results = this._getFilteredWindowIds(terms, this._appWindows);
+            resolve(results);
+        });
     }
 
-    getSubsearchResultSet(previousResults, terms, callback, _cancellable) {
-        const appWindows = previousResults.map(winId => this._getAppWindow(winId)).filter(aw => aw !== undefined);
-        callback(this._getFilteredWindowIds(terms, appWindows));
+    getSubsearchResultSet(previousResults, terms, cancellable) {
+        return this.getInitialResultSet(terms, cancellable);
     }
 
     activateResult(winId, _terms) {
@@ -88,7 +90,7 @@ var OpenWindowSearchProvider = class {
             const appName = aw.app.get_name()?.toLowerCase();
             const appDescription = aw.app.get_description()?.toLowerCase();
             return terms.some(term => title?.includes(term) || appName?.includes(term) ||
-            appDescription?.includes(term));
+                appDescription?.includes(term));
         });
 
         return appWindows.map(aw => aw.window.get_id().toString());
@@ -99,3 +101,19 @@ var OpenWindowSearchProvider = class {
         return this._appWindows.find(aw => aw.window.get_id() === winId);
     }
 };
+
+/**
+ * @param {Meta.Workspace} workspace
+ * @returns {Meta.Window}
+ */
+function getWindows(workspace) {
+    // We ignore skip-taskbar windows in switchers, but if they are attached
+    // to their parent, their position in the MRU list may be more appropriate
+    // than the parent; so start with the complete list ...
+    const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    // ... map windows to their parent where appropriate ...
+    return windows.map(w => {
+        return w.is_attached_dialog() ? w.get_transient_for() : w;
+    // ... and filter out skip-taskbar windows and duplicates
+    }).filter((w, i, a) => !w.skip_taskbar && a.indexOf(w) === i);
+}

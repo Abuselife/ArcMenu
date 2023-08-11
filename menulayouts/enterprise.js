@@ -1,19 +1,14 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const {Clutter, GObject, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const MW = Me.imports.menuWidgets;
-const _ = Gettext.gettext;
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.ENTERPRISE;
-}
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
+export const Layout = class EnterpriseLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -100,7 +95,7 @@ var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
         const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
-        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
+        const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
@@ -123,7 +118,7 @@ var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
         let powerOptionsDisplay;
-        const powerDisplayStyle = Me.settings.get_enum('power-display-style');
+        const powerDisplayStyle = this._settings.get_enum('power-display-style');
         if (powerDisplayStyle === Constants.PowerDisplayStyle.MENU) {
             powerOptionsDisplay = new MW.LeaveButton(this, true);
         } else {
@@ -137,7 +132,7 @@ var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
             Constants.SeparatorAlignment.HORIZONTAL));
         this.leftBox.add_child(powerOptionsDisplay);
 
-        const searchbarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
 
@@ -157,10 +152,10 @@ var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
 
     updateWidth(setDefaultMenuView) {
         const leftPanelWidthOffset = 70;
-        const leftPanelWidth = Me.settings.get_int('left-panel-width') - leftPanelWidthOffset;
+        const leftPanelWidth = this._settings.get_int('left-panel-width') - leftPanelWidthOffset;
         this.leftBox.style = `width: ${leftPanelWidth}px;`;
 
-        const widthAdjustment = Me.settings.get_int('menu-width-adjustment');
+        const widthAdjustment = this._settings.get_int('menu-width-adjustment');
         let menuWidth = this.default_menu_width + widthAdjustment;
         // Set a 300px minimum limit for the menu width
         menuWidth = Math.max(300, menuWidth);
@@ -186,7 +181,7 @@ var Menu = class ArcMenuEnterpriseLayout extends BaseMenuLayout {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
 
-        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
+        const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];
             const shouldShow = extraCategories[i][1];

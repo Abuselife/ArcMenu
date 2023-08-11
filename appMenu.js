@@ -1,24 +1,37 @@
-/* exported AppContextMenu */
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const {Clutter, Gio, GLib, Meta, St} = imports.gi;
-const AppMenu = imports.ui.appMenu;
-const {ExtensionState} = ExtensionUtils;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const PopupMenu = imports.ui.popupMenu;
-const Utils =  Me.imports.utils;
-const _ = Gettext.gettext;
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
+
+import {AppMenu} from 'resource:///org/gnome/shell/ui/appMenu.js';
+import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+
+import * as Utils from './utils.js';
 
 const DESKTOP_ICONS_UUIDS = [
     'ding@rastersoft.com', 'gtk4-ding@smedius.gitlab.com',
     'desktopicons-neo@darkdemon',
 ];
 
-var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
+function isPopupMenuItemVisible(child) {
+    if (child._delegate instanceof PopupMenu.PopupMenuSection) {
+        if (child._delegate.isEmpty())
+            return false;
+    }
+    return child.visible;
+}
+
+export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
     constructor(sourceActor, menuLayout) {
         super(sourceActor, St.Side.TOP);
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
 
         this._menuButton = menuLayout.menuButton;
         this._menuLayout = menuLayout;
@@ -50,7 +63,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         this._detailsItem.connect('activate', () => this.closeMenus());
 
         this._arcMenuPinnedItem = this._createMenuItem(_('Pin to ArcMenu'), 8, () => {
-            const pinnedApps = Me.settings.get_strv('pinned-app-list');
+            const pinnedApps = this._settings.get_strv('pinned-app-list');
             const _isPinnedApp = this._isPinnedApp();
 
             this.close();
@@ -59,7 +72,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
                 for (let i = 0; i < pinnedApps.length; i += 3) {
                     if (pinnedApps[i + 2] === this._app.get_id()) {
                         pinnedApps.splice(i, 3);
-                        Me.settings.set_strv('pinned-app-list', pinnedApps);
+                        this._settings.set_strv('pinned-app-list', pinnedApps);
                         break;
                     }
                 }
@@ -67,7 +80,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
                 pinnedApps.push(this._app.get_app_info().get_display_name());
                 pinnedApps.push('');
                 pinnedApps.push(this._app.get_id());
-                Me.settings.set_strv('pinned-app-list', pinnedApps);
+                this._settings.set_strv('pinned-app-list', pinnedApps);
             }
         });
 
@@ -91,10 +104,10 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         });
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 8);
 
-        Me.settings.connectObject('changed::pinned-app-list', () => this._updateArcMenuPinnedItem(), this.actor);
+        this._settings.connectObject('changed::pinned-app-list', () => this._updateArcMenuPinnedItem(), this.actor);
         this.desktopExtensionStateChangedId =
-            Main.extensionManager.connect('extension-state-changed', (data, extension) => {
-                if (DESKTOP_ICONS_UUIDS.includes(extension.uuid))
+            Main.extensionManager.connect('extension-state-changed', (data, changedExtension) => {
+                if (DESKTOP_ICONS_UUIDS.includes(changedExtension.uuid))
                     this._updateDesktopShortcutItem();
             });
 
@@ -270,11 +283,11 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         this._command = command;
         this._arcMenuPinnedItem = this._createMenuItem(_('Unpin from ArcMenu'), 0, () => {
             this.close();
-            const pinnedApps = Me.settings.get_strv('pinned-app-list');
+            const pinnedApps = this._settings.get_strv('pinned-app-list');
             for (let i = 0; i < pinnedApps.length; i += 3) {
                 if (pinnedApps[i + 2] === this._command) {
                     pinnedApps.splice(i, 3);
-                    Me.settings.set_strv('pinned-app-list', pinnedApps);
+                    this._settings.set_strv('pinned-app-list', pinnedApps);
                     break;
                 }
             }
@@ -282,7 +295,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
     }
 
     _isPinnedApp() {
-        const pinnedApps = Me.settings.get_strv('pinned-app-list');
+        const pinnedApps = this._settings.get_strv('pinned-app-list');
         let matchFound = false;
 
         // 3rd entry contains the appID
@@ -387,7 +400,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
         const hasVisibleChildren = this.box.get_children().some(child => {
             if (child._delegate instanceof PopupMenu.PopupSeparatorMenuItem)
                 return false;
-            return PopupMenu.isPopupMenuItemVisible(child);
+            return isPopupMenuItemVisible(child);
         });
 
         return !hasVisibleChildren;
@@ -409,7 +422,7 @@ var AppContextMenu = class ArcMenuAppContextMenu extends AppMenu.AppMenu {
     }
 
     _disconnectSignals() {
-        Me.settings.disconnectObject(this.actor);
+        this._settings.disconnectObject(this.actor);
         this._appSystem.disconnectObject(this.actor);
         this._parentalControlsManager.disconnectObject(this.actor);
         this._appFavorites.disconnectObject(this.actor);

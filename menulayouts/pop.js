@@ -1,15 +1,19 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const {Clutter, GLib, Gio, GObject, Shell, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const MW = Me.imports.menuWidgets;
-const ParentalControlsManager = imports.misc.parentalControlsManager;
-const _ = Gettext.gettext;
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
+
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
+
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 function _getFolderName(folder) {
     const name = folder.get_string('name');
@@ -70,11 +74,7 @@ function _findBestFolderName(apps) {
     return null;
 }
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.POP;
-}
-
-var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
+export const Layout = class PopLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -142,7 +142,7 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
         this.categoriesContainer.add_child(this.categoriesGrid);
         layout.hookup_style(this.categoriesGrid);
 
-        const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.searchBox.style = 'margin: 10px 220px;';
             this.topBox.style = 'padding-top: 0.5em;';
@@ -189,11 +189,11 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
         global.settings.connectObject('changed::app-picker-layout',
             this.syncLibraryHomeAppList.bind(this), this);
 
-        Me.settings.connectObject('changed::pop-default-view', () => this.setDefaultMenuView(), this);
+        this._settings.connectObject('changed::pop-default-view', () => this.setDefaultMenuView(), this);
     }
 
     updateWidth(setDefaultMenuView) {
-        const widthAdjustment = Me.settings.get_int('menu-width-adjustment');
+        const widthAdjustment = this._settings.get_int('menu-width-adjustment');
         let menuWidth = this.default_menu_width + widthAdjustment;
         // Set a 300px minimum limit for the menu width
         menuWidth = Math.max(300, menuWidth);
@@ -227,10 +227,10 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
         const {folderSettings} = folderMenuItem;
         const name = _getFolderName(folderSettings);
 
-        const foldersData = Me.settings.get_value('pop-folders-data').deep_unpack();
+        const foldersData = this._settings.get_value('pop-folders-data').deep_unpack();
         const folderEntryId = folderMenuItem.folder_id;
         foldersData[folderEntryId] = name;
-        Me.settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
+        this._settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
 
         this._loadFolderApps(folderMenuItem);
         folderMenuItem.folder_name = name;
@@ -279,7 +279,7 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
             }
         });
 
-        Me.settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
+        this._settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
 
         const remainingApps = [];
         const apps = this._appInfoList.map(app => app.get_id());
@@ -563,7 +563,7 @@ var Menu = class ArcMenuPopLayout extends BaseMenuLayout {
 
     setDefaultMenuView() {
         super.setDefaultMenuView();
-        const defaultView = Me.settings.get_string('pop-default-view');
+        const defaultView = this._settings.get_string('pop-default-view');
         let category = this.categoryDirectories.get(defaultView);
 
         if (!category)
