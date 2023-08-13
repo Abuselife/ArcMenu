@@ -468,7 +468,8 @@ var SearchResults = GObject.registerClass({
         this._startingSearch = false;
 
         this._providers.forEach(provider => {
-            this._unregisterProvider(provider);
+            if (provider.display)
+                provider.display.destroy();
         });
 
         this.recentFilesManager.destroy();
