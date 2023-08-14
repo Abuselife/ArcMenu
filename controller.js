@@ -15,10 +15,10 @@ import {StandaloneRunner} from './standaloneRunner.js';
 import * as Utils from './utils.js';
 
 export const MenuSettingsController = class {
-    constructor(settingsControllers, panel, panelBox, panelParent, isPrimaryPanel) {
-        this.panel = panel;
+    constructor(settingsControllers, panelInfo, index) {
+        this.panel = panelInfo.panel;
         this.currentMonitorIndex = 0;
-        this.isPrimaryPanel = isPrimaryPanel;
+        this.isPrimaryPanel = index === 0;
 
         const extension = Extension.lookupByURL(import.meta.url);
         this._settings = extension.getSettings();
@@ -33,7 +33,7 @@ export const MenuSettingsController = class {
         }
 
         this._settingsConnections = new Utils.SettingsConnectionsHandler();
-        this._menuButton = new MenuButton(this.panel, panelBox, panelParent);
+        this._menuButton = new MenuButton(panelInfo, index);
         this._settingsControllers = settingsControllers;
 
         if (this.isPrimaryPanel) {

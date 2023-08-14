@@ -2,7 +2,8 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import * as Constants from './constants.js';
-import * as Controller from './controller.js';
+import {MenuSettingsController} from './controller.js';
+import {SearchProviderEmitter} from './searchProviders/searchProviderEmitter.js';
 import * as Theming from './theming.js';
 
 export default class ArcMenu extends Extension {
@@ -13,6 +14,8 @@ export default class ArcMenu extends Extension {
 
     enable() {
         this._settings = this.getSettings();
+
+        this.searchProviderEmitter = new SearchProviderEmitter();
 
         const hideOverviewOnStartup = this._settings.get_boolean('hide-overview-on-startup');
         if (hideOverviewOnStartup && Main.layoutManager._startingUp) {
@@ -47,6 +50,9 @@ export default class ArcMenu extends Extension {
     }
 
     disable() {
+        this.searchProviderEmitter.destroy();
+        delete this.searchProviderEmitter;
+
         Main.sessionMode.hasOverview = this._realHasOverview;
 
         if (this._extensionChangedId) {
@@ -128,9 +134,8 @@ export default class ArcMenu extends Extension {
             if (isStandalone && ('isPrimary' in panelParent && panelParent.isPrimary) && panelParent.isStandalone)
                 panel = Main.panel;
 
-            const isPrimaryPanel = i === 0;
-            const settingsController = new Controller.MenuSettingsController(this._settingsControllers,
-                panel, panelBox, panelParent, isPrimaryPanel);
+            const panelInfo = {panel, panelBox, panelParent};
+            const settingsController = new MenuSettingsController(this._settingsControllers, panelInfo, i);
 
             settingsController.monitorIndex = panelParent.monitor?.index ?? 0;
 

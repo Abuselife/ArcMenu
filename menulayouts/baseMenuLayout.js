@@ -940,16 +940,16 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             return actor.navigate_focus(global.stage.key_focus, direction, false);
         }
         case Clutter.KEY_KP_Enter:
-            case Clutter.KEY_Return:
-            case Clutter.KEY_Escape:
-                return Clutter.EVENT_PROPAGATE;
-            default:
-                if (unicode !== 0 && this.searchBox) {
-                    global.stage.set_key_focus(this.searchBox.clutter_text);
-                    this.searchBox.clutter_text.event(event, false);
-                }
-            }
+        case Clutter.KEY_Return:
+        case Clutter.KEY_Escape:
             return Clutter.EVENT_PROPAGATE;
+        default:
+            if (unicode !== 0 && this.searchBox) {
+                global.stage.set_key_focus(this.searchBox.clutter_text);
+                this.searchBox.clutter_text.event(event, false);
+            }
+        }
+        return Clutter.EVENT_PROPAGATE;
     }
 
     _onDestroy() {

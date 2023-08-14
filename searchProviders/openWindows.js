@@ -32,6 +32,7 @@ export const OpenWindowSearchProvider = class {
             get_name: () => _('Open Windows'),
             get_id: () => 'arcmenu.open-windows',
             get_icon: () => Gio.icon_new_for_string('focus-windows-symbolic'),
+            should_show: () => true,
         };
     }
 

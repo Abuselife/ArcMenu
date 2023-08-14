@@ -22,6 +22,7 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
         this.extension = Extension.lookupByURL(import.meta.url);
         this.tooltip = new MW.Tooltip(this);
         this._layoutHandler = new LayoutHandler(this);
+        this.index = -1;
 
         // Create Main Menus - ArcMenu and arcMenu's context menu
         this.arcMenu = new ArcMenu(Main.layoutManager.dummyCursor, 0.5, St.Side.TOP, this);

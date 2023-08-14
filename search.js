@@ -13,7 +13,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 
 import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 import {Highlighter} from 'resource:///org/gnome/shell/misc/util.js';
-import * as RemoteSearch from 'resource:///org/gnome/shell/ui/remoteSearch.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {ApplicationMenuItem, ArcMenuPopupBaseMenuItem} from './menuWidgets.js';
 import * as Constants from './constants.js';
@@ -137,6 +137,7 @@ class SearchResultsBase extends St.BoxLayout {
     }
 
     _onDestroy() {
+        this._cancellable.cancel();
         this._terms = [];
     }
 
@@ -418,6 +419,8 @@ export class SearchResults extends St.BoxLayout {
             x_align: Clutter.ActorAlign.FILL,
         });
         this._menuLayout = menuLayout;
+        const index = menuLayout.menuButton.index;
+        this._displayId = `display_${index}`;
         this.searchType = this._menuLayout.search_display_type;
 
         const extension = Extension.lookupByURL(import.meta.url);
@@ -461,6 +464,7 @@ export class SearchResults extends St.BoxLayout {
         this._searchSettings.connectObject('changed::enabled', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::disable-external', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::sort-order', this._reloadRemoteProviders.bind(this), this);
+        extension.searchProviderEmitter.connectObject('search-providers-changed', this._reloadRemoteProviders.bind(this), this);
 
         this._searchTimeoutId = null;
         this._cancellable = new Gio.Cancellable();
@@ -493,8 +497,10 @@ export class SearchResults extends St.BoxLayout {
         this._startingSearch = false;
 
         this._providers.forEach(provider => {
-            if (provider.display)
-                provider.display.destroy();
+            if (provider[this._displayId]) {
+                provider[this._displayId].destroy();
+                delete provider[this._displayId];
+            }
         });
 
         this.recentFilesManager.destroy();
@@ -519,7 +525,9 @@ export class SearchResults extends St.BoxLayout {
         if (this._settings.get_boolean('search-provider-recent-files'))
             this._registerProvider(new RecentFilesSearchProvider(this.recentFilesManager));
 
-        const providers = RemoteSearch.loadRemoteSearchProviders(this._searchSettings);
+        const searchResults = Main.overview.searchController._searchResults;
+        const providers = searchResults._providers.filter(p => p.isRemoteProvider);
+
         providers.forEach(this._registerProvider.bind(this));
 
         // restart any active search
@@ -537,8 +545,10 @@ export class SearchResults extends St.BoxLayout {
         const index = this._providers.indexOf(provider);
         this._providers.splice(index, 1);
 
-        if (provider.display)
-            provider.display.destroy();
+        if (provider[this._displayId]) {
+            provider[this._displayId].destroy();
+            delete provider[this._displayId];
+        }
     }
 
     _clearSearchTimeout() {
@@ -639,7 +649,7 @@ export class SearchResults extends St.BoxLayout {
     }
 
     _ensureProviderDisplay(provider) {
-        if (provider.display)
+        if (provider[this._displayId])
             return;
 
         let providerDisplay;
@@ -649,12 +659,12 @@ export class SearchResults extends St.BoxLayout {
             providerDisplay = new AppSearchResults(provider, this);
         providerDisplay.hide();
         this._content.add_child(providerDisplay);
-        provider.display = providerDisplay;
+        provider[this._displayId] = providerDisplay;
     }
 
     _clearDisplay() {
         this._providers.forEach(provider => {
-            provider.display.clear();
+            provider[this._displayId]?.clear();
         });
     }
 
@@ -664,7 +674,7 @@ export class SearchResults extends St.BoxLayout {
         const providers = this._providers;
         for (let i = 0; i < providers.length; i++) {
             const provider = providers[i];
-            const display = provider.display;
+            const display = provider[this._displayId];
 
             if (!display.visible)
                 continue;
@@ -693,7 +703,7 @@ export class SearchResults extends St.BoxLayout {
 
     _updateSearchProgress() {
         const haveResults = this._providers.some(provider => {
-            const display = provider.display;
+            const display = provider[this._displayId];
             return display.getFirstResult() !== null;
         });
 
@@ -712,7 +722,7 @@ export class SearchResults extends St.BoxLayout {
 
     _updateResults(provider, results) {
         const terms = this._terms;
-        const display = provider.display;
+        const display = provider[this._displayId];
         display.updateSearch(results, terms, () => {
             provider.searchInProgress = false;
 

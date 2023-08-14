@@ -21,7 +21,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 
 export const MenuButton = GObject.registerClass(
 class ArcMenuMenuButton extends PanelMenu.Button {
-    _init(panel, panelBox, panelParent) {
+    _init(panelInfo, index) {
         super._init(0.5, null, true);
 
         this.set({
@@ -32,10 +32,11 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this.extension = Extension.lookupByURL(import.meta.url);
         this._settings = this.extension.getSettings();
         this._layoutHandler = new LayoutHandler(this);
+        this.index = index;
 
-        this._panel = panel;
-        this._panelBox = panelBox;
-        this._panelParent = panelParent;
+        this._panel = panelInfo.panel;
+        this._panelBox = panelInfo.panelBox;
+        this._panelParent = panelInfo.panelParent;
         this.menu.destroy();
         this.menu = null;
         this.add_style_class_name('arcmenu-panel-menu');

@@ -1,7 +1,5 @@
-import * as Gettext from 'gettext';
-
-const GettextDomain = Gettext.domain('arcmenu');
-const _ = GettextDomain.gettext;
+import {domain} from 'gettext';
+const {gettext: _} = domain('arcmenu');
 
 export const DASH_TO_PANEL_UUID = 'dash-to-panel@jderose9.github.com';
 export const AZTASKBAR_UUID = 'aztaskbar@aztaskbar.gitlab.com';
