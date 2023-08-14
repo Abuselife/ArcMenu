@@ -104,6 +104,7 @@ async function updateStylesheet(settings) {
     const [menuRise, menuRiseValue] = settings.get_value('menu-arrow-rise').deep_unpack();
 
     const [buttonFG, buttonFGColor] = settings.get_value('menu-button-fg-color').deep_unpack();
+    const [buttonBG, buttonBGColor] = settings.get_value('menu-button-bg-color').deep_unpack();
     const [buttonHoverBG, buttonHoverBGColor] = settings.get_value('menu-button-hover-bg-color').deep_unpack();
     const [buttonHoverFG, buttonHoverFGColor] = settings.get_value('menu-button-hover-fg-color').deep_unpack();
     const [buttonActiveBG, buttonActiveBGColor] = settings.get_value('menu-button-active-bg-color').deep_unpack();
@@ -116,6 +117,12 @@ async function updateStylesheet(settings) {
     if (buttonFG) {
         extraStylingCSS += `.arcmenu-menu-button{
                                 color: ${buttonFGColor};
+                            }`;
+    }
+    if (buttonBG) {
+        extraStylingCSS += `.arcmenu-panel-menu{
+                                box-shadow: inset 0 0 0 100px transparent;
+                                background-color: ${buttonBGColor};
                             }`;
     }
     if (buttonHoverBG) {

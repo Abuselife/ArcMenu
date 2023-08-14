@@ -206,6 +206,9 @@ class ArcMenuMenuButtonPage extends Adw.PreferencesPage {
         const buttonFGColorRow = this._createButtonColorRow(_('Foreground Color'), 'menu-button-fg-color');
         menuButtonGroup.add(buttonFGColorRow);
 
+        const buttonBGColorRow = this._createButtonColorRow(_('Background Color'), 'menu-button-bg-color');
+        menuButtonGroup.add(buttonBGColorRow);
+
         const buttonHoverBGColorRow = this._createButtonColorRow(`${_('Hover')} ${_('Background Color')}`, 'menu-button-hover-bg-color');
         menuButtonGroup.add(buttonHoverBGColorRow);
 
@@ -251,6 +254,7 @@ class ArcMenuMenuButtonPage extends Adw.PreferencesPage {
             this._settings.reset('custom-menu-button-icon');
             this._settings.reset('menu-button-position-offset');
             this._settings.reset('menu-button-fg-color');
+            this._settings.reset('menu-button-bg-color');
             this._settings.reset('menu-button-hover-bg-color');
             this._settings.reset('menu-button-hover-fg-color');
             this._settings.reset('menu-button-active-bg-color');

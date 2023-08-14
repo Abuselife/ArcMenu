@@ -196,6 +196,11 @@
       <summary>ArcMenu menu button fg color. Active when 'override-menu-theme' enabled.</summary>
       <description>ArcMenu menu button fg color. Active when 'override-menu-theme' enabled.</description>
     </key>
+    <key type="(bs)" name="menu-button-bg-color">
+      <default>(false, "rgba(242,242,242,0.2)")</default>
+      <summary>ArcMenu menu button bg color. Active when 'override-menu-theme' enabled.</summary>
+      <description>ArcMenu menu button bg color. Active when 'override-menu-theme' enabled.</description>
+    </key>
     <key type="(bi)" name="menu-button-border-radius">
       <default>(false, 20)</default>
       <summary>ArcMenu menu button border radius. Active when 'override-menu-theme' enabled.</summary>
