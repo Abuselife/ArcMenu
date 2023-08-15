@@ -14,18 +14,20 @@ export class SearchProviderEmitter extends EventEmitter {
         this._injectionManager = new InjectionManager();
 
         this._injectionManager.overrideMethod(SearchController.prototype, 'addProvider', originalMethod => {
-            /* eslint-disable no-invalid-this */
+            const searchProviderEmitter = this;
             return function (provider) {
+                /* eslint-disable-next-line no-invalid-this */
                 originalMethod.call(this, provider);
-                this.emit('search-provider-added');
+                searchProviderEmitter.emit('search-provider-added', provider);
             };
         });
 
         this._injectionManager.overrideMethod(SearchController.prototype, 'removeProvider', originalMethod => {
-            /* eslint-disable no-invalid-this */
+            const searchProviderEmitter = this;
             return function (provider) {
+                /* eslint-disable-next-line no-invalid-this */
                 originalMethod.call(this, provider);
-                this.emit('search-provider-removed');
+                searchProviderEmitter.emit('search-provider-removed', provider);
             };
         });
     }

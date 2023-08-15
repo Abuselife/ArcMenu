@@ -19,7 +19,7 @@ function createIcon(mimeType, size) {
 export const RecentFilesSearchProvider = class {
     constructor(recentFilesManager) {
         this.id = 'arcmenu.recent-files';
-        this.isRemoteProvider = true;
+        this.isRemoteProvider = false;
         this.canLaunchSearch = false;
         this.recentFilesManager = recentFilesManager;
 

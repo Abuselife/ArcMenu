@@ -21,7 +21,7 @@ function createIcon(app, size) {
 export const OpenWindowSearchProvider = class {
     constructor() {
         this.id = 'arcmenu.open-windows';
-        this.isRemoteProvider = true;
+        this.isRemoteProvider = false;
         this.canLaunchSearch = false;
 
         this._appWindows = [];

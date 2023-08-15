@@ -465,8 +465,8 @@ export class SearchResults extends St.BoxLayout {
         this._searchSettings.connectObject('changed::disable-external', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::sort-order', this._reloadRemoteProviders.bind(this), this);
 
-        extension.searchProviderEmitter.connectObject('search-provider-added', this._registerProvider.bind(this), this);
-        extension.searchProviderEmitter.connectObject('search-provider-removed', this._unregisterProvider.bind(this), this);
+        extension.searchProviderEmitter.connectObject('search-provider-added', (_, provider) => this._registerProvider(provider), this);
+        extension.searchProviderEmitter.connectObject('search-provider-removed', (_, provider) => this._unregisterProvider(provider), this);
 
         this._searchTimeoutId = null;
         this._cancellable = new Gio.Cancellable();
@@ -513,6 +513,11 @@ export class SearchResults extends St.BoxLayout {
         const searchResults = Main.overview.searchController._searchResults;
         const providers = searchResults._providers.filter(p => !p.isRemoteProvider);
         providers.forEach(this._registerProvider.bind(this));
+
+        if (this._settings.get_boolean('search-provider-open-windows'))
+            this._registerProvider(new OpenWindowSearchProvider());
+        if (this._settings.get_boolean('search-provider-recent-files'))
+            this._registerProvider(new RecentFilesSearchProvider(this.recentFilesManager));
     }
 
     _reloadRemoteProviders() {
@@ -525,11 +530,6 @@ export class SearchResults extends St.BoxLayout {
         remoteProviders.forEach(provider => {
             this._unregisterProvider(provider);
         });
-
-        if (this._settings.get_boolean('search-provider-open-windows'))
-            this._registerProvider(new OpenWindowSearchProvider());
-        if (this._settings.get_boolean('search-provider-recent-files'))
-            this._registerProvider(new RecentFilesSearchProvider(this.recentFilesManager));
 
         const providers = RemoteSearch.loadRemoteSearchProviders(this._searchSettings);
         providers.forEach(this._registerProvider.bind(this));
