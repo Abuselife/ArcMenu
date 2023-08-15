@@ -11,9 +11,9 @@ import St from 'gi://St';
 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 import {Highlighter} from 'resource:///org/gnome/shell/misc/util.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as RemoteSearch from 'resource:///org/gnome/shell/ui/remoteSearch.js';
 
 import {ApplicationMenuItem, ArcMenuPopupBaseMenuItem} from './menuWidgets.js';
 import * as Constants from './constants.js';
@@ -464,15 +464,17 @@ export class SearchResults extends St.BoxLayout {
         this._searchSettings.connectObject('changed::enabled', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::disable-external', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::sort-order', this._reloadRemoteProviders.bind(this), this);
-        extension.searchProviderEmitter.connectObject('search-providers-changed', this._reloadRemoteProviders.bind(this), this);
+
+        extension.searchProviderEmitter.connectObject('search-provider-added', this._registerProvider.bind(this), this);
+        extension.searchProviderEmitter.connectObject('search-provider-removed', this._unregisterProvider.bind(this), this);
 
         this._searchTimeoutId = null;
         this._cancellable = new Gio.Cancellable();
 
-        this._registerProvider(new AppDisplay.AppSearchProvider());
         const appSystem = Shell.AppSystem.get_default();
         appSystem.connectObject('installed-changed', this._reloadRemoteProviders.bind(this), this);
 
+        this._registerGnomeShellProviders();
         this._reloadRemoteProviders();
 
         this.connect('destroy', this._onDestroy.bind(this));
@@ -507,15 +509,19 @@ export class SearchResults extends St.BoxLayout {
         this.recentFilesManager = null;
     }
 
+    _registerGnomeShellProviders() {
+        const searchResults = Main.overview.searchController._searchResults;
+        const providers = searchResults._providers.filter(p => !p.isRemoteProvider);
+        providers.forEach(this._registerProvider.bind(this));
+    }
+
     _reloadRemoteProviders() {
         const currentTerms = this._terms;
         // cancel any active search
         if (this._terms.length !== 0)
             this._reset();
 
-        this._oldProviders = null;
         const remoteProviders = this._providers.filter(p => p.isRemoteProvider);
-
         remoteProviders.forEach(provider => {
             this._unregisterProvider(provider);
         });
@@ -525,9 +531,7 @@ export class SearchResults extends St.BoxLayout {
         if (this._settings.get_boolean('search-provider-recent-files'))
             this._registerProvider(new RecentFilesSearchProvider(this.recentFilesManager));
 
-        const searchResults = Main.overview.searchController._searchResults;
-        const providers = searchResults._providers.filter(p => p.isRemoteProvider);
-
+        const providers = RemoteSearch.loadRemoteSearchProviders(this._searchSettings);
         providers.forEach(this._registerProvider.bind(this));
 
         // restart any active search

@@ -3,10 +3,9 @@ import {InjectionManager} from 'resource:///org/gnome/shell/extensions/extension
 import {SearchController} from 'resource:///org/gnome/shell/ui/searchController.js';
 
 /**
- * Override SearchController addProvider() and removeProvider(), to emit signal
- * when both methods are called. Allows ArcMenu to utilize custom search providers
- * from extensions that use these methods.
-*/
+ * Override SearchController addProvider() and removeProvider() methods to emit signals
+ * when called. Allows ArcMenu to use custom search providers from extensions that use these methods.
+ */
 
 export class SearchProviderEmitter extends EventEmitter {
     constructor() {
@@ -18,7 +17,7 @@ export class SearchProviderEmitter extends EventEmitter {
             /* eslint-disable no-invalid-this */
             return function (provider) {
                 originalMethod.call(this, provider);
-                this.emit('search-providers-changed');
+                this.emit('search-provider-added');
             };
         });
 
@@ -26,7 +25,7 @@ export class SearchProviderEmitter extends EventEmitter {
             /* eslint-disable no-invalid-this */
             return function (provider) {
                 originalMethod.call(this, provider);
-                this.emit('search-providers-changed');
+                this.emit('search-provider-removed');
             };
         });
     }
