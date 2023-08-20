@@ -77,9 +77,9 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     }
 
     initiate() {
-        this.dashToPanel = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
+        this._dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
 
-        if (this.dashToPanel?.state === ExtensionState.ENABLED && global.dashToPanel)
+        if (this._dtp?.state === ExtensionState.ENABLED && global.dashToPanel)
             this.syncWithDashToPanel();
 
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => this.updateHeight());
@@ -90,13 +90,16 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     }
 
     syncWithDashToPanel() {
+        const dtp = Extension.lookupByUUID(Constants.DASH_TO_PANEL_UUID);
+        this._dtpSettings = dtp.getSettings('org.gnome.shell.extensions.dash-to-panel');
+
         const monitorIndex = Main.layoutManager.findIndexForActor(this);
-        const side = Utils.getDashToPanelPosition(this.dashToPanel.settings, monitorIndex);
+        const side = Utils.getDashToPanelPosition(this._dtpSettings, monitorIndex);
         this.updateArrowSide(side);
 
-        this.dtpPostionChangedID = this.dashToPanel.settings.connect('changed::panel-positions', () => {
+        this.dtpPostionChangedID = this._dtpSettings.connect('changed::panel-positions', () => {
             const newMonitorIndex = Main.layoutManager.findIndexForActor(this);
-            const newSide = Utils.getDashToPanelPosition(this.dashToPanel.settings, newMonitorIndex);
+            const newSide = Utils.getDashToPanelPosition(this._dtpSettings, newMonitorIndex);
             this.updateArrowSide(newSide);
         });
     }
@@ -136,9 +139,9 @@ class ArcMenuMenuButton extends PanelMenu.Button {
                 this.arcMenu._arrowAlignment = arrowAlignment;
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
                 this.arcMenu._boxPointer.setSourceAlignment(.5);
-            } else if (this.dashToPanel?.state === ExtensionState.ENABLED) {
+            } else if (this._dtp?.state === ExtensionState.ENABLED) {
                 const monitorIndex = Main.layoutManager.findIndexForActor(this);
-                const side = Utils.getDashToPanelPosition(this.dashToPanel.settings, monitorIndex);
+                const side = Utils.getDashToPanelPosition(this._dtpSettings, monitorIndex);
                 this.updateArrowSide(side, false);
             } else {
                 this.updateArrowSide(St.Side.TOP, false);
@@ -332,8 +335,8 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this._clearMenuLayoutTimeouts();
         this._clearTooltipShowingId();
 
-        if (this.dtpPostionChangedID && this.dashToPanel.settings) {
-            this.dashToPanel.settings.disconnect(this.dtpPostionChangedID);
+        if (this.dtpPostionChangedID && this._dtpSettings) {
+            this._dtpSettings.disconnect(this.dtpPostionChangedID);
             this.dtpPostionChangedID = null;
         }
 
