@@ -422,26 +422,25 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             box.add_child(showMoreItem);
         }
 
-        for (const file of recentFiles) {
-            this.recentFilesManager.queryInfoAsync(file).then(result => {
+        for (const fileUri of recentFiles) {
+            this.recentFilesManager.queryInfoAsync(fileUri).then(result => {
                 const {recentFile} = result;
                 const {error} = result;
 
                 if (error)
                     return;
 
-                const gioFile = Gio.File.new_for_uri(recentFile.get_uri());
-                const filePath = gioFile.get_path();
-                const name = recentFile.get_display_name();
-                const icon = Gio.content_type_get_symbolic_icon(recentFile.get_mime_type()).to_string();
+                const filePath = recentFile.get_path();
+                const name = recentFile.get_basename();
+                const mimeType = this.recentFilesManager.getMimeType(fileUri);
+                const icon = Gio.content_type_get_symbolic_icon(mimeType)?.to_string();
                 const isContainedInCategory = true;
 
                 const placeMenuItem = this.createMenuItem([name, icon, filePath],
                     Constants.DisplayType.LIST, isContainedInCategory);
                 placeMenuItem.setAsRecentFile(recentFile, () => {
                     try {
-                        const {recentManager} = this.recentFilesManager;
-                        recentManager.remove_item(placeMenuItem.fileUri);
+                        this.recentFilesManager.removeItem(placeMenuItem.fileUri);
                     } catch (err) {
                         log(err);
                     }

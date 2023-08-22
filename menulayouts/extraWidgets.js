@@ -18,6 +18,11 @@ const MAX_FORECASTS = 5;
 const ClocksIntegrationIface = loadInterfaceXML('org.gnome.Shell.ClocksIntegration');
 const ClocksProxy = Gio.DBusProxy.makeProxyWrapper(ClocksIntegrationIface);
 
+/**
+ * WorldClocksSection and WeatherSection are not exported in GNOME shell.
+ * Copy them here. Used in Raven and Unity layouts.
+ */
+
 export const WorldClocksSection = GObject.registerClass(
 class ArcMenuWorldClocksSection extends St.Button {
     _init(menuLayout) {

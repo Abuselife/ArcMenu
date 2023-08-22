@@ -368,31 +368,32 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
         endPoint = x2;
     }
 
-    let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
+    const [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
     let offset = 0;
+    let newValue;
+
     const fade = parent.get_effect('fade');
     if (fade)
         offset = axis === Clutter.Orientation.VERTICAL ? fade.fade_margins.top : fade.fade_margins.left;
 
     if (startPoint < value + offset)
-        value = Math.max(0, startPoint - offset);
+        newValue = Math.max(0, startPoint - offset);
     else if (endPoint > value + pageSize - offset)
-        value = Math.min(upper, endPoint + offset - pageSize);
+        newValue = Math.min(upper, endPoint + offset - pageSize);
     else
         return;
 
-    adjustment.ease(value, {
+    adjustment.ease(newValue, {
         mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         duration: 100,
     });
 }
 
-// modified from GNOME shell to allow opening other extension setttings
 export function openPrefs(uuid) {
-        const extension = Extension.lookupByUUID(uuid);
-        if (extension !== null)
-            extension.openPreferences();
+    const extension = Extension.lookupByUUID(uuid);
+    if (extension !== null)
+        extension.openPreferences();
 }
 
 export function getDashToPanelPosition(settings, index) {

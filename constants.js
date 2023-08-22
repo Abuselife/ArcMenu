@@ -73,7 +73,7 @@ export const DefaultMenuViewRedmond = {
 
 export const SoftwareManagerIDs = ['org.manjaro.pamac.manager.desktop', 'pamac-manager.desktop',
     'io.elementary.appcenter.desktop', 'snap-store_ubuntu-software.desktop', 'snap-store_snap-store.desktop',
-    'org.gnome.Software.desktop','tr.org.pardus.software.desktop'];
+    'org.gnome.Software.desktop', 'tr.org.pardus.software.desktop'];
 
 export const Categories = [
     {CATEGORY: CategoryType.FAVORITES, NAME: _('Favorites'), ICON: 'emblem-favorite-symbolic'},

@@ -9,7 +9,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {ArcMenu} from './menuButton.js';
 import * as Constants from './constants.js';
-import {LayoutHandler} from './menulayouts/layoutHandler.js';
+import * as LayoutHandler from './menulayouts/layoutHandler.js';
 import * as MW from './menuWidgets.js';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -21,7 +21,6 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
 
         this.extension = Extension.lookupByURL(import.meta.url);
         this.tooltip = new MW.Tooltip(this);
-        this._layoutHandler = new LayoutHandler(this);
         this.index = -1;
 
         // Create Main Menus - ArcMenu and arcMenu's context menu
@@ -68,9 +67,14 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
 
         this._destroyMenuLayout();
 
-        const standaloneRunner = true;
-        this._menuLayout = this._layoutHandler.getMenuLayout(Constants.MenuLayout.RUNNER, standaloneRunner);
-        this.arcMenu.box.add_child(this._menuLayout);
+        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+            const standaloneRunner = true;
+            this._menuLayout = LayoutHandler.createMenuLayout(this, Constants.MenuLayout.RUNNER, standaloneRunner);
+            this.arcMenu.box.add_child(this._menuLayout);
+
+            this._createMenuLayoutTimeoutID = null;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     closeOtherMenus() {

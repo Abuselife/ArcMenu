@@ -3041,11 +3041,9 @@ export class PlaceMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     setAsRecentFile(recentFile, removeRecentFile) {
-        const homeRegExp = new RegExp(`^(${GLib.get_home_dir()})`);
-        const file = Gio.File.new_for_uri(recentFile.get_uri());
-
-        this.folderPath = file.get_parent()?.get_path(); // can be null
-        this.description = recentFile.get_uri_display().replace(homeRegExp, '~');
+        const parentPath = recentFile.get_parent()?.get_path();
+        this.folderPath = parentPath;
+        this.description = parentPath;
         this.fileUri = recentFile.get_uri();
 
         this._additionalAction = () => {

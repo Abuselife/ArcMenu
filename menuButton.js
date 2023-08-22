@@ -13,7 +13,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
 
 import * as Constants from './constants.js';
-import {LayoutHandler} from './menulayouts/layoutHandler.js';
+import * as LayoutHandler from './menulayouts/layoutHandler.js';
 import * as MW from './menuWidgets.js';
 import * as Utils from './utils.js';
 
@@ -31,7 +31,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.extension = Extension.lookupByURL(import.meta.url);
         this._settings = this.extension.getSettings();
-        this._layoutHandler = new LayoutHandler(this);
         this.index = index;
 
         this._panel = panelInfo.panel;
@@ -118,14 +117,20 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this._destroyMenuLayout();
 
-        this._menuLayout = this._layoutHandler.getMenuLayout(this._settings.get_enum('menu-layout'));
+        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+            const layout = this._settings.get_enum('menu-layout');
+            this._menuLayout = LayoutHandler.createMenuLayout(this, layout);
 
-        if (this._menuLayout) {
-            this.arcMenu.box.add_child(this._menuLayout);
-            this.setMenuPositionAlignment();
-            this.forceMenuLocation();
-            this.updateHeight();
-        }
+            if (this._menuLayout) {
+                this.arcMenu.box.add_child(this._menuLayout);
+                this.setMenuPositionAlignment();
+                this.forceMenuLocation();
+                this.updateHeight();
+            }
+
+            this._createMenuLayoutTimeoutID = null;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     setMenuPositionAlignment() {

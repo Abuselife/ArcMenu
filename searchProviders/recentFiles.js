@@ -39,9 +39,9 @@ export const RecentFilesSearchProvider = class {
             const file = Gio.File.new_for_uri(rf.get_uri());
             return rf ? {
                 id: fileUri,
-                name: rf.get_display_name(),
+                name: rf.get_basename(),
                 description: file.get_parent()?.get_path(), // can be null
-                createIcon: size => createIcon(rf.get_mime_type(), size),
+                createIcon: size => createIcon(this.recentFilesManager.getMimeType(fileUri), size),
             } : undefined;
         }).filter(m => m?.name !== undefined && m?.name !== null);
 
@@ -87,7 +87,7 @@ export const RecentFilesSearchProvider = class {
                         Gio.AppInfo.launch_default_for_uri_finish(res);
                         resolve();
                     } catch (e) {
-                        Main.notifyError(_('Failed to open “%s”').format(recentFile.get_display_name()), e.message);
+                        Main.notifyError(_('Failed to open “%s”').format(recentFile.get_basename()), e.message);
                         reject(e);
                     }
                 });
@@ -101,7 +101,7 @@ export const RecentFilesSearchProvider = class {
     _getFilteredFileUris(terms, recentFiles) {
         terms = terms.map(term => term.toLowerCase());
         recentFiles = recentFiles.filter(rf => {
-            const fileName = rf.get_display_name()?.toLowerCase();
+            const fileName = rf.get_basename()?.toLowerCase();
             return terms.some(term => fileName?.includes(term));
         });
 

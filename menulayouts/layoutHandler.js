@@ -21,58 +21,59 @@ import {Layout as UnityLayout} from './unity.js';
 import {Layout as WhiskerLayout} from './whisker.js';
 import {Layout as WindowsLayout} from './windows.js';
 
-export class LayoutHandler {
-    constructor(menuButton) {
-        this._menuButton = menuButton;
-    }
+/**
+ *
+ * @param {PanelMenu.Button} menuButton
+ * @param {MenuLayout} layout
+ * @param {boolean} isStandaloneRunner
+ */
+export function createMenuLayout(menuButton, layout, isStandaloneRunner) {
+    if (layout === MenuLayout.GNOME_OVERVIEW)
+        return null;
 
-    getMenuLayout(layoutEnum, isStandaloneRunner) {
-        if (layoutEnum === MenuLayout.GNOME_OVERVIEW)
-            return null;
+    let constructor;
+    if (layout === MenuLayout.ARCMENU)
+        constructor = ArcMenuLayout;
+    else if (layout === MenuLayout.AZ)
+        constructor = AzLayout;
+    else if (layout === MenuLayout.BRISK)
+        constructor = BriskLayout;
+    else if (layout === MenuLayout.BUDGIE)
+        constructor = BudgieLayout;
+    else if (layout === MenuLayout.CHROMEBOOK)
+        constructor = ChromebookLayout;
+    else if (layout === MenuLayout.ELEMENTARY)
+        constructor = ElementaryLayout;
+    else if (layout === MenuLayout.ELEVEN)
+        constructor = ElevenLayout;
+    else if (layout === MenuLayout.ENTERPRISE)
+        constructor = EnterpriseLayout;
+    else if (layout === MenuLayout.GNOME_MENU)
+        constructor = GnomeMenuLayout;
+    else if (layout === MenuLayout.INSIDER)
+        constructor = InsiderLayout;
+    else if (layout === MenuLayout.MINT)
+        constructor = MintLayout;
+    else if (layout === MenuLayout.PLASMA)
+        constructor = PlasmaLayout;
+    else if (layout === MenuLayout.POP)
+        constructor = PopLayout;
+    else if (layout === MenuLayout.RAVEN)
+        constructor = RavenLayout;
+    else if (layout === MenuLayout.REDMOND)
+        constructor = RedmondLayout;
+    else if (layout === MenuLayout.RUNNER)
+        constructor = RunnerLayout;
+    else if (layout === MenuLayout.TOGNEE)
+        constructor = TogneeLayout;
+    else if (layout === MenuLayout.UNITY)
+        constructor = UnityLayout;
+    else if (layout === MenuLayout.WHISKER)
+        constructor = WhiskerLayout;
+    else if (layout === MenuLayout.WINDOWS)
+        constructor = WindowsLayout;
+    else
+        constructor = ArcMenuLayout;
 
-        switch (layoutEnum) {
-        case MenuLayout.ARCMENU:
-            return new ArcMenuLayout(this._menuButton);
-        case MenuLayout.AZ:
-            return new AzLayout(this._menuButton);
-        case MenuLayout.BRISK:
-            return new BriskLayout(this._menuButton);
-        case MenuLayout.BUDGIE:
-            return new BudgieLayout(this._menuButton);
-        case MenuLayout.CHROMEBOOK:
-            return new ChromebookLayout(this._menuButton);
-        case MenuLayout.ELEMENTARY:
-            return new ElementaryLayout(this._menuButton);
-        case MenuLayout.ELEVEN:
-            return new ElevenLayout(this._menuButton);
-        case MenuLayout.ENTERPRISE:
-            return new EnterpriseLayout(this._menuButton);
-        case MenuLayout.GNOME_MENU:
-            return new GnomeMenuLayout(this._menuButton);
-        case MenuLayout.INSIDER:
-            return new InsiderLayout(this._menuButton);
-        case MenuLayout.MINT:
-            return new MintLayout(this._menuButton);
-        case MenuLayout.PLASMA:
-            return new PlasmaLayout(this._menuButton);
-        case MenuLayout.POP:
-            return new PopLayout(this._menuButton);
-        case MenuLayout.RAVEN:
-            return new RavenLayout(this._menuButton);
-        case MenuLayout.REDMOND:
-            return new RedmondLayout(this._menuButton);
-        case MenuLayout.RUNNER:
-            return new RunnerLayout(this._menuButton, isStandaloneRunner);
-        case MenuLayout.TOGNEE:
-            return new TogneeLayout(this._menuButton);
-        case MenuLayout.UNITY:
-            return new UnityLayout(this._menuButton);
-        case MenuLayout.WHISKER:
-            return new WhiskerLayout(this._menuButton);
-        case MenuLayout.WINDOWS:
-            return new WindowsLayout(this._menuButton);
-        default:
-            return new ArcMenuLayout(this._menuButton);
-        }
-    }
+    return new constructor(menuButton, isStandaloneRunner);
 }
