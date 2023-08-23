@@ -1432,7 +1432,8 @@ export class ShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
         this._displayType = displayType;
         this.isContainedInCategory = isContainedInCategory;
 
-        let [name, icon, command] = menuItemArray;
+        let [name] = menuItemArray;
+        const [, icon, command] = menuItemArray;
         this._command = command;
         this.iconName = icon;
 

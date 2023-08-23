@@ -472,7 +472,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     createMenuItem(menuItemArray, displayType, isContainedInCategory) {
-        let [shortcutName, shortcutIcon, shortcutCommand] = menuItemArray;
+        let [,, shortcutCommand] = menuItemArray;
+        const [shortcutName, shortcutIcon] = menuItemArray;
         let app = Shell.AppSystem.get_default().lookup_app(shortcutCommand);
 
         // Ubunutu 22.04 uses old version of GNOME settings
