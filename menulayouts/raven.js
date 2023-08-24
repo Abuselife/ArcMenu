@@ -167,7 +167,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         const weatherWidgetEnabled = this._settings.get_boolean('enable-weather-widget-raven');
 
         if (clockWidgetEnabled && !this._clocksItem) {
-            this._clocksItem = new MW.WorldClocksSection(this);
+            this._clocksItem = new MW.WorldClocksWidget(this);
             this._clocksItem.set({
                 x_expand: true,
                 x_align: Clutter.ActorAlign.FILL,
@@ -179,7 +179,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         }
 
         if (weatherWidgetEnabled && !this._weatherItem) {
-            this._weatherItem = new MW.WeatherSection(this);
+            this._weatherItem = new MW.WeatherWidget(this);
             this._widgetBox.add_child(this._weatherItem);
         } else if (!weatherWidgetEnabled && this._weatherItem) {
             this._weatherItem.destroy();

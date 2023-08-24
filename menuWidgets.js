@@ -27,8 +27,9 @@ import * as Utils from './utils.js';
 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const WeatherWidget = Main.panel.statusArea.dateMenu._weatherItem.constructor;
-const WorldClocksWidget = Main.panel.statusArea.dateMenu._clocksItem.constructor;
+const GDateMenu = Main.panel.statusArea.dateMenu;
+const GWeatherWidget = GDateMenu._weatherItem.constructor;
+const GWorldClocksWidget = GDateMenu._clocksItem.constructor;
 
 const INDICATOR_ICON_SIZE = 18;
 const USER_AVATAR_SIZE = 28;
@@ -3354,8 +3355,8 @@ export class MenuButtonWidget extends St.BoxLayout {
     }
 }
 
-export const WorldClocksSection = GObject.registerClass(
-class ArcMenuWorldClocksSection extends WorldClocksWidget {
+export const WorldClocksWidget = GObject.registerClass(
+class ArcMenuWorldClocksWidget extends GWorldClocksWidget {
     _init(menuLayout) {
         super._init();
         this._menuLayout = menuLayout;
@@ -3406,8 +3407,8 @@ class ArcMenuWorldClocksSection extends WorldClocksWidget {
     }
 });
 
-export const WeatherSection = GObject.registerClass(
-class ArcMenuWeatherSection extends WeatherWidget {
+export const WeatherWidget = GObject.registerClass(
+class ArcMenuWeatherWidget extends GWeatherWidget {
     _init(menuLayout) {
         super._init();
         this._menuLayout = menuLayout;
