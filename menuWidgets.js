@@ -27,6 +27,9 @@ import * as Utils from './utils.js';
 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+const WeatherWidget = Main.panel.statusArea.dateMenu._weatherItem.constructor;
+const WorldClocksWidget = Main.panel.statusArea.dateMenu._clocksItem.constructor;
+
 const INDICATOR_ICON_SIZE = 18;
 const USER_AVATAR_SIZE = 28;
 
@@ -3350,3 +3353,76 @@ export class MenuButtonWidget extends St.BoxLayout {
         this._label.style = style;
     }
 }
+
+export const WorldClocksSection = GObject.registerClass(
+class ArcMenuWorldClocksSection extends WorldClocksWidget {
+    _init(menuLayout) {
+        super._init();
+        this._menuLayout = menuLayout;
+        this.connect('destroy', () => this._onDestroy());
+
+        this._syncID = GObject.signal_handler_find(this._appSystem, {signalId: 'installed-changed'});
+        this._clockChangedID = GObject.signal_handler_find(this._settings, {signalId: 'changed'});
+    }
+
+    _onDestroy() {
+        if (this._syncID) {
+            this._appSystem.disconnect(this._syncID);
+            this._syncID = null;
+        }
+        if (this._clockChangedID) {
+            this._settings.disconnect(this._clockChangedID);
+            this._clockChangedID = null;
+        }
+        if (this._clocksProxyID) {
+            this._clocksProxy.disconnect(this._clocksProxyID);
+            this._clocksProxyID = null;
+        }
+        if (this._clockNotifyId) {
+            this._clock.disconnect(this._clockNotifyId);
+            this._clockNotifyId = null;
+        }
+        if (this._tzNotifyId) {
+            this._clock.disconnect(this._tzNotifyId);
+            this._tzNotifyId = null;
+        }
+    }
+
+    vfunc_clicked() {
+        this._menuLayout.arcMenu.toggle();
+        if (this._clocksApp)
+            this._clocksApp.activate();
+    }
+
+    _onProxyReady(proxy, error) {
+        if (error) {
+            log(`Failed to create GNOME Clocks proxy: ${error}`);
+            return;
+        }
+
+        this._clocksProxyID = this._clocksProxy.connect('g-properties-changed',
+            this._onClocksPropertiesChanged.bind(this));
+        this._onClocksPropertiesChanged();
+    }
+});
+
+export const WeatherSection = GObject.registerClass(
+class ArcMenuWeatherSection extends WeatherWidget {
+    _init(menuLayout) {
+        super._init();
+        this._menuLayout = menuLayout;
+
+        this.connect('destroy', () => this._onDestroy());
+    }
+
+    _onDestroy() {
+        this._weatherClient.disconnectAll();
+        this._weatherClient = null;
+        delete this._weatherClient;
+    }
+
+    vfunc_clicked() {
+        this._menuLayout.arcMenu.toggle();
+        this._weatherClient.activateApp();
+    }
+});
