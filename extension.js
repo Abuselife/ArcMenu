@@ -1,5 +1,6 @@
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 
 import * as Constants from './constants.js';
 import {MenuSettingsController} from './controller.js';
@@ -32,13 +33,18 @@ export default class ArcMenu extends Extension {
         this._settings.connect('changed::dash-to-panel-standalone', () => this._reload());
         this._settingsControllers = [];
 
-        Theming.createStylesheet(this._settings);
+        Theming.createStylesheet();
 
         this._enableButtons();
 
         // dash to panel might get enabled after ArcMenu
         this._extensionChangedId = Main.extensionManager.connect('extension-state-changed', (data, extension) => {
-            if (extension.uuid === Constants.DASH_TO_PANEL_UUID || extension.uuid === Constants.AZTASKBAR_UUID) {
+            const isDtp = extension.uuid === Constants.DASH_TO_PANEL_UUID;
+            const isAzTaskbar = extension.uuid === Constants.AZTASKBAR_UUID;
+            const isEnabled = extension.state === ExtensionState.ENABLED;
+            const isDisabled = extension.state === ExtensionState.DISABLED;
+
+            if ((isDtp || isAzTaskbar) && (isEnabled || isDisabled)) {
                 this._disconnectExtensionSignals();
                 this._connectExtensionSignals();
                 this._reload();
@@ -61,7 +67,6 @@ export default class ArcMenu extends Extension {
         }
 
         Theming.deleteStylesheet();
-        delete this.customStylesheet;
 
         this._disconnectExtensionSignals();
 
@@ -73,10 +78,12 @@ export default class ArcMenu extends Extension {
     }
 
     _connectExtensionSignals() {
-        if (global.dashToPanel)
+        const dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
+        if (dtp?.state === ExtensionState.ENABLED && global.dashToPanel)
             global.dashToPanel._panelsCreatedId = global.dashToPanel.connect('panels-created', () => this._reload());
 
-        if (global.azTaskbar)
+        const azTaskbar = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
+        if (azTaskbar?.state === ExtensionState.ENABLED && global.azTaskbar)
             global.azTaskbar._panelsCreatedId = global.azTaskbar.connect('panels-created', () => this._reload());
     }
 

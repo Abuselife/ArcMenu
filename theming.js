@@ -1,4 +1,4 @@
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
@@ -6,47 +6,28 @@ import GLib from 'gi://GLib';
 import St from 'gi://St';
 
 Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
-Gio._promisify(Gio.File.prototype, 'create_async');
-Gio._promisify(Gio.File.prototype, 'make_directory_async');
 Gio._promisify(Gio.File.prototype, 'delete_async');
 
-/**
- *  @returns The stylesheet file
- */
-export function getStylesheetFiles() {
-    const directoryPath = GLib.build_filenamev([GLib.get_home_dir(), '.local/share/arcmenu']);
-    const stylesheetPath = GLib.build_filenamev([directoryPath, 'stylesheet.css']);
-
-    const directory = Gio.File.new_for_path(directoryPath);
-    const stylesheet = Gio.File.new_for_path(stylesheetPath);
-
-    return [directory, stylesheet];
-}
+const FileName = 'XXXXXX-arcmenu-stylesheet.css';
 
 /**
- * @param {Gio.Settings} settings ArcMenu Settings
+ * Create and load a custom stylesheet file into global.stage St.Theme
  */
-export async function createStylesheet(settings) {
+export function createStylesheet() {
     const extension = Extension.lookupByURL(import.meta.url);
     try {
-        const [directory, stylesheet] = getStylesheetFiles();
-
-        if (!directory.query_exists(null))
-            await directory.make_directory_async(0, null);
-        if (!stylesheet.query_exists(null))
-            await stylesheet.create_async(Gio.FileCreateFlags.NONE, 0, null);
-
-        extension.customStylesheet = stylesheet;
-        updateStylesheet(settings);
+        const [file] = Gio.File.new_tmp(FileName);
+        extension.customStylesheet = file;
+        updateStylesheet();
     } catch (e) {
         log(`ArcMenu - Error creating custom stylesheet: ${e}`);
     }
 }
 
 /**
- *  @description Unload the custom stylesheet from GNOME shell
+ * Unload the custom stylesheet from global.stage St.Theme
  */
-export function unloadStylesheet() {
+function unloadStylesheet() {
     const extension = Extension.lookupByURL(import.meta.url);
     if (!extension.customStylesheet)
         return;
@@ -56,31 +37,31 @@ export function unloadStylesheet() {
 }
 
 /**
- *  @description Delete the custom stylesheet file
+ * Delete and unload the custom stylesheet file from global.stage St.Theme
  */
 export async function deleteStylesheet() {
     unloadStylesheet();
 
-    try {
-        const [directory, stylesheet] = getStylesheetFiles();
+    const extension = Extension.lookupByURL(import.meta.url);
+    const stylesheet = extension.customStylesheet;
 
+    try {
         if (stylesheet.query_exists(null))
-            await stylesheet.delete_async(0, null);
-        if (directory.query_exists(null))
-            await directory.delete_async(0, null);
+            await stylesheet.delete_async(GLib.PRIORITY_DEFAULT, null);
     } catch (e) {
         if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
             log(`ArcMenu - Error deleting custom stylesheet: ${e}`);
+    } finally {
+        delete extension.customStylesheet;
     }
 }
 
 /**
- *
- * @param {Gio.Settings} settings ArcMenu Settings
- * @description Update the stylesheet based on the current ArcMenu settings
+ * Write theme data to custom stylesheet and reload into global.stage St.Theme
  */
-export async function updateStylesheet(settings) {
+export async function updateStylesheet() {
     const extension = Extension.lookupByURL(import.meta.url);
+    const settings = extension.getSettings();
     const stylesheet = extension.customStylesheet;
 
     if (!stylesheet) {
@@ -301,7 +282,7 @@ export async function updateStylesheet(settings) {
  * @param {number} overrideAlpha change the color alpha to this value
  * @returns a string in rbga() format representing the new modified color
  */
-function modifyColorLuminance(colorString, luminanceAdjustment, overrideAlpha) {
+function modifyColorLuminance(colorString, luminanceAdjustment, overrideAlpha = null) {
     const color = Clutter.color_from_string(colorString)[1];
     const [hue, luminance, saturation] = color.to_hls();
     let modifiedLuminance;

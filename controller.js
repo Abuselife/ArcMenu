@@ -182,7 +182,7 @@ export const MenuSettingsController = class {
             GLib.source_remove(this._writeTimeoutId);
 
         this._writeTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-            Theming.updateStylesheet(this._settings);
+            Theming.updateStylesheet();
             this._writeTimeoutId = null;
             return GLib.SOURCE_REMOVE;
         });
