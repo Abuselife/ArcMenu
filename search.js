@@ -9,7 +9,7 @@ import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {Highlighter} from 'resource:///org/gnome/shell/misc/util.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -233,8 +233,7 @@ class ListSearchResults extends SearchResultsBase {
         this._menuLayout = resultsView._menuLayout;
         this.searchType = this._menuLayout.search_display_type;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = resultsView.settings;
 
         this.layout = this._settings.get_enum('menu-layout');
 
@@ -309,8 +308,7 @@ class AppSearchResults extends SearchResultsBase {
         this._menuLayout = resultsView._menuLayout;
         this.searchType = this._menuLayout.search_display_type;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = resultsView.settings;
 
         this.layout = this._settings.get_enum('menu-layout');
 
@@ -423,8 +421,7 @@ export class SearchResults extends St.BoxLayout {
         this._displayId = `display_${index}`;
         this.searchType = this._menuLayout.search_display_type;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = menuLayout.settings;
 
         this.layout = this._settings.get_enum('menu-layout');
 
@@ -465,6 +462,7 @@ export class SearchResults extends St.BoxLayout {
         this._searchSettings.connectObject('changed::disable-external', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::sort-order', this._reloadRemoteProviders.bind(this), this);
 
+        const extension = menuLayout.extension;
         extension.searchProviderEmitter.connectObject('search-provider-added', (_, provider) => this._registerProvider(provider), this);
         extension.searchProviderEmitter.connectObject('search-provider-removed', (_, provider) => this._unregisterProvider(provider), this);
 
@@ -482,6 +480,10 @@ export class SearchResults extends St.BoxLayout {
 
     get terms() {
         return this._terms;
+    }
+
+    get settings() {
+        return this._settings;
     }
 
     setStyle(style) {

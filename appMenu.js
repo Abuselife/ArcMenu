@@ -1,4 +1,4 @@
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
@@ -30,10 +30,11 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
     constructor(sourceActor, menuLayout) {
         super(sourceActor, St.Side.TOP);
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        ({
+            menuButton: this._menuButton,
+            settings: this._settings,
+        } = menuLayout);
 
-        this._menuButton = menuLayout.menuButton;
         this._menuLayout = menuLayout;
         this._enableFavorites = true;
         this._showSingleWindows = true;

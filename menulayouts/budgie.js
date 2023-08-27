@@ -61,7 +61,7 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.FILL,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
@@ -93,7 +93,7 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
             separator.style += 'margin-bottom: 6px;';
 
@@ -103,7 +103,7 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
             this.insert_child_at_index(this.searchBox, 0);
             this.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
             separator.style += 'margin-top: 6px;';
 

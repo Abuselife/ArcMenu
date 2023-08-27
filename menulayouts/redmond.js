@@ -50,7 +50,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
@@ -113,7 +113,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
         if (!userAvatar) {
             const userMenuItem = new MW.UserMenuItem(this, Constants.DisplayType.LIST);
             this.rightBox.add_child(userMenuItem);
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.SHORT,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.rightBox.add_child(separator);
         }
@@ -137,7 +137,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
                                (this._settings.get_boolean('show-external-devices') || haveApplicationShortcuts ||
                                 this._settings.get_boolean('show-bookmarks'));
         if (needsSeparator) {
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.SHORT,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.shortcutsBox.add_child(separator);
         }

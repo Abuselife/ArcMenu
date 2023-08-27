@@ -167,7 +167,7 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
                 separator.x_expand = false;
                 this.actionsBox.add_child(separator);

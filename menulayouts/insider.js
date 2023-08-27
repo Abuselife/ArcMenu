@@ -44,7 +44,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         });
         this.add_child(this.actionsBox);
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
         this.add_child(verticalSeparator);
 
@@ -114,7 +114,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             } else {
@@ -165,7 +165,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         this.backButton.connectObject('activate', () => this.togglePinnedAppsMenu(), this);
         headerBox.add_child(this.backButton);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         headerBox.add_child(separator);
         headerBox.add_child(this.createLabelRow(_('Pinned')));

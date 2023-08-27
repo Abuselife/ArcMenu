@@ -99,11 +99,10 @@ export function canHibernateOrSleep(callName, asyncCallback) {
 }
 
 export const SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandler {
-    constructor() {
+    constructor(settings) {
         this._connections = new Map();
         this._eventPrefix = 'changed::';
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = settings;
     }
 
     connect(event, callback) {
@@ -142,8 +141,7 @@ export function convertToGridLayout(item) {
     const menuLayout = item._menuLayout;
     const icon = item._iconBin;
 
-    const extension = Extension.lookupByURL(import.meta.url);
-    const settings = extension.getSettings();
+    const settings = menuLayout.settings;
 
     const iconSizeEnum = settings.get_enum('menu-item-grid-icon-size');
     const defaultIconSize = menuLayout.icon_grid_size;
@@ -210,10 +208,7 @@ export function getIconSize(iconSizeEnum, defaultIconSize) {
     }
 }
 
-export function getGridIconSize(iconSizeEnum, defaultIconSize) {
-    const extension = Extension.lookupByURL(import.meta.url);
-    const settings = extension.getSettings();
-
+export function getGridIconSize(settings, iconSizeEnum, defaultIconSize) {
     if (iconSizeEnum === Constants.GridIconSize.CUSTOM) {
         const {width, height, iconSize} = settings.get_value('custom-grid-icon-size').deep_unpack();
         return {width, height, iconSize};
@@ -233,9 +228,7 @@ export function getGridIconSize(iconSizeEnum, defaultIconSize) {
     return {width, height, iconSize};
 }
 
-export function getCategoryDetails(currentCategory) {
-    const extension = Extension.lookupByURL(import.meta.url);
-
+export function getCategoryDetails(extension, currentCategory) {
     let name, gicon, fallbackIcon = null;
 
     for (const entry of Constants.Categories) {
@@ -295,8 +288,8 @@ export function getPowerTypeFromShortcutCommand(command) {
     }
 }
 
-export function getMenuButtonIcon(settings, path) {
-    const extension = Extension.lookupByURL(import.meta.url);
+export function getMenuButtonIcon(extension, path) {
+    const settings = extension.getSettings();
 
     const iconType = settings.get_enum('menu-button-icon');
     const iconDirectory = `${extension.path}/icons/hicolor/16x16/actions/`;

@@ -48,7 +48,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         });
         this.add_child(this.actionsBox);
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
         this.add_child(verticalSeparator);
 
@@ -73,7 +73,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         });
         this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
 
-        this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const layout = new Clutter.GridLayout({
@@ -156,7 +156,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             } else {
@@ -252,7 +252,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.backButton.connect('activate', () => this.toggleExtrasMenu());
         headerBox.add_child(this.backButton);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         headerBox.add_child(separator);
 

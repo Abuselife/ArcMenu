@@ -147,7 +147,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             this.searchBox.style = 'margin: 10px 220px;';
             this.topBox.style = 'padding-top: 0.5em;';
 
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.add_child(this.categoriesContainer);
             this.categoriesContainer.set({
@@ -166,7 +166,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
             this.add_child(this.applicationsScrollBox);
 
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.categoriesContainer.insert_child_at_index(separator, 0);
             this.add_child(this.categoriesContainer);

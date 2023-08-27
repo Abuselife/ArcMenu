@@ -21,7 +21,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 
 export const MenuButton = GObject.registerClass(
 class ArcMenuMenuButton extends PanelMenu.Button {
-    _init(panelInfo, index) {
+    _init(extension, panelInfo, index) {
         super._init(0.5, null, true);
 
         this.set({
@@ -29,13 +29,16 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             y_expand: false,
         });
 
-        this.extension = Extension.lookupByURL(import.meta.url);
-        this._settings = this.extension.getSettings();
+        this._settings = extension.getSettings();
+        this.extension = extension;
         this.index = index;
 
-        this._panel = panelInfo.panel;
-        this._panelBox = panelInfo.panelBox;
-        this._panelParent = panelInfo.panelParent;
+        ({
+            panel: this._panel,
+            panelBox: this._panelBox,
+            panelParent: this._panelParent,
+        } = panelInfo);
+
         this.menu.destroy();
         this.menu = null;
         this.add_style_class_name('arcmenu-panel-menu');
@@ -73,6 +76,10 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.menuButtonWidget = new MW.MenuButtonWidget();
         this.add_child(this.menuButtonWidget);
+    }
+
+    get settings() {
+        return this._settings;
     }
 
     initiate() {
@@ -539,8 +546,10 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
 
         this.systemActions = SystemActions.getDefault();
 
-        this._extension = Extension.lookupByURL(import.meta.url);
-        this._settings = this._extension.getSettings();
+        ({
+            extension: this._extension,
+            settings: this._settings,
+        } = sourceActor);
 
         const menuItemsChangedId = this._settings.connect('changed::context-menu-shortcuts',
             () => this.populateMenuItems());

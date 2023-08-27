@@ -190,7 +190,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
                 this.actionsBox.add_child(separator);
             } else {
@@ -336,7 +336,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             if (!hasExtraCategory) {
                 hasExtraCategory = isExtraCategory;
             } else if (!isExtraCategory && !separatorAdded) {
-                this.categoriesBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+                this.categoriesBox.add_child(new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL));
                 separatorAdded = true;
             }

@@ -9,19 +9,18 @@ import * as Config from 'resource:///org/gnome/Shell/Extensions/js/misc/config.j
 
 import * as Constants from '../constants.js';
 
-import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export const AboutPage = GObject.registerClass(
 class ArcMenuAboutPage extends Adw.PreferencesPage {
-    _init(settings) {
+    _init(settings, metadata) {
         super._init({
             title: _('About'),
             icon_name: 'help-about-symbolic',
             name: 'AboutPage',
         });
 
-        const Me = ExtensionPreferences.lookupByURL(import.meta.url);
-        const PAYPAL_LINK = `https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=53CWA7NR743WC&item_name=Support+${Me.metadata.name}&source=url`;
+        const PAYPAL_LINK = `https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=53CWA7NR743WC&item_name=Support+${metadata.name}&source=url`;
         const PROJECT_DESCRIPTION = _('Application Menu Extension for GNOME');
         const PROJECT_IMAGE = 'settings-arcmenu-logo';
         const SCHEMA_PATH = '/org/gnome/shell/extensions/arcmenu/';
@@ -69,17 +68,17 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
             title: _('ArcMenu Version'),
         });
         projectVersionRow.add_suffix(new Gtk.Label({
-            label: Me.metadata.version.toString(),
+            label: metadata.version.toString(),
             css_classes: ['dim-label'],
         }));
         infoGroup.add(projectVersionRow);
 
-        if (Me.metadata.commit) {
+        if (metadata.commit) {
             const commitRow = new Adw.ActionRow({
                 title: _('Git Commit'),
             });
             commitRow.add_suffix(new Gtk.Label({
-                label: Me.metadata.commit.toString(),
+                label: metadata.commit.toString(),
                 css_classes: ['dim-label'],
             }));
             infoGroup.add(commitRow);
@@ -116,7 +115,7 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         }));
         infoGroup.add(sessionTypeRow);
 
-        const gitlabRow = this._createLinkRow(_('ArcMenu GitLab'), Me.metadata.url);
+        const gitlabRow = this._createLinkRow(_('ArcMenu GitLab'), metadata.url);
         infoGroup.add(gitlabRow);
 
         const donateRow = this._createLinkRow(_('Donate via PayPal'), PAYPAL_LINK);

@@ -12,14 +12,13 @@ import * as Constants from './constants.js';
 import * as LayoutHandler from './menulayouts/layoutHandler.js';
 import * as MW from './menuWidgets.js';
 
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-
 export const StandaloneRunner = class ArcMenuStandaloneRunner {
-    constructor() {
+    constructor(extension) {
         this.tooltipShowing = false;
         this.tooltipShowingID = null;
 
-        this.extension = Extension.lookupByURL(import.meta.url);
+        this.settings = extension.getSettings();
+        this.extension = extension;
         this.tooltip = new MW.Tooltip(this);
         this.index = -1;
 

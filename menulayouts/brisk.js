@@ -60,7 +60,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
@@ -104,7 +104,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
             this.searchBox.style = 'margin-bottom: 0px;';
             this.insert_child_at_index(this.searchBox, 0);
 
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
@@ -134,7 +134,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
         for (let i = 0; i < extraShortcuts.length; i++) {
             const command = extraShortcuts[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             } else {
@@ -144,10 +144,10 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
             }
         }
 
-        let separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        let separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.actionsBox.insert_child_at_index(separator, 0);
-        separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
+        separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
         this.actionsBox.add_child(separator);
     }
 

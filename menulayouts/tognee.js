@@ -67,7 +67,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.END,
         });
         this.backButton = new MW.BackButton(this);
-        this.navigateBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        this.navigateBox.add_child(new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL));
         this.navigateBox.add_child(this.backButton);
         this.appBox.add_child(this.navigateBox);
@@ -89,7 +89,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
             style: 'spacing: 6px;',
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
@@ -121,7 +121,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
         const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
         const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
         if (haveDirectoryShortcuts && haveApplicationShortcuts) {
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.shortcutsBox.add_child(separator);
         }
@@ -140,7 +140,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
         else
             leaveButton = new MW.LeaveButton(this);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.LONG,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.quickBox.add_child(separator);
         this.quickBox.add_child(leaveButton);

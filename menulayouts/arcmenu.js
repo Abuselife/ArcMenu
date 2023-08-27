@@ -74,7 +74,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         });
         this.leftBox.add_child(this.navigateBox);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.navigateBox.add_child(separator);
 
@@ -93,7 +93,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             this.leftBox.add_child(this.searchBox);
         }
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
@@ -105,7 +105,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         if (!userAvatar) {
             const userMenuItem = new MW.UserMenuItem(this, Constants.DisplayType.LIST);
             this.rightBox.add_child(userMenuItem);
-            const userAvatarSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.SHORT,
+            const userAvatarSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.rightBox.add_child(userAvatarSeparator);
         }
@@ -129,7 +129,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
                                (this._settings.get_boolean('show-external-devices') || haveApplicationShortcuts ||
                                 this._settings.get_boolean('show-bookmarks'));
         if (needsSeparator) {
-            const shortcutsSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.SHORT,
+            const shortcutsSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.shortcutsBox.add_child(shortcutsSeparator);
         }
@@ -188,7 +188,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         this.extraCategoriesLinksBox = new St.BoxLayout({vertical: true});
         this.extraCategoriesLinksBox.visible = false;
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.extraCategoriesLinksBox.add_child(separator);
 

@@ -88,7 +88,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
@@ -109,14 +109,14 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
             this.searchBox.add_style_class_name('arcmenu-search-top');
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
 
             this.rightPanelParentBox.insert_child_at_index(this.searchBox, 0);
             this.rightPanelParentBox.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
             this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
 
             this.rightPanelParentBox.add_child(separator);
@@ -144,7 +144,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
             if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);
             } else {

@@ -25,7 +25,7 @@ import {AppContextMenu} from './appMenu.js';
 import * as Constants from './constants.js';
 import * as Utils from './utils.js';
 
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const GDateMenu = Main.panel.statusArea.dateMenu;
 const GWeatherWidget = GDateMenu._weatherItem.constructor;
@@ -146,15 +146,18 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
             accessible_role: Atk.Role.MENU_ITEM,
         });
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
-
         this.set_offscreen_redirect(Clutter.OffscreenRedirect.ON_IDLE);
         this.hasContextMenu = false;
         this._delegate = this;
         this._menuLayout = menuLayout;
-        this._menuButton = menuLayout.menuButton;
-        this.arcMenu = this._menuLayout.arcMenu;
+
+        ({
+            menuButton: this._menuButton,
+            settings: this._settings,
+            arcMenu: this._arcMenu,
+            extension: this._extension,
+        } = menuLayout);
+
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM;
         this.shouldShow = true;
         this._parent = null;
@@ -179,7 +182,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         if (params.reactive && params.hover)
             this.bind_property('hover', this, 'active', GObject.BindingFlags.SYNC_CREATE);
 
-        this.arcMenu.connectObject('open-state-changed', (menu, open) => {
+        this._arcMenu.connectObject('open-state-changed', (menu, open) => {
             if (!open)
                 this._cancelContextMenuTimeOut();
         }, this);
@@ -425,7 +428,7 @@ export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
         GObject.registerClass(this);
     }
 
-    constructor(separatorLength, separatorAlignment, text) {
+    constructor(menuLayout, separatorLength, separatorAlignment, text) {
         super({
             style_class: 'popup-separator-menu-item',
             reactive: false,
@@ -433,8 +436,7 @@ export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
         });
         this.reactive = true;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = menuLayout.settings;
 
         if (this._ornamentLabel)
             this.remove_child(this._ornamentLabel);
@@ -565,10 +567,9 @@ export class Tooltip extends St.Label {
             line_wrap: true,
             line_wrap_mode: Pango.WrapMode.WORD_CHAR,
         });
-        this._menuButton = menuButton;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._menuButton = menuButton;
+        this._settings = menuButton.settings;
 
         global.stage.add_child(this);
         this.hide();
@@ -809,8 +810,7 @@ export class RunnerTweaksButton extends ArcMenuButtonItem {
     activate(event) {
         super.activate(event);
         this._settings.set_int('prefs-visible-page', Constants.SettingsPage.RUNNER_TWEAKS);
-        const extension = Extension.lookupByURL(import.meta.url);
-        extension.openPreferences();
+        this._extension.openPreferences();
     }
 }
 
@@ -860,8 +860,7 @@ export class PowerOptionsBox extends St.ScrollView {
             clip_to_allocation: true,
         });
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = menuLayout.settings;
 
         this._orientation = vertical ? Clutter.Orientation.VERTICAL : Clutter.Orientation.HORIZONTAL;
 
@@ -1520,7 +1519,7 @@ export class ShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
         } else if (this._displayType === Constants.DisplayType.GRID) {
             iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
         } else {
             defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
                 : this._menuLayout.quicklinks_icon_size;
@@ -1637,8 +1636,7 @@ export class UserMenuIcon extends St.Bin {
     }
 
     constructor(menuLayout, iconSize, hasTooltip) {
-        const extension = Extension.lookupByURL(import.meta.url);
-        const settings = extension.getSettings();
+        const settings = menuLayout.settings;
 
         let avatarStyle;
         if (settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
@@ -1730,10 +1728,8 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         this.gridLocation = [-1, -1];
         this._iconString = this._icon;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-
-        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${extension.path}/icons/arcmenu-logo-symbolic.svg`)
-            this._iconString = `${extension.path}/${Constants.ArcMenuLogoSymbolic}`;
+        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${this._extension.path}/icons/arcmenu-logo-symbolic.svg`)
+            this._iconString = `${this._extension.path}/${Constants.ArcMenuLogoSymbolic}`;
 
         if (this._app && this._iconString === '') {
             const appIcon = this._app.create_icon_texture(Constants.MEDIUM_ICON_SIZE);
@@ -1795,7 +1791,7 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this._displayType === Constants.DisplayType.GRID) {
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
@@ -2224,7 +2220,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
 
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ||
@@ -2806,7 +2802,7 @@ export class CategoryMenuItem extends ArcMenuPopupBaseMenuItem {
             }
         }
 
-        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._category);
+        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._extension, this._category);
         this._name = _(name);
         this.label.text = _(name);
 
@@ -3147,10 +3143,11 @@ export class SearchBox extends St.Entry {
             style_class: 'arcmenu-search-entry',
         });
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        ({
+            settings: this._settings,
+            searchResults: this.searchResults,
+        } = menuLayout);
 
-        this.searchResults = menuLayout.searchResults;
         this._menuLayout = menuLayout;
         this.triggerSearchChangeEvent = true;
         this._iconClickedId = 0;

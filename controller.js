@@ -1,4 +1,4 @@
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -15,12 +15,13 @@ import {StandaloneRunner} from './standaloneRunner.js';
 import * as Utils from './utils.js';
 
 export const MenuSettingsController = class {
-    constructor(settingsControllers, panelInfo, index) {
+    constructor(extension, panelInfo, index) {
         this.panel = panelInfo.panel;
         this.currentMonitorIndex = 0;
         this.isPrimaryPanel = index === 0;
 
-        const extension = Extension.lookupByURL(import.meta.url);
+        this._extension = extension;
+        this._settingsControllers = extension.settingsControllers;
         this._settings = extension.getSettings();
 
         // Allow other extensions and DBus command to open/close ArcMenu
@@ -32,13 +33,12 @@ export const MenuSettingsController = class {
             };
         }
 
-        this._settingsConnections = new Utils.SettingsConnectionsHandler();
-        this._menuButton = new MenuButton(panelInfo, index);
-        this._settingsControllers = settingsControllers;
+        this._settingsConnections = new Utils.SettingsConnectionsHandler(this._settings);
+        this._menuButton = new MenuButton(this._extension, panelInfo, index);
 
         if (this.isPrimaryPanel) {
             this._overrideOverlayKey = new Keybinder.OverrideOverlayKey();
-            this._customKeybinding = new Keybinder.CustomKeybinding();
+            this._customKeybinding = new Keybinder.CustomKeybinding(this._settings);
             this._appSystem = Shell.AppSystem.get_default();
             this._updateHotKeyBinder();
             this._initRecentAppsTracker();
@@ -182,7 +182,7 @@ export const MenuSettingsController = class {
             GLib.source_remove(this._writeTimeoutId);
 
         this._writeTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-            Theming.updateStylesheet();
+            Theming.updateStylesheet(this._extension);
             this._writeTimeoutId = null;
             return GLib.SOURCE_REMOVE;
         });
@@ -335,7 +335,7 @@ export const MenuSettingsController = class {
 
             if (enableStandaloneRunnerMenu) {
                 if (!this.runnerMenu) {
-                    this.runnerMenu = new StandaloneRunner();
+                    this.runnerMenu = new StandaloneRunner(this._extension);
                     this.runnerMenu.initiate();
                 }
                 if (runnerHotKey === Constants.HotkeyType.CUSTOM) {
@@ -418,7 +418,7 @@ export const MenuSettingsController = class {
         const {menuButtonWidget} = this._menuButton;
         const stIcon = menuButtonWidget.getPanelIcon();
 
-        const iconString = Utils.getMenuButtonIcon(this._settings, path);
+        const iconString = Utils.getMenuButtonIcon(this._extension, path);
         stIcon.set_gicon(Gio.icon_new_for_string(iconString));
     }
 

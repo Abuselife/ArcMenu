@@ -15,7 +15,7 @@ import {RecentFilesManager} from '../recentFilesManager.js';
 import {SearchResults} from '../search.js';
 import * as Utils from '../utils.js';
 
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const MAX_RECENT_FILES = 25;
 
@@ -93,12 +93,14 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this._delegate = this;
         this.menuButton = menuButton;
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        ({
+            contextMenuManager: this.contextMenuManager,
+            subMenuManager: this.subMenuManager,
+            arcMenu: this.arcMenu,
+            extension: this.extension,
+            settings: this._settings,
+        } = menuButton);
 
-        this.contextMenuManager = menuButton.contextMenuManager;
-        this.subMenuManager = menuButton.subMenuManager;
-        this.arcMenu = menuButton.arcMenu;
         this._focusChild = null;
         this.hasPinnedApps = false;
         this.activeCategoryType = -1;
@@ -138,6 +140,10 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         layout.hookup_style(this.applicationsGrid);
 
         this.connect('destroy', () => this._onDestroy());
+    }
+
+    get settings() {
+        return this._settings;
     }
 
     setDefaultMenuView() {
@@ -181,7 +187,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         const gridIconPadding = 10;
         const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
 
-        const {width, height_, iconSize_} = Utils.getGridIconSize(iconSizeEnum, this.icon_grid_size);
+        const {width, height_, iconSize_} = Utils.getGridIconSize(this._settings, iconSizeEnum, this.icon_grid_size);
         return width + gridIconPadding;
     }
 
@@ -371,7 +377,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             if (!hasExtraCategory) {
                 hasExtraCategory = isExtraCategory;
             } else if (!isExtraCategory && !separatorAdded) {
-                categoriesBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+                categoriesBox.add_child(new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL));
                 separatorAdded = true;
             }
@@ -639,7 +645,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         }
 
         if (needsSeparator) {
-            const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.SHORT,
+            const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this._placesSections[id].add_child(separator);
         }
@@ -1047,7 +1053,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     _createLabelWithSeparator(headerLabel) {
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.HEADER_LABEL,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.HEADER_LABEL,
             Constants.SeparatorAlignment.HORIZONTAL, headerLabel);
         return separator;
     }

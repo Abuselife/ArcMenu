@@ -1,5 +1,3 @@
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
@@ -101,7 +99,8 @@ export const OverrideOverlayKey = class {
 };
 
 export const CustomKeybinding = class {
-    constructor() {
+    constructor(settings) {
+        this._settings = settings;
         this._keybindings = new Map();
     }
 
@@ -109,10 +108,7 @@ export const CustomKeybinding = class {
         if (!this._keybindings.has(keybindingNameKey)) {
             this._keybindings.set(keybindingNameKey, keybindingValueKey);
 
-            const extension = Extension.lookupByURL(import.meta.url);
-            const settings = extension.getSettings();
-
-            Main.wm.addKeybinding(keybindingValueKey, settings,
+            Main.wm.addKeybinding(keybindingValueKey, this._settings,
                 Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
                 Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW | Shell.ActionMode.POPUP,
                 keybindingHandler);

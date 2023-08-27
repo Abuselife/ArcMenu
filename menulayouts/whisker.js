@@ -61,7 +61,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
             powerOptionsBox = new MW.PowerOptionsBox(this);
         this.actionsBox.add_child(powerOptionsBox);
 
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.add_child(separator);
 
@@ -95,7 +95,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');

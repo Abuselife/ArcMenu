@@ -31,9 +31,9 @@ export default class ArcMenu extends Extension {
 
         this._settings.connect('changed::multi-monitor', () => this._reload());
         this._settings.connect('changed::dash-to-panel-standalone', () => this._reload());
-        this._settingsControllers = [];
+        this.settingsControllers = [];
 
-        Theming.createStylesheet();
+        Theming.createStylesheet(this);
 
         this._enableButtons();
 
@@ -66,12 +66,12 @@ export default class ArcMenu extends Extension {
             this._extensionChangedId = null;
         }
 
-        Theming.deleteStylesheet();
+        Theming.deleteStylesheet(this);
 
         this._disconnectExtensionSignals();
 
         this._disableButtons();
-        this._settingsControllers = null;
+        this.settingsControllers = null;
 
         this._settings.run_dispose();
         delete this._settings;
@@ -142,7 +142,7 @@ export default class ArcMenu extends Extension {
                 panel = Main.panel;
 
             const panelInfo = {panel, panelBox, panelParent};
-            const settingsController = new MenuSettingsController(this._settingsControllers, panelInfo, i);
+            const settingsController = new MenuSettingsController(this, panelInfo, i);
 
             settingsController.monitorIndex = panelParent.monitor?.index ?? 0;
 
@@ -151,13 +151,13 @@ export default class ArcMenu extends Extension {
 
             settingsController.enableButton();
             settingsController.connectSettingsEvents();
-            this._settingsControllers.push(settingsController);
+            this.settingsControllers.push(settingsController);
         }
     }
 
     _disableButtons() {
-        for (let i = this._settingsControllers.length - 1; i >= 0; --i) {
-            const sc = this._settingsControllers[i];
+        for (let i = this.settingsControllers.length - 1; i >= 0; --i) {
+            const sc = this.settingsControllers[i];
             this._disableButton(sc);
         }
     }
@@ -168,7 +168,7 @@ export default class ArcMenu extends Extension {
             delete controller.panel._amDestroyId;
         }
 
-        this._settingsControllers.splice(this._settingsControllers.indexOf(controller), 1);
+        this.settingsControllers.splice(this.settingsControllers.indexOf(controller), 1);
         controller.destroy();
     }
 }

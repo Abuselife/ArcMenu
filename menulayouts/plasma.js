@@ -8,7 +8,7 @@ import * as Constants from '../constants.js';
 import * as MW from '../menuWidgets.js';
 import * as PlaceDisplay from '../placeDisplay.js';
 
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export const Layout = class PlasmaLayout extends BaseMenuLayout {
     static {
@@ -112,8 +112,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         layout.hookup_style(this.grid);
         this.navigateBox.add_child(this.grid);
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this.pinnedAppsButton = new MW.PlasmaMenuItem(this, _('Pinned'), `${extension.path}/${Constants.ArcMenuLogoSymbolic}`);
+        this.pinnedAppsButton = new MW.PlasmaMenuItem(this, _('Pinned'), `${this.extension.path}/${Constants.ArcMenuLogoSymbolic}`);
         this.pinnedAppsButton.connect('activate', () => this.displayPinnedApps());
         this.grid.layout_manager.attach(this.pinnedAppsButton, 0, 0, 1, 1);
         this.pinnedAppsButton.set_style_pseudo_class('active-item');
@@ -143,14 +142,14 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
 
             this.navigateBoxContainer.add_child(this.navigateBox);
 
-            let separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            let separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.navigateBoxContainer.add_child(separator);
 
             this.add_child(this.navigateBoxContainer);
             this.add_child(this.applicationsScrollBox);
 
-            separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.add_child(separator);
 
@@ -164,13 +163,13 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
 
             this.add_child(this.topBox);
 
-            let separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            let separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.add_child(separator);
 
             this.add_child(this.applicationsScrollBox);
 
-            separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+            separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.navigateBoxContainer.add_child(separator);
 
@@ -371,7 +370,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
             if (!hasExtraCategory) {
                 hasExtraCategory = isExtraCategory;
             } else if (!isExtraCategory && !separatorAdded) {
-                this.applicationsBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+                this.applicationsBox.add_child(new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL));
                 separatorAdded = true;
             }

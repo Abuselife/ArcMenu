@@ -92,7 +92,7 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
         const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
@@ -128,12 +128,12 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
                 x_align: Clutter.ActorAlign.CENTER,
             });
         }
-        this.leftBox.add_child(new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        this.leftBox.add_child(new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL));
         this.leftBox.add_child(powerOptionsDisplay);
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
-        const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
+        const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
 
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {
