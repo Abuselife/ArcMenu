@@ -1,13 +1,16 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable jsdoc/require-jsdoc */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const {Clutter, Gio, GLib, Pango, Shell, St} = imports.gi;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const MenuLayouts = Me.imports.menulayouts;
-const _ = Gettext.gettext;
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Pango from 'gi://Pango';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Constants from './constants.js';
+import {getLoginManager} from 'resource:///org/gnome/shell/misc/loginManager.js';
 
 const InterfaceXml = `<node>
   <interface name="com.Extensions.ArcMenu">
@@ -15,7 +18,7 @@ const InterfaceXml = `<node>
   </interface>
 </node>`;
 
-var DBusService = class {
+export const DBusService = class {
     constructor() {
         this.ToggleArcMenu = () => {};
 
@@ -43,8 +46,8 @@ var DBusService = class {
     }
 };
 
-function activateHibernateOrSleep(powerType) {
-    const loginManager = imports.misc.loginManager.getLoginManager();
+export function activateHibernateOrSleep(powerType) {
+    const loginManager = getLoginManager();
     let callName, activateCall;
 
     if (powerType === Constants.PowerType.HIBERNATE) {
@@ -73,8 +76,8 @@ function activateHibernateOrSleep(powerType) {
     });
 }
 
-function canHibernateOrSleep(callName, asyncCallback) {
-    const loginManager = imports.misc.loginManager.getLoginManager();
+export function canHibernateOrSleep(callName, asyncCallback) {
+    const loginManager = getLoginManager();
 
     if (!loginManager._proxy)
         asyncCallback(false);
@@ -95,35 +98,21 @@ function canHibernateOrSleep(callName, asyncCallback) {
     });
 }
 
-function getMenuLayout(menuButton, layoutEnum, isStandaloneRunner) {
-    if (layoutEnum === Constants.MenuLayout.GNOME_OVERVIEW)
-        return null;
-
-    for (const menuLayout in MenuLayouts) {
-        const LayoutClass = MenuLayouts[menuLayout];
-        if (LayoutClass.getMenuLayoutEnum() === layoutEnum) {
-            const {Menu} = LayoutClass;
-            return new Menu(menuButton, isStandaloneRunner);
-        }
-    }
-
-    const {Menu} = MenuLayouts.arcmenu;
-    return new Menu(menuButton, isStandaloneRunner);
-}
-
-var SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandler {
+export const SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandler {
     constructor() {
         this._connections = new Map();
         this._eventPrefix = 'changed::';
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
     }
 
     connect(event, callback) {
-        this._connections.set(Me.settings.connect(this._eventPrefix + event, callback), Me.settings);
+        this._connections.set(this._settings.connect(this._eventPrefix + event, callback), this._settings);
     }
 
     connectMultipleEvents(events, callback) {
         for (const event of events)
-            this._connections.set(Me.settings.connect(this._eventPrefix + event, callback), Me.settings);
+            this._connections.set(this._settings.connect(this._eventPrefix + event, callback), this._settings);
     }
 
     destroy() {
@@ -136,7 +125,7 @@ var SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandler {
     }
 };
 
-function convertToButton(item) {
+export function convertToButton(item) {
     item.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
     item.remove_child(item._ornamentLabel);
     item.remove_child(item.label);
@@ -149,13 +138,16 @@ function convertToButton(item) {
     });
 }
 
-function convertToGridLayout(item) {
+export function convertToGridLayout(item) {
     const menuLayout = item._menuLayout;
     const icon = item._iconBin;
 
-    const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+    const extension = Extension.lookupByURL(import.meta.url);
+    const settings = extension.getSettings();
+
+    const iconSizeEnum = settings.get_enum('menu-item-grid-icon-size');
     const defaultIconSize = menuLayout.icon_grid_size;
-    const {width, height, _iconSize} = getGridIconSize(iconSizeEnum, defaultIconSize);
+    const {width, height, iconSize_} = getGridIconSize(iconSizeEnum, defaultIconSize);
 
     if (item._ornamentLabel)
         item.remove_child(item._ornamentLabel);
@@ -182,7 +174,7 @@ function convertToGridLayout(item) {
         });
     }
 
-    if (!Me.settings.get_boolean('multi-lined-labels'))
+    if (!settings.get_boolean('multi-lined-labels'))
         return;
 
     icon?.set({
@@ -197,7 +189,7 @@ function convertToGridLayout(item) {
     });
 }
 
-function getIconSize(iconSizeEnum, defaultIconSize) {
+export function getIconSize(iconSizeEnum, defaultIconSize) {
     switch (iconSizeEnum) {
     case Constants.IconSize.DEFAULT:
         return defaultIconSize;
@@ -218,9 +210,12 @@ function getIconSize(iconSizeEnum, defaultIconSize) {
     }
 }
 
-function getGridIconSize(iconSizeEnum, defaultIconSize) {
+export function getGridIconSize(iconSizeEnum, defaultIconSize) {
+    const extension = Extension.lookupByURL(import.meta.url);
+    const settings = extension.getSettings();
+
     if (iconSizeEnum === Constants.GridIconSize.CUSTOM) {
-        const {width, height, iconSize} = Me.settings.get_value('custom-grid-icon-size').deep_unpack();
+        const {width, height, iconSize} = settings.get_value('custom-grid-icon-size').deep_unpack();
         return {width, height, iconSize};
     }
 
@@ -238,7 +233,9 @@ function getGridIconSize(iconSizeEnum, defaultIconSize) {
     return {width, height, iconSize};
 }
 
-function getCategoryDetails(currentCategory) {
+export function getCategoryDetails(currentCategory) {
+    const extension = Extension.lookupByURL(import.meta.url);
+
     let name, gicon, fallbackIcon = null;
 
     for (const entry of Constants.Categories) {
@@ -256,7 +253,7 @@ function getCategoryDetails(currentCategory) {
     } else {
         name = currentCategory.get_name();
         const categoryIcon = currentCategory.get_icon();
-        const fallbackIconDirectory = `${Me.path}/icons/category-icons/`;
+        const fallbackIconDirectory = `${extension.path}/icons/category-icons/`;
 
         if (!categoryIcon) {
             gicon = null;
@@ -275,7 +272,7 @@ function getCategoryDetails(currentCategory) {
     }
 }
 
-function getPowerTypeFromShortcutCommand(command) {
+export function getPowerTypeFromShortcutCommand(command) {
     switch (command) {
     case Constants.ShortcutCommands.LOG_OUT:
         return Constants.PowerType.LOGOUT;
@@ -298,9 +295,11 @@ function getPowerTypeFromShortcutCommand(command) {
     }
 }
 
-function getMenuButtonIcon(settings, path) {
+export function getMenuButtonIcon(settings, path) {
+    const extension = Extension.lookupByURL(import.meta.url);
+
     const iconType = settings.get_enum('menu-button-icon');
-    const iconDirectory = `${Me.path}/icons/hicolor/16x16/actions/`;
+    const iconDirectory = `${extension.path}/icons/hicolor/16x16/actions/`;
 
     if (iconType === Constants.MenuIconType.CUSTOM) {
         if (path && GLib.file_test(path, GLib.FileTest.IS_REGULAR))
@@ -323,7 +322,7 @@ function getMenuButtonIcon(settings, path) {
     return 'start-here-symbolic';
 }
 
-function findSoftwareManager() {
+export function findSoftwareManager() {
     const appSys = Shell.AppSystem.get_default();
 
     for (const softwareManagerID of Constants.SoftwareManagerIDs) {
@@ -334,12 +333,12 @@ function findSoftwareManager() {
     return 'ArcMenu_InvalidShortcut.desktop';
 }
 
-function areaOfTriangle(p1, p2, p3) {
+export function areaOfTriangle(p1, p2, p3) {
     return Math.abs((p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])) / 2.0);
 }
 
 // modified from GNOME shell's ensureActorVisibleInScrollView()
-function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation.VERTICAL) {
+export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation.VERTICAL) {
     let box = actor.get_allocation_box();
     let {y1} = box, {y2} = box;
     let {x1} = box, {x2} = box;
@@ -369,39 +368,35 @@ function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation.VERTIC
         endPoint = x2;
     }
 
-    let [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
+    const [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
     let offset = 0;
+    let newValue;
+
     const fade = parent.get_effect('fade');
     if (fade)
         offset = axis === Clutter.Orientation.VERTICAL ? fade.fade_margins.top : fade.fade_margins.left;
 
     if (startPoint < value + offset)
-        value = Math.max(0, startPoint - offset);
+        newValue = Math.max(0, startPoint - offset);
     else if (endPoint > value + pageSize - offset)
-        value = Math.min(upper, endPoint + offset - pageSize);
+        newValue = Math.min(upper, endPoint + offset - pageSize);
     else
         return;
 
-    adjustment.ease(value, {
+    adjustment.ease(newValue, {
         mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         duration: 100,
     });
 }
 
-// modified from GNOME shell to allow opening other extension setttings
-function openPrefs(uuid) {
-    try {
-        const {extensionManager} = imports.ui.main;
-        extensionManager.openExtensionPrefs(uuid, '', {});
-    } catch (e) {
-        if (e.name === 'ImportError')
-            throw new Error('openPrefs() cannot be called from preferences');
-        logError(e, 'Failed to open extension preferences');
-    }
+export function openPrefs(uuid) {
+    const extension = Extension.lookupByUUID(uuid);
+    if (extension !== null)
+        extension.openPreferences();
 }
 
-function getDashToPanelPosition(settings, index) {
+export function getDashToPanelPosition(settings, index) {
     var positions = null;
     var side = 'NONE';
 

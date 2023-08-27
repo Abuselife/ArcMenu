@@ -1,20 +1,17 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const {Clutter, GObject, Shell, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const MW = Me.imports.menuWidgets;
-const _ = Gettext.gettext;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.ELEVEN;
-}
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
 
-var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+export const Layout = class ElevenLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -147,8 +144,8 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
         layout.forceGridColumns = 2;
         this.shortcutsBox.add_child(this.shortcutsGrid);
 
-        Me.settings.connectObject('changed::eleven-extra-buttons', () => this._createExtraButtons(), this);
-        Me.settings.connectObject('changed::eleven-disable-frequent-apps', () => this.setDefaultMenuView(), this);
+        this._settings.connectObject('changed::eleven-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::eleven-disable-frequent-apps', () => this.setDefaultMenuView(), this);
 
         this._createExtraButtons();
         this.updateStyle();
@@ -165,7 +162,7 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
         this.actionsBox.add_child(userMenuItem);
 
         const isContainedInCategory = false;
-        const extraButtons = Me.settings.get_value('eleven-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('eleven-extra-buttons').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
@@ -183,7 +180,7 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
         }
 
         let leaveButton;
-        const powerDisplayStyle = Me.settings.get_enum('power-display-style');
+        const powerDisplayStyle = this._settings.get_enum('power-display-style');
         if (powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
             leaveButton = new MW.PowerOptionsBox(this);
         else
@@ -200,7 +197,7 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
     loadFrequentApps() {
         this.frequentAppsList = [];
 
-        if (Me.settings.get_boolean('eleven-disable-frequent-apps'))
+        if (this._settings.get_boolean('eleven-disable-frequent-apps'))
             return;
 
         const mostUsed = Shell.AppUsage.get_default().get_most_used();
@@ -208,7 +205,7 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
         if (mostUsed.length < 1)
             return;
 
-        const pinnedApps = Me.settings.get_strv('pinned-app-list');
+        const pinnedApps = this._settings.get_strv('pinned-app-list');
 
         for (let i = 0; i < mostUsed.length; i++) {
             if (!mostUsed[i])
@@ -289,7 +286,7 @@ var Menu = class ArcMenuElevenLayout extends BaseMenuLayout {
         this._clearActorsFromBox(this.applicationsBox);
         this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
 
-        if (this.frequentAppsList.length > 0 && !Me.settings.get_boolean('eleven-disable-frequent-apps')) {
+        if (this.frequentAppsList.length > 0 && !this._settings.get_boolean('eleven-disable-frequent-apps')) {
             this.setGridLayout(Constants.DisplayType.GRID, 0);
             this._displayAppList(this.frequentAppsList, Constants.CategoryType.HOME_SCREEN, this.shortcutsGrid);
             this.setGridLayout(Constants.DisplayType.GRID, 0);

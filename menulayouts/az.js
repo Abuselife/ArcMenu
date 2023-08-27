@@ -1,20 +1,16 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const {Clutter, GObject, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const MW = Me.imports.menuWidgets;
-const _ = Gettext.gettext;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.AZ;
-}
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
 
-var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+export const Layout = class AzLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -117,7 +113,7 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
         });
         this.actionsBox.style = 'margin: 0px 10px; spacing: 10px;';
 
-        const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
             this.topBox.add_child(this.searchBox);
             this.bottomBox.add_child(this.actionsBox);
@@ -126,7 +122,7 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
             this.bottomBox.add_child(this.searchBox);
         }
 
-        Me.settings.connectObject('changed::az-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::az-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateStyle();
@@ -143,7 +139,7 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
         this.actionsBox.add_child(userMenuItem);
 
         const isContainedInCategory = false;
-        const extraButtons = Me.settings.get_value('az-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('az-extra-buttons').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
@@ -160,7 +156,7 @@ var Menu = class ArcMenuAzLayout extends BaseMenuLayout {
             }
         }
 
-        const powerDisplayStyle = Me.settings.get_enum('power-display-style');
+        const powerDisplayStyle = this._settings.get_enum('power-display-style');
         let leaveButton;
         if (powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
             leaveButton = new MW.PowerOptionsBox(this);

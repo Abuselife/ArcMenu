@@ -1,21 +1,17 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const {Clutter, GObject, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const MW = Me.imports.menuWidgets;
-const PopupMenu = imports.ui.popupMenu;
-const _ = Gettext.gettext;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.INSIDER;
-}
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
 
-var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+export const Layout = class InsiderLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -92,7 +88,7 @@ var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
-        Me.settings.connectObject('changed::insider-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::insider-extra-buttons', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();
@@ -113,7 +109,7 @@ var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
         this.actionsBox.add_child(this.pinnedAppsButton);
 
         const isContainedInCategory = false;
-        const extraButtons = Me.settings.get_value('insider-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('insider-extra-buttons').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
             const command = extraButtons[i][2];
@@ -130,7 +126,7 @@ var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
         }
 
         let leaveButton;
-        const powerDisplayStyle = Me.settings.get_enum('power-display-style');
+        const powerDisplayStyle = this._settings.get_enum('power-display-style');
         if (powerDisplayStyle === Constants.PowerDisplayStyle.IN_LINE)
             leaveButton = new MW.PowerOptionsBox(this, true);
         else
@@ -198,7 +194,7 @@ var Menu = class ArcMenuInsiderLayout extends BaseMenuLayout {
         layout.forceGridColumns = 1;
         layout.hookup_style(this.pinnedAppsGrid);
 
-        const height = Me.settings.get_int('menu-height');
+        const height = this._settings.get_int('menu-height');
         this.pinnedAppsMenu.actor.style = `height: ${height}px;`;
 
         this.displayPinnedApps();

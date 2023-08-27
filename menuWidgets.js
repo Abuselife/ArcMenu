@@ -1,22 +1,35 @@
-/* eslint-disable no-unused-vars */
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import AccountsService from 'gi://AccountsService';
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GMenu from 'gi://GMenu';
+import GObject from 'gi://GObject';
+import Graphene from 'gi://Graphene';
+import Pango from 'gi://Pango';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
-const {AccountsService, Atk, Clutter, Gio, GLib, GMenu, GObject, Graphene, Pango, Shell, St} = imports.gi;
-const {AppContextMenu} = Me.imports.appMenu;
-const BoxPointer = imports.ui.boxpointer;
-const Constants = Me.imports.constants;
-const DateMenu = imports.ui.dateMenu;
-const Dialog = imports.ui.dialog;
-const DND = imports.ui.dnd;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
-const PopupMenu = imports.ui.popupMenu;
-const SystemActions = imports.misc.systemActions;
-const Util = imports.misc.util;
-const Utils =  Me.imports.utils;
-const _ = Gettext.gettext;
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
+import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
+import * as Params from 'resource:///org/gnome/shell/misc/params.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import {showScreenshotUI} from 'resource:///org/gnome/shell/ui/screenshot.js';
+import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
+import * as Util from 'resource:///org/gnome/shell/misc/util.js';
+
+import {AppContextMenu} from './appMenu.js';
+import * as Constants from './constants.js';
+import * as Utils from './utils.js';
+
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+const GDateMenu = Main.panel.statusArea.dateMenu;
+const GWeatherWidget = GDateMenu._weatherItem.constructor;
+const GWorldClocksWidget = GDateMenu._clocksItem.constructor;
 
 const INDICATOR_ICON_SIZE = 18;
 const USER_AVATAR_SIZE = 28;
@@ -61,7 +74,7 @@ function activatePowerOption(powerType) {
 /**
  * @param {PowerMenuItem} powerMenuItem Bind visibility of the powermenu item
  */
-function bindPowerItemVisibility(powerMenuItem) {
+export function bindPowerItemVisibility(powerMenuItem) {
     const {powerType} = powerMenuItem;
     const systemActions = SystemActions.getDefault();
 
@@ -99,35 +112,43 @@ function bindPowerItemVisibility(powerMenuItem) {
     }
 }
 
-var ArcMenuPopupBaseMenuItem = GObject.registerClass({
-    Properties: {
+export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
+    static [GObject.properties] = {
         'active': GObject.ParamSpec.boolean('active', 'active', 'active',
             GObject.ParamFlags.READWRITE,
             false),
         'sensitive': GObject.ParamSpec.boolean('sensitive', 'sensitive', 'sensitive',
             GObject.ParamFlags.READWRITE,
             true),
-    },
-    Signals: {
-        'activate': {param_types: [Clutter.Event.$gtype]},
-    },
+    };
 
-},   class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
-    _init(menuLayout, params) {
-        params = imports.misc.params.parse(params, {
+    static [GObject.signals] =  {
+        'activate': {param_types: [Clutter.Event.$gtype]},
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, params) {
+        params = Params.parse(params, {
             reactive: true,
             activate: true,
             hover: true,
             style_class: null,
             can_focus: true,
         });
-        super._init({
+        super({
             style_class: 'popup-menu-item arcmenu-menu-item',
             reactive: params.reactive,
             track_hover: params.reactive,
             can_focus: params.can_focus,
             accessible_role: Atk.Role.MENU_ITEM,
         });
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
+
         this.set_offscreen_redirect(Clutter.OffscreenRedirect.ON_IDLE);
         this.hasContextMenu = false;
         this._delegate = this;
@@ -397,17 +418,23 @@ var ArcMenuPopupBaseMenuItem = GObject.registerClass({
         this._cancelContextMenuTimeOut();
         this.isDestroyed = true;
     }
-});
+}
 
-var ArcMenuSeparator = GObject.registerClass(
-class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
-    _init(separatorLength, separatorAlignment, text) {
-        super._init({
+export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(separatorLength, separatorAlignment, text) {
+        super({
             style_class: 'popup-separator-menu-item',
             reactive: false,
             can_focus: false,
         });
         this.reactive = true;
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
 
         if (this._ornamentLabel)
             this.remove_child(this._ornamentLabel);
@@ -461,7 +488,7 @@ class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
                 this.style = 'padding: 5px 0px; margin: 1px 0px;';
             } else {
                 this._syncVisibility();
-                Me.settings.connectObject('changed::vert-separator', this._syncVisibility.bind(this), this);
+                this._settings.connectObject('changed::vert-separator', this._syncVisibility.bind(this), this);
                 this.style = 'padding: 0px 6px; margin: 6px 0px;';
                 this._separator.style = 'margin: 0px; width: 1px; height: -1px;';
             }
@@ -479,14 +506,17 @@ class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
     }
 
     _syncVisibility() {
-        this._separator.visible = Me.settings.get_boolean('vert-separator');
+        this._separator.visible = this._settings.get_boolean('vert-separator');
     }
-});
+}
 
-var ActivitiesMenuItem = GObject.registerClass(
-class ArcMenuActivitiesMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout) {
-        super._init(menuLayout);
+export class ActivitiesMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout);
 
         this._iconBin = new St.Bin();
         this.add_child(this._iconBin);
@@ -502,7 +532,7 @@ class ArcMenuActivitiesMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = Me.settings.get_enum('quicklinks-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.quicklinks_icon_size);
 
         return new St.Icon({
@@ -517,12 +547,15 @@ class ArcMenuActivitiesMenuItem extends ArcMenuPopupBaseMenuItem {
         super.activate(event);
         this._menuLayout.arcMenu.toggle();
     }
-});
+}
 
-var Tooltip = GObject.registerClass(
-class ArcMenuTooltip extends St.Label {
-    _init(menuButton) {
-        super._init({
+export class Tooltip extends St.Label {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuButton) {
+        super({
             name: 'ArcMenu_Tooltip',
             style_class: 'dash-label arcmenu-tooltip',
             opacity: 0,
@@ -534,11 +567,14 @@ class ArcMenuTooltip extends St.Label {
         });
         this._menuButton = menuButton;
 
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
+
         global.stage.add_child(this);
         this.hide();
 
-        this._useTooltips = !Me.settings.get_boolean('disable-tooltips');
-        Me.settings.connectObject('changed::disable-tooltips', this.disableTooltips.bind(this), this);
+        this._useTooltips = !this._settings.get_boolean('disable-tooltips');
+        this._settings.connectObject('changed::disable-tooltips', this.disableTooltips.bind(this), this);
         this.connect('destroy', () => this._onDestroy());
     }
 
@@ -556,7 +592,7 @@ class ArcMenuTooltip extends St.Label {
     }
 
     disableTooltips() {
-        this._useTooltips = !Me.settings.get_boolean('disable-tooltips');
+        this._useTooltips = !this._settings.get_boolean('disable-tooltips');
     }
 
     _setToolTipText(titleLabel, description, displayType) {
@@ -688,12 +724,15 @@ class ArcMenuTooltip extends St.Label {
 
         global.stage.remove_child(this);
     }
-});
+}
 
-var ArcMenuButtonItem = GObject.registerClass(
-class ArcMenuButtonItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, tooltipText, iconName, gicon) {
-        super._init(menuLayout);
+export class ArcMenuButtonItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, tooltipText, iconName, gicon) {
+        super(menuLayout);
         this.remove_child(this._ornamentLabel);
 
         this.set({
@@ -720,7 +759,7 @@ class ArcMenuButtonItem extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon(overrideIconSize) {
-        const IconSizeEnum = Me.settings.get_enum('button-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.buttons_icon_size);
 
         return new St.Icon({
@@ -742,13 +781,16 @@ class ArcMenuButtonItem extends ArcMenuPopupBaseMenuItem {
             this._menuLayout.arcMenu.toggle();
         super.activate(event);
     }
-});
+}
 
 // Runner Layout Tweaks Button
-var RunnerTweaksButton = GObject.registerClass(
-class ArcMenuRunnerTweaksButton extends ArcMenuButtonItem {
-    _init(menuLayout) {
-        super._init(menuLayout, _('Configure Runner'), 'emblem-system-symbolic');
+export class RunnerTweaksButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Configure Runner'), 'emblem-system-symbolic');
         this.style_class = 'button arcmenu-button';
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
     }
@@ -766,16 +808,20 @@ class ArcMenuRunnerTweaksButton extends ArcMenuButtonItem {
 
     activate(event) {
         super.activate(event);
-        Me.settings.set_int('prefs-visible-page', Constants.SettingsPage.RUNNER_TWEAKS);
-        ExtensionUtils.openPrefs();
+        this._settings.set_int('prefs-visible-page', Constants.SettingsPage.RUNNER_TWEAKS);
+        const extension = Extension.lookupByURL(import.meta.url);
+        extension.openPreferences();
     }
-});
+}
 
 // 'Insider' layout Pinned Apps hamburger button
-var PinnedAppsButton = GObject.registerClass(
-class ArcMenuPinnedAppsButton extends ArcMenuButtonItem {
-    _init(menuLayout) {
-        super._init(menuLayout, _('Pinned Apps'), 'open-menu-symbolic');
+export class PinnedAppsButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Pinned Apps'), 'open-menu-symbolic');
         this.toggleMenuOnClick = false;
     }
 
@@ -783,13 +829,16 @@ class ArcMenuPinnedAppsButton extends ArcMenuButtonItem {
         super.activate(event);
         this._menuLayout.togglePinnedAppsMenu();
     }
-});
+}
 
 // 'Windows' layout extras hamburger button
-var ExtrasButton = GObject.registerClass(
-class ArcMenuExtrasButton extends ArcMenuButtonItem {
-    _init(menuLayout) {
-        super._init(menuLayout, _('Extras'), 'open-menu-symbolic');
+export class ExtrasButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Extras'), 'open-menu-symbolic');
         this.toggleMenuOnClick = false;
     }
 
@@ -797,16 +846,22 @@ class ArcMenuExtrasButton extends ArcMenuButtonItem {
         super.activate(event);
         this._menuLayout.toggleExtrasMenu();
     }
-});
+}
 
-var PowerOptionsBox = GObject.registerClass(
-class ArcMenuPowerOptionsBox extends St.ScrollView {
-    _init(menuLayout, vertical = false) {
-        super._init({
+export class PowerOptionsBox extends St.ScrollView {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, vertical = false) {
+        super({
             x_expand: false,
             overlay_scrollbars: true,
             clip_to_allocation: true,
         });
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
 
         this._orientation = vertical ? Clutter.Orientation.VERTICAL : Clutter.Orientation.HORIZONTAL;
 
@@ -816,7 +871,7 @@ class ArcMenuPowerOptionsBox extends St.ScrollView {
         });
         this.add_actor(box);
 
-        const powerOptions = Me.settings.get_value('power-options').deep_unpack();
+        const powerOptions = this._settings.get_value('power-options').deep_unpack();
         for (let i = 0; i < powerOptions.length; i++) {
             const [powerType, shouldShow] = powerOptions[i];
             if (shouldShow) {
@@ -828,13 +883,16 @@ class ArcMenuPowerOptionsBox extends St.ScrollView {
             }
         }
     }
-});
+}
 
 // 'Power Off / Log Out' button with popupmenu that shows lock, power off, restart, etc
-var LeaveButton = GObject.registerClass(
-class ArcMenuLeaveButton extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, showLabel) {
-        super._init(menuLayout);
+export class LeaveButton extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, showLabel) {
+        super(menuLayout);
         this.menuButton = menuLayout.menuButton;
 
         this.toggleMenuOnClick = false;
@@ -873,8 +931,8 @@ class ArcMenuLeaveButton extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon(overrideIconSize) {
-        const IconSizeEnum = this.showLabel ? Me.settings.get_enum('quicklinks-item-icon-size')
-            : Me.settings.get_enum('button-item-icon-size');
+        const IconSizeEnum = this.showLabel ? this._settings.get_enum('quicklinks-item-icon-size')
+            : this._settings.get_enum('button-item-icon-size');
         const defaultIconSize = this.showLabel ? this._menuLayout.quicklinks_icon_size
             : this._menuLayout.buttons_icon_size;
         const iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
@@ -913,7 +971,7 @@ class ArcMenuLeaveButton extends ArcMenuPopupBaseMenuItem {
         box.add_child(systemBox);
 
         let hasSessionOption, hasSystemOption;
-        const powerOptions = Me.settings.get_value('power-options').deep_unpack();
+        const powerOptions = this._settings.get_value('power-options').deep_unpack();
         for (let i = 0; i < powerOptions.length; i++) {
             const [powerType, shouldShow] = powerOptions[i];
             if (shouldShow) {
@@ -967,13 +1025,16 @@ class ArcMenuLeaveButton extends ArcMenuPopupBaseMenuItem {
         super.activate(event);
         this.leaveMenu.toggle();
     }
-});
+}
 
 // 'Unity' layout categories hamburger button
-var CategoriesButton = GObject.registerClass(
-class ArcMenuCategoriesButton extends ArcMenuButtonItem {
-    _init(menuLayout) {
-        super._init(menuLayout, _('Categories'), 'open-menu-symbolic');
+export class CategoriesButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Categories'), 'open-menu-symbolic');
         this.toggleMenuOnClick = false;
     }
 
@@ -981,12 +1042,15 @@ class ArcMenuCategoriesButton extends ArcMenuButtonItem {
         super.activate(event);
         this._menuLayout.toggleCategoriesMenu();
     }
-});
+}
 
-var PowerButton = GObject.registerClass(
-class ArcMenuPowerButton extends ArcMenuButtonItem {
-    _init(menuLayout, powerType) {
-        super._init(menuLayout, Constants.PowerOptions[powerType].NAME,
+export class PowerButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, powerType) {
+        super(menuLayout, Constants.PowerOptions[powerType].NAME,
             Constants.PowerOptions[powerType].ICON);
         this.powerType = powerType;
 
@@ -997,12 +1061,15 @@ class ArcMenuPowerButton extends ArcMenuButtonItem {
         this._menuLayout.arcMenu.toggle();
         activatePowerOption(this.powerType);
     }
-});
+}
 
-var PowerMenuItem = GObject.registerClass(
-class ArcMenuPowerMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, type) {
-        super._init(menuLayout);
+export class PowerMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, type) {
+        super(menuLayout);
         this.powerType = type;
 
         bindPowerItemVisibility(this);
@@ -1021,7 +1088,7 @@ class ArcMenuPowerMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = Me.settings.get_enum('quicklinks-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.quicklinks_icon_size);
 
         return new St.Icon({
@@ -1035,12 +1102,15 @@ class ArcMenuPowerMenuItem extends ArcMenuPopupBaseMenuItem {
         this._menuLayout.arcMenu.toggle();
         activatePowerOption(this.powerType);
     }
-});
+}
 
-var PlasmaMenuItem = GObject.registerClass(
-class ArcMenuPlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, title, iconPath) {
-        super._init(menuLayout);
+export class PlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, title, iconPath) {
+        super(menuLayout);
         this.iconPath = iconPath;
 
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
@@ -1048,7 +1118,7 @@ class ArcMenuPlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
 
         this.remove_child(this._ornamentLabel);
 
-        const searchbarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP)
             this.name = 'arcmenu-plasma-button-top';
         else
@@ -1090,7 +1160,7 @@ class ArcMenuPlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
         } else {
             this._menuButton.tooltip.hide();
         }
-        const shouldHover = Me.settings.get_boolean('plasma-enable-hover');
+        const shouldHover = this._settings.get_boolean('plasma-enable-hover');
         if (shouldHover && this.hover && !this.isActive)
             this.activate(Clutter.get_current_event());
     }
@@ -1127,12 +1197,15 @@ class ArcMenuPlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
         this.setActive(true);
         super.activate(event);
     }
-});
+}
 
-var PlasmaCategoryHeader = GObject.registerClass(
-class ArcMenuPlasmaCategoryHeader extends St.BoxLayout {
-    _init(menuLayout) {
-        super._init({
+export class PlasmaCategoryHeader extends St.BoxLayout {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super({
             style_class: 'popup-menu-item',
             style: 'padding: 0px;',
             reactive: true,
@@ -1177,12 +1250,15 @@ class ArcMenuPlasmaCategoryHeader extends St.BoxLayout {
             this.categoryLabel.hide();
         }
     }
-});
+}
 
-var NavigationButton = GObject.registerClass(
-class ArcMenuNavigationButton extends ArcMenuButtonItem {
-    _init(menuLayout, text, arrowSymbolic, activateAction, arrowSide) {
-        super._init(menuLayout, null, arrowSymbolic);
+export class NavigationButton extends ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, text, arrowSymbolic, activateAction, arrowSide) {
+        super(menuLayout, null, arrowSymbolic);
         this.activateAction = activateAction;
 
         this.set({
@@ -1208,7 +1284,7 @@ class ArcMenuNavigationButton extends ArcMenuButtonItem {
     }
 
     createIcon() {
-        const IconSizeEnum = Me.settings.get_enum('misc-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
 
         return new St.Icon({
@@ -1223,27 +1299,36 @@ class ArcMenuNavigationButton extends ArcMenuButtonItem {
         super.activate(event);
         this.activateAction();
     }
-});
+}
 
-var GoNextButton = GObject.registerClass(
-class ArcMenuGoNextButton extends NavigationButton {
-    _init(menuLayout, title, activateAction) {
-        super._init(menuLayout, _(title), 'go-next-symbolic', () => activateAction());
+export class GoNextButton extends NavigationButton {
+    static {
+        GObject.registerClass(this);
     }
-});
 
-var GoPreviousButton = GObject.registerClass(
-class ArcMenuGoPreviousButton extends NavigationButton {
-    _init(menuLayout, activateAction) {
-        super._init(menuLayout, _('Back'), 'go-previous-symbolic', () => activateAction(), St.Side.LEFT);
+    constructor(menuLayout, title, activateAction) {
+        super(menuLayout, _(title), 'go-next-symbolic', () => activateAction());
     }
-});
+}
+
+export class GoPreviousButton extends NavigationButton {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, activateAction) {
+        super(menuLayout, _('Back'), 'go-previous-symbolic', () => activateAction(), St.Side.LEFT);
+    }
+}
 
 // Menu item to go back to category view
-var BackButton = GObject.registerClass(
-class ArcMenuBackButton extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout) {
-        super._init(menuLayout);
+export class BackButton extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout);
 
         this._iconBin = new St.Bin({
             x_expand: false,
@@ -1263,7 +1348,7 @@ class ArcMenuBackButton extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = Me.settings.get_enum('misc-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, Constants.MISC_ICON_SIZE);
 
         return new St.Icon({
@@ -1274,7 +1359,7 @@ class ArcMenuBackButton extends ArcMenuPopupBaseMenuItem {
     }
 
     activate(event) {
-        const layout = Me.settings.get_enum('menu-layout');
+        const layout = this._settings.get_enum('menu-layout');
         if (layout === Constants.MenuLayout.ARCMENU) {
             // If the current page is inside a category and
             // previous page was the categories page,
@@ -1290,13 +1375,16 @@ class ArcMenuBackButton extends ArcMenuPopupBaseMenuItem {
         }
         super.activate(event);
     }
-});
+}
 
 // Menu item to view all apps
-var ViewAllAppsButton = GObject.registerClass(
-class ArcMenuViewAllAppsButton extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout) {
-        super._init(menuLayout);
+export class ViewAllAppsButton extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout);
 
         const label = new St.Label({
             text: _('All Apps'),
@@ -1316,7 +1404,7 @@ class ArcMenuViewAllAppsButton extends ArcMenuPopupBaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = Me.settings.get_enum('misc-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, Constants.MISC_ICON_SIZE);
 
         return new St.Icon({
@@ -1328,7 +1416,7 @@ class ArcMenuViewAllAppsButton extends ArcMenuPopupBaseMenuItem {
     }
 
     activate(event) {
-        const defaultMenuView = Me.settings.get_enum('default-menu-view');
+        const defaultMenuView = this._settings.get_enum('default-menu-view');
         if (defaultMenuView === Constants.DefaultMenuView.PINNED_APPS ||
             defaultMenuView === Constants.DefaultMenuView.FREQUENT_APPS)
             this._menuLayout.displayCategories();
@@ -1336,20 +1424,24 @@ class ArcMenuViewAllAppsButton extends ArcMenuPopupBaseMenuItem {
             this._menuLayout.displayAllApps();
         super.activate(event);
     }
-});
+}
 
-var ShortcutMenuItem = GObject.registerClass(
-class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, menuItemArray, displayType, isContainedInCategory) {
-        super._init(menuLayout);
+export class ShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, menuItemArray, displayType, isContainedInCategory) {
+        super(menuLayout);
         this._displayType = displayType;
         this.isContainedInCategory = isContainedInCategory;
 
-        let [name, icon, command] = menuItemArray;
+        let [name] = menuItemArray;
+        const [, icon, command] = menuItemArray;
         this._command = command;
         this.iconName = icon;
 
-        const shortcutIconType = Me.settings.get_enum('shortcut-icon-type');
+        const shortcutIconType = this._settings.get_enum('shortcut-icon-type');
         if (shortcutIconType === Constants.CategoryIconType.FULL_COLOR)
             this.add_style_class_name('regular-icons');
         else
@@ -1384,9 +1476,9 @@ class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
             y_align: Clutter.ActorAlign.CENTER,
         });
 
-        const layout = Me.settings.get_enum('menu-layout');
+        const layout = this._settings.get_enum('menu-layout');
         if (layout === Constants.MenuLayout.PLASMA &&
-            Me.settings.get_boolean('apps-show-extra-details') && this._app) {
+            this._settings.get_boolean('apps-show-extra-details') && this._app) {
             const labelBox = new St.BoxLayout({
                 vertical: true,
             });
@@ -1415,18 +1507,18 @@ class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
     createIcon() {
         let iconSizeEnum;
         if (this.isContainedInCategory)
-            iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
         else
-            iconSizeEnum = Me.settings.get_enum('quicklinks-item-icon-size');
+            iconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
 
         let defaultIconSize, iconSize;
         if (this._displayType === Constants.DisplayType.BUTTON) {
-            iconSizeEnum = Me.settings.get_enum('button-item-icon-size');
+            iconSizeEnum = this._settings.get_enum('button-item-icon-size');
             defaultIconSize = this._menuLayout.buttons_icon_size;
             iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
             this.style = `min-width: ${iconSize}px; min-height: ${iconSize}px;`;
         } else if (this._displayType === Constants.DisplayType.GRID) {
-            iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+            iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             defaultIconSize = this._menuLayout.icon_grid_size;
             iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else {
@@ -1495,28 +1587,31 @@ class ArcMenuShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
         }
         this._menuLayout.arcMenu.toggle();
     }
-});
+}
 
 // Menu item which displays the current user
-var UserMenuItem = GObject.registerClass(
-class ArcMenuUserMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, displayType) {
-        super._init(menuLayout);
+export class UserMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, displayType) {
+        super(menuLayout);
         this._menuLayout = menuLayout;
         this._displayType = displayType;
 
-        if (Me.settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
+        if (this._settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
             this.avatarStyle = 'arcmenu-avatar-round';
         else
             this.avatarStyle = 'arcmenu-avatar-square';
 
         if (this._displayType === Constants.DisplayType.BUTTON) {
-            const IconSizeEnum = Me.settings.get_enum('button-item-icon-size');
+            const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
             const defaultIconSize = this._menuLayout.buttons_icon_size;
             this.iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
             this.userMenuIcon.set_style_class_name(`${this.avatarStyle} user-icon`);
         } else {
-            const IconSizeEnum = Me.settings.get_enum('misc-item-icon-size');
+            const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
             this.iconSize = Utils.getIconSize(IconSizeEnum, USER_AVATAR_SIZE);
         }
 
@@ -1534,29 +1629,35 @@ class ArcMenuUserMenuItem extends ArcMenuPopupBaseMenuItem {
         this._menuLayout.arcMenu.toggle();
         super.activate(event);
     }
-});
+}
 
-var UserMenuIcon = GObject.registerClass(
-class ArcMenuUserMenuIcon extends St.Bin {
-    _init(menuLayout, size, hasTooltip) {
+export class UserMenuIcon extends St.Bin {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, iconSize, hasTooltip) {
+        const extension = Extension.lookupByURL(import.meta.url);
+        const settings = extension.getSettings();
+
         let avatarStyle;
-        if (Me.settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
+        if (settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
             avatarStyle = 'arcmenu-avatar-round';
         else
             avatarStyle = 'arcmenu-avatar-square';
 
-        super._init({
+        super({
             style_class: `${avatarStyle} user-icon popup-menu-icon`,
             track_hover: true,
             reactive: true,
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
-            style: `width: ${this.iconSize}px; height: ${this.iconSize}px;`,
+            style: `width: ${iconSize}px; height: ${iconSize}px;`,
         });
 
         this._menuButton = menuLayout.menuButton;
         this._menuLayout = menuLayout;
-        this.iconSize = size;
+        this.iconSize = iconSize;
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
 
         this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
@@ -1608,13 +1709,17 @@ class ArcMenuUserMenuIcon extends St.Bin {
             }
         }
     }
-});
+}
 
-var PinnedAppsMenuItem = GObject.registerClass({
-    Signals: {'saveSettings': {}},
-}, class ArcMenuPinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, pinnedAppData, displayType, isContainedInCategory) {
-        super._init(menuLayout);
+export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
+    static [GObject.signals] = {'saveSettings': {}};
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, pinnedAppData, displayType, isContainedInCategory) {
+        super(menuLayout);
         this._menuButton = menuLayout.menuButton;
         [this._name, this._icon, this._command] = pinnedAppData;
         this._displayType = displayType;
@@ -1625,8 +1730,10 @@ var PinnedAppsMenuItem = GObject.registerClass({
         this.gridLocation = [-1, -1];
         this._iconString = this._icon;
 
-        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${Me.path}/icons/arcmenu-logo-symbolic.svg`)
-            this._iconString = Constants.ArcMenuLogoSymbolic;
+        const extension = Extension.lookupByURL(import.meta.url);
+
+        if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${extension.path}/icons/arcmenu-logo-symbolic.svg`)
+            this._iconString = `${extension.path}/${Constants.ArcMenuLogoSymbolic}`;
 
         if (this._app && this._iconString === '') {
             const appIcon = this._app.create_icon_texture(Constants.MEDIUM_ICON_SIZE);
@@ -1651,7 +1758,7 @@ var PinnedAppsMenuItem = GObject.registerClass({
             y_align: Clutter.ActorAlign.CENTER,
         });
 
-        const showExtraDetails = Me.settings.get_boolean('apps-show-extra-details');
+        const showExtraDetails = this._settings.get_boolean('apps-show-extra-details');
         if (this._displayType === Constants.DisplayType.LIST && showExtraDetails &&
             this._app && this._app.get_description()) {
             const labelBox = new St.BoxLayout({vertical: true});
@@ -1686,11 +1793,11 @@ var PinnedAppsMenuItem = GObject.registerClass({
     createIcon() {
         let iconSize;
         if (this._displayType === Constants.DisplayType.GRID) {
-            const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+            const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
             iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
-            const iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
                 : this._menuLayout.pinned_apps_icon_size;
             iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
@@ -1848,12 +1955,15 @@ var PinnedAppsMenuItem = GObject.registerClass({
         this._menuLayout.arcMenu.toggle();
         super.activate(event);
     }
-});
+}
 
-var ApplicationMenuItem = GObject.registerClass(
-class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, app, displayType, metaInfo, isContainedInCategory) {
-        super._init(menuLayout);
+export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, app, displayType, metaInfo, isContainedInCategory) {
+        super(menuLayout);
         this._app = app;
         this._displayType = displayType;
         this.metaInfo = metaInfo || {};
@@ -1864,9 +1974,9 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         this.isSearchResult = !!Object.keys(this.metaInfo).length;
 
         if (this._app) {
-            const disableRecentAppsIndicator = Me.settings.get_boolean('disable-recently-installed-apps');
+            const disableRecentAppsIndicator = this._settings.get_boolean('disable-recently-installed-apps');
             if (!disableRecentAppsIndicator) {
-                const recentApps = Me.settings.get_strv('recently-installed-apps');
+                const recentApps = this._settings.get_strv('recently-installed-apps');
                 this.isRecentlyInstalled = recentApps.some(appIter => appIter === this._app.get_id());
             }
         }
@@ -1888,9 +1998,9 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         });
         this.description = this._app ? this._app.get_description() : this.metaInfo['description'];
 
-        const showSearchDescriptions = Me.settings.get_boolean('show-search-result-details') &&
+        const showSearchDescriptions = this._settings.get_boolean('show-search-result-details') &&
                                        this.isSearchResult;
-        const showAppDescriptions = Me.settings.get_boolean('apps-show-extra-details') &&
+        const showAppDescriptions = this._settings.get_boolean('apps-show-extra-details') &&
                                     !this.isSearchResult;
         const isCalculatorProvider = this.metaInfo['provider-id'] === 'org.gnome.Calculator.desktop';
 
@@ -2003,7 +2113,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         this.scaleAndFade();
     }
 
-    _onDragMotion(dragEvent) {
+    _onDragMotion() {
         if (!this.folderMenuItem || this.folderMenuItem.home_folder)
             return DND.DragMotionResult.CONTINUE;
 
@@ -2112,11 +2222,11 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this._displayType === Constants.DisplayType.GRID) {
             this._iconBin.x_align = Clutter.ActorAlign.CENTER;
 
-            const iconSizeEnum = Me.settings.get_enum('menu-item-grid-icon-size');
+            const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
             iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
-            const iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ||
                 this.isSearchResult ? this._menuLayout.apps_icon_size
                 : this._menuLayout.pinned_apps_icon_size;
@@ -2135,12 +2245,12 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
     removeIndicator() {
         if (this.isRecentlyInstalled) {
             this.isRecentlyInstalled = false;
-            const recentApps = Me.settings.get_strv('recently-installed-apps');
+            const recentApps = this._settings.get_strv('recently-installed-apps');
             const index = recentApps.indexOf(this._app.get_id());
             if (index > -1)
                 recentApps.splice(index, 1);
 
-            Me.settings.set_strv('recently-installed-apps', recentApps);
+            this._settings.set_strv('recently-installed-apps', recentApps);
 
             this._indicator.hide();
             this._menuLayout.setNewAppIndicator();
@@ -2188,7 +2298,7 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
             // Main.overview to be hidden before launching ScreenshotUI.
             // Avoid that by directly calling Screenshot.showScreenshotUI().
             if (metaInfo.id === 'open-screenshot-ui') {
-                imports.ui.screenshot.showScreenshotUI();
+                showScreenshotUI();
                 return;
             }
 
@@ -2207,10 +2317,10 @@ class ArcMenuApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
             super.activate(event);
         }
     }
-});
+}
 
-var GroupFolderMenuItem = GObject.registerClass({
-    Properties: {
+export class GroupFolderMenuItem extends ArcMenuPopupBaseMenuItem {
+    static [GObject.properties] = {
         'folder-name': GObject.ParamSpec.string('folder-name', 'folder-name', 'folder-name',
             GObject.ParamFlags.READWRITE, ''),
         'folder-id': GObject.ParamSpec.string('folder-id', 'folder-id', 'folder-id',
@@ -2219,15 +2329,19 @@ var GroupFolderMenuItem = GObject.registerClass({
             GObject.ParamFlags.READWRITE, false),
         'new-folder': GObject.ParamSpec.boolean('new-folder', 'new-folder', 'new-folder',
             GObject.ParamFlags.READWRITE, false),
-    },
-    Signals: {
+    };
+
+    static [GObject.signals] = {
         'folder-moved': {},
         'app-moved': {},
-    },
-},
-class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, folderSettings, params = {}) {
-        super._init(menuLayout);
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, folderSettings, params = {}) {
+        super(menuLayout);
         this.set(params);
         this.pivot_point = new Graphene.Point({x: 0.5, y: 0.5});
         this.folderSettings = folderSettings;
@@ -2273,7 +2387,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
             this._draggable.connect('drag-end', this._onDragEnd.bind(this));
         }
 
-        if (!Me.settings.get_boolean('multi-lined-labels'))
+        if (!this._settings.get_boolean('multi-lined-labels'))
             return;
 
         this._iconBin?.set({
@@ -2478,7 +2592,7 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         return true;
     }
 
-    _onDragMotion(dragEvent) {
+    _onDragMotion() {
         const layoutManager = this._parentBox.layout_manager;
         if (layoutManager instanceof Clutter.GridLayout) {
             this.xIndex = Math.floor((this._draggable._dragX - this.posX) /
@@ -2619,19 +2733,22 @@ class ArcMenuGroupFolderItem extends ArcMenuPopupBaseMenuItem {
         this._menuLayout.setActiveCategory(this);
         this.displayAppList();
     }
-});
+}
 
-var CategoryMenuItem = GObject.registerClass(
-class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, category, displayType) {
-        super._init(menuLayout);
+export class CategoryMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, category, displayType) {
+        super(menuLayout);
         this._category = category;
         this._displayType = displayType;
 
         this.appList = [];
         this._name = '';
 
-        const categoryIconType = Me.settings.get_enum('category-icon-type');
+        const categoryIconType = this._settings.get_enum('category-icon-type');
         if (categoryIconType === Constants.CategoryIconType.FULL_COLOR)
             this.add_style_class_name('regular-icons');
         else
@@ -2674,12 +2791,12 @@ class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
     createIcon() {
         let iconSize;
         if (this._displayType === Constants.DisplayType.BUTTON) {
-            const iconSizeEnum = Me.settings.get_enum('button-item-icon-size');
+            const iconSizeEnum = this._settings.get_enum('button-item-icon-size');
             const defaultIconSize = this._menuLayout.buttons_icon_size;
             iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
             this.style = `min-width: ${iconSize}px; min-height: ${iconSize}px;`;
         } else {
-            const iconSizeEnum = Me.settings.get_enum('menu-item-category-icon-size');
+            const iconSizeEnum = this._settings.get_enum('menu-item-category-icon-size');
             const defaultIconSize = this._menuLayout.category_icon_size;
             iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
 
@@ -2762,7 +2879,7 @@ class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     _shouldActivateOnHover() {
-        const activateOnHover = Me.settings.get_boolean('activate-on-hover');
+        const activateOnHover = this._settings.get_boolean('activate-on-hover');
         const supportsActivateOnHover = this._menuLayout.supports_category_hover_activation;
 
         return activateOnHover && supportsActivateOnHover;
@@ -2831,7 +2948,7 @@ class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         const {width} = this._menuLayout.initialMotionEventItem;
         const {height} = this._menuLayout.initialMotionEventItem;
 
-        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
+        const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         const maxX = horizontalFlip ? posX : posX + width;
         const maxY = posY + height;
 
@@ -2853,13 +2970,16 @@ class ArcMenuCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         this._clearLeaveEventTimeout();
         super._onDestroy();
     }
-});
+}
 
 // Directory shorctuts. Home, Documents, Downloads, etc
-var PlaceMenuItem = GObject.registerClass(
-class ArcMenuPlaceMenuItem extends ArcMenuPopupBaseMenuItem {
-    _init(menuLayout, info, displayType, isContainedInCategory) {
-        super._init(menuLayout);
+export class PlaceMenuItem extends ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, info, displayType, isContainedInCategory) {
+        super(menuLayout);
         this._displayType = displayType;
         this._info = info;
         this.isContainedInCategory = isContainedInCategory;
@@ -2926,11 +3046,9 @@ class ArcMenuPlaceMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     setAsRecentFile(recentFile, removeRecentFile) {
-        const homeRegExp = new RegExp(`^(${GLib.get_home_dir()})`);
-        const file = Gio.File.new_for_uri(recentFile.get_uri());
-
-        this.folderPath = file.get_parent()?.get_path(); // can be null
-        this.description = recentFile.get_uri_display().replace(homeRegExp, '~');
+        const parentPath = recentFile.get_parent()?.get_path();
+        this.folderPath = parentPath;
+        this.description = parentPath;
         this.fileUri = recentFile.get_uri();
 
         this._additionalAction = () => {
@@ -2970,9 +3088,9 @@ class ArcMenuPlaceMenuItem extends ArcMenuPopupBaseMenuItem {
     createIcon() {
         let iconSizeEnum;
         if (this.isContainedInCategory)
-            iconSizeEnum = Me.settings.get_enum('menu-item-icon-size');
+            iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
         else
-            iconSizeEnum = Me.settings.get_enum('quicklinks-item-icon-size');
+            iconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
 
         const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
             : this._menuLayout.quicklinks_icon_size;
@@ -2980,7 +3098,7 @@ class ArcMenuPlaceMenuItem extends ArcMenuPopupBaseMenuItem {
 
         if (this._displayType === Constants.DisplayType.BUTTON) {
             const defaultButtonIconSize = this._menuLayout.buttons_icon_size;
-            const IconSizeEnum = Me.settings.get_enum('button-item-icon-size');
+            const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
             iconSize = Utils.getIconSize(IconSizeEnum, defaultButtonIconSize);
             this.style = `min-width: ${iconSize}px; min-height: ${iconSize}px;`;
         }
@@ -3004,18 +3122,21 @@ class ArcMenuPlaceMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this.label && !this._foreTitle)
             this.label.text = _(info.name);
     }
-});
+}
 
-var SearchBox = GObject.registerClass({
-    Signals: {
+export class SearchBox extends St.Entry {
+    static [GObject.signals] = {
         'search-changed': {param_types: [GObject.TYPE_STRING]},
         'entry-key-focus-in': { },
         'entry-key-press': {param_types: [Clutter.Event.$gtype]},
-    },
-},
-class ArcMenuSearchBox extends St.Entry {
-    _init(menuLayout) {
-        super._init({
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super({
             hint_text: _('Search…'),
             track_hover: true,
             can_focus: true,
@@ -3025,11 +3146,15 @@ class ArcMenuSearchBox extends St.Entry {
             name: 'ArcMenuSearchEntry',
             style_class: 'arcmenu-search-entry',
         });
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
+
         this.searchResults = menuLayout.searchResults;
         this._menuLayout = menuLayout;
         this.triggerSearchChangeEvent = true;
         this._iconClickedId = 0;
-        const IconSizeEnum = Me.settings.get_enum('misc-item-icon-size');
+        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
         const iconSize = Utils.getIconSize(IconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
 
         this._findIcon = new St.Icon({
@@ -3151,12 +3276,15 @@ class ArcMenuSearchBox extends St.Entry {
             this._iconClickedId = null;
         }
     }
-});
+}
 
-var MenuButtonWidget = GObject.registerClass(
-class ArcMenuMenuButtonWidget extends St.BoxLayout {
-    _init() {
-        super._init({
+export class MenuButtonWidget extends St.BoxLayout {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor() {
+        super({
             style_class: 'panel-status-menu-box',
         });
 
@@ -3225,10 +3353,10 @@ class ArcMenuMenuButtonWidget extends St.BoxLayout {
     setLabelStyle(style) {
         this._label.style = style;
     }
-});
+}
 
-var WorldClocksSection = GObject.registerClass(
-class ArcMenuWorldClocksSection extends DateMenu.WorldClocksSection {
+export const WorldClocksWidget = GObject.registerClass(
+class ArcMenuWorldClocksWidget extends GWorldClocksWidget {
     _init(menuLayout) {
         super._init();
         this._menuLayout = menuLayout;
@@ -3279,8 +3407,8 @@ class ArcMenuWorldClocksSection extends DateMenu.WorldClocksSection {
     }
 });
 
-var WeatherSection = GObject.registerClass(
-class ArcMenuWeatherSection extends DateMenu.WeatherSection {
+export const WeatherWidget = GObject.registerClass(
+class ArcMenuWeatherWidget extends GWeatherWidget {
     _init(menuLayout) {
         super._init();
         this._menuLayout = menuLayout;

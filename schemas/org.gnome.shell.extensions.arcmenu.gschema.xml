@@ -193,48 +193,48 @@
     </key>
     <key type="(bs)" name="menu-button-fg-color">
       <default>(false, "rgb(242,242,242)")</default>
-      <summary>ArcMenu menu button fg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button fg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button fg color.</summary>
+      <description>ArcMenu menu button fg color.</description>
     </key>
     <key type="(bs)" name="menu-button-bg-color">
       <default>(false, "rgba(242,242,242,0.2)")</default>
-      <summary>ArcMenu menu button bg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button bg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button bg color.</summary>
+      <description>ArcMenu menu button bg color.</description>
     </key>
     <key type="(bi)" name="menu-button-border-radius">
       <default>(false, 20)</default>
-      <summary>ArcMenu menu button border radius. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button border radius. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button border radius.</summary>
+      <description>ArcMenu menu button border radius.</description>
     </key>
     <key type="(bi)" name="menu-button-border-width">
       <default>(false, 3)</default>
-      <summary>ArcMenu menu button border radius. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button border radius. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button border radius.</summary>
+      <description>ArcMenu menu button border radius.</description>
     </key>
     <key type="(bs)" name="menu-button-border-color">
       <default>(false, "transparent")</default>
-      <summary>ArcMenu menu button hover bg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button hover bg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button hover bg color.</summary>
+      <description>ArcMenu menu button hover bg color.</description>
     </key>
     <key type="(bs)" name="menu-button-hover-bg-color">
       <default>(false, "rgba(242,242,242,0.15)")</default>
-      <summary>ArcMenu menu button hover bg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button hover bg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button hover bg color.</summary>
+      <description>ArcMenu menu button hover bg color.</description>
     </key>
     <key type="(bs)" name="menu-button-hover-fg-color">
       <default>(false, "rgb(242,242,242)")</default>
-      <summary>ArcMenu menu button hover fg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button hover fg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button hover fg color.</summary>
+      <description>ArcMenu menu button hover fg color.</description>
     </key>
     <key type="(bs)" name="menu-button-active-bg-color">
       <default>(false, "rgba(242,242,242,0.2)")</default>
-      <summary>ArcMenu menu button active bg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button active bg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button active bg color.</summary>
+      <description>ArcMenu menu button active bg color.</description>
     </key>
     <key type="(bs)" name="menu-button-active-fg-color">
       <default>(false, "rgb(242,242,242)")</default>
-      <summary>ArcMenu menu button active fg color. Active when 'override-menu-theme' enabled.</summary>
-      <description>ArcMenu menu button active fg color. Active when 'override-menu-theme' enabled.</description>
+      <summary>ArcMenu menu button active fg color.</summary>
+      <description>ArcMenu menu button active fg color.</description>
     </key>
     <key name="menu-themes" type="aas">
     <!--Order of elements in a theme:

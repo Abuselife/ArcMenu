@@ -1,22 +1,19 @@
-/* exported getMenuLayoutTweaksName, MenuLayout, setVisibleRows, parseRGBA,
-   createXpmImage, getIconStringFromListing  */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
-const {Gio, GLib, Gdk} = imports.gi;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as Constants from '../constants.js';
 
 /**
  *
  * @param {Constants.MenuLayout} menuLayout menulayout enum
- * @returns '%s Layout Tweaks'
+ * @returns 'name of menu layout'
  */
-function getMenuLayoutTweaksName(menuLayout) {
+export function getMenuLayoutName(menuLayout) {
     for (const styles of Constants.MenuStyles) {
         for (const style of styles.MENU_TYPE) {
             if (style.LAYOUT === menuLayout)
-                return _('%s Layout Tweaks').format(_(style.TITLE));
+                return style.TITLE;
         }
     }
     return '';
@@ -27,7 +24,7 @@ function getMenuLayoutTweaksName(menuLayout) {
  * @param {Array} rows the array of setting rows to show/hide
  * @param {Constants.MenuLayout} menuLayout menulayout enum
  */
-function setVisibleRows(rows, menuLayout) {
+export function setVisibleRows(rows, menuLayout) {
     for (const row in rows)
         rows[row].visible = true;
 
@@ -94,7 +91,7 @@ function setVisibleRows(rows, menuLayout) {
  * @param {string} colorString string representing a color
  * @returns a new Gdk.RGBA() representing the colorString
  */
-function parseRGBA(colorString) {
+export function parseRGBA(colorString) {
     const rgba = new Gdk.RGBA();
     rgba.parse(colorString);
     return rgba;
@@ -108,7 +105,7 @@ function parseRGBA(colorString) {
  * @param {string} color4 string representing a color
  * @returns xpm image based on the four colors
  */
-function createXpmImage(color1, color2, color3, color4) {
+export function createXpmImage(color1, color2, color3, color4) {
     color1 = rgbToHex(parseRGBA(color1));
     color2 = rgbToHex(parseRGBA(color2));
     color3 = rgbToHex(parseRGBA(color3));
@@ -135,7 +132,7 @@ function createXpmImage(color1, color2, color3, color4) {
  * @param {Clutter.Color} color A Clutter.Color to convert to a string in hex format
  * @returns String of Color in hex
  */
-function rgbToHex(color) {
+export function rgbToHex(color) {
     const [r, g, b, a_] = [Math.round(color.red * 255), Math.round(color.green * 255),
         Math.round(color.blue * 255), Math.round(color.alpha * 255)];
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
@@ -146,7 +143,7 @@ function rgbToHex(color) {
  * @param {object} listing The shortcut data listing
  * @returns An icon name for the given listing data
  */
-function getIconStringFromListing(listing) {
+export function getIconStringFromListing(listing) {
     let path;
     const shortcutCommand = listing[2];
     const shortcutIconName = listing[1];

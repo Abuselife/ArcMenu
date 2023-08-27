@@ -1,19 +1,14 @@
-/* eslint-disable jsdoc/require-jsdoc */
-/* exported getMenuLayoutEnum, Menu */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 
-const {Clutter, GObject, St} = imports.gi;
-const {BaseMenuLayout} = Me.imports.menulayouts.baseMenuLayout;
-const Constants = Me.imports.constants;
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const MW = Me.imports.menuWidgets;
-const _ = Gettext.gettext;
+import {BaseMenuLayout} from './baseMenuLayout.js';
+import * as Constants from '../constants.js';
+import * as MW from '../menuWidgets.js';
 
-function getMenuLayoutEnum() {
-    return Constants.MenuLayout.BUDGIE;
-}
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-var Menu = class ArcMenuBudgieLayout extends BaseMenuLayout {
+export const Layout = class BudgieLayout extends BaseMenuLayout {
     static {
         GObject.registerClass(this);
     }
@@ -68,7 +63,7 @@ var Menu = class ArcMenuBudgieLayout extends BaseMenuLayout {
 
         const verticalSeparator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
-        const horizontalFlip = Me.settings.get_boolean('enable-horizontal-flip');
+        const horizontalFlip = this._settings.get_boolean('enable-horizontal-flip');
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
@@ -84,7 +79,7 @@ var Menu = class ArcMenuBudgieLayout extends BaseMenuLayout {
         this.categoriesBox = new St.BoxLayout({vertical: true});
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
-        if (Me.settings.get_boolean('enable-activities-shortcut')) {
+        if (this._settings.get_boolean('enable-activities-shortcut')) {
             this.activitiesBox = new St.BoxLayout({
                 vertical: true,
                 x_expand: true,
@@ -96,7 +91,7 @@ var Menu = class ArcMenuBudgieLayout extends BaseMenuLayout {
             this.leftBox.add_child(this.activitiesBox);
         }
 
-        const searchBarLocation = Me.settings.get_enum('searchbar-default-top-location');
+        const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
             const separator = new MW.ArcMenuSeparator(Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
@@ -144,7 +139,7 @@ var Menu = class ArcMenuBudgieLayout extends BaseMenuLayout {
         this.categoryDirectories = null;
         this.categoryDirectories = new Map();
 
-        const extraCategories = Me.settings.get_value('extra-categories').deep_unpack();
+        const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
             const categoryEnum = extraCategories[i][0];

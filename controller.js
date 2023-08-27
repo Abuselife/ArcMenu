@@ -1,21 +1,27 @@
-/* exported MenuSettingsController */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const {Gio, GLib, Shell} = imports.gi;
-const Constants = Me.imports.constants;
-const {InputSourceManager} = imports.ui.status.keyboard;
-const Keybinder = Me.imports.keybinder;
-const Main = imports.ui.main;
-const {MenuButton} = Me.imports.menuButton;
-const {StandaloneRunner} = Me.imports.standaloneRunner;
-const Theming = Me.imports.theming;
-const Utils = Me.imports.utils;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Shell from 'gi://Shell';
 
-var MenuSettingsController = class {
-    constructor(settingsControllers, panel, panelBox, panelParent, isPrimaryPanel) {
-        this.panel = panel;
+import {InputSourceManager} from 'resource:///org/gnome/shell/ui/status/keyboard.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+import * as Constants from './constants.js';
+import * as Keybinder from './keybinder.js';
+import {MenuButton} from './menuButton.js';
+import * as Theming from './theming.js';
+import {StandaloneRunner} from './standaloneRunner.js';
+import * as Utils from './utils.js';
+
+export const MenuSettingsController = class {
+    constructor(settingsControllers, panelInfo, index) {
+        this.panel = panelInfo.panel;
         this.currentMonitorIndex = 0;
-        this.isPrimaryPanel = isPrimaryPanel;
+        this.isPrimaryPanel = index === 0;
+
+        const extension = Extension.lookupByURL(import.meta.url);
+        this._settings = extension.getSettings();
 
         // Allow other extensions and DBus command to open/close ArcMenu
         if (!global.toggleArcMenu) {
@@ -27,7 +33,7 @@ var MenuSettingsController = class {
         }
 
         this._settingsConnections = new Utils.SettingsConnectionsHandler();
-        this._menuButton = new MenuButton(this.panel, panelBox, panelParent);
+        this._menuButton = new MenuButton(panelInfo, index);
         this._settingsControllers = settingsControllers;
 
         if (this.isPrimaryPanel) {
@@ -176,7 +182,7 @@ var MenuSettingsController = class {
             GLib.source_remove(this._writeTimeoutId);
 
         this._writeTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-            Theming.updateStylesheet(Me.settings);
+            Theming.updateStylesheet();
             this._writeTimeoutId = null;
             return GLib.SOURCE_REMOVE;
         });
@@ -196,7 +202,7 @@ var MenuSettingsController = class {
         this._appList = this._listAllApps();
 
         this._installedChangedId = this._appSystem.connect('installed-changed', () => {
-            const isDisabled = Me.settings.get_boolean('disable-recently-installed-apps');
+            const isDisabled = this._settings.get_boolean('disable-recently-installed-apps');
             const appList = this._listAllApps();
 
             // Filter to find if a new application has been installed
@@ -205,9 +211,9 @@ var MenuSettingsController = class {
 
             if (newAppsList.length && !isDisabled) {
                 // A new app has been installed, Save it in settings
-                const recentApps = Me.settings.get_strv('recently-installed-apps');
+                const recentApps = this._settings.get_strv('recently-installed-apps');
                 const newRecentApps = [...new Set(recentApps.concat(newAppsList))];
-                Me.settings.set_strv('recently-installed-apps', newRecentApps);
+                this._settings.set_strv('recently-installed-apps', newRecentApps);
             }
 
             for (let i = 0; i < this._settingsControllers.length; i++) {
@@ -257,7 +263,7 @@ var MenuSettingsController = class {
             this.runnerMenu.toggleMenu();
         if (global.dashToPanel || global.azTaskbar) {
             const MultipleArcMenus = this._settingsControllers.length > 1;
-            const ShowArcMenuOnPrimaryMonitor = Me.settings.get_boolean('hotkey-open-primary-monitor');
+            const ShowArcMenuOnPrimaryMonitor = this._settings.get_boolean('hotkey-open-primary-monitor');
             if (MultipleArcMenus && ShowArcMenuOnPrimaryMonitor)
                 this._toggleMenuOnMonitor(Main.layoutManager.primaryMonitor);
             else if (MultipleArcMenus && !ShowArcMenuOnPrimaryMonitor)
@@ -317,11 +323,11 @@ var MenuSettingsController = class {
 
     _updateHotKeyBinder() {
         if (this.isPrimaryPanel) {
-            const enableMenuHotkey = Me.settings.get_boolean('enable-menu-hotkey');
-            const enableStandaloneRunnerMenu = Me.settings.get_boolean('enable-standlone-runner-menu');
+            const enableMenuHotkey = this._settings.get_boolean('enable-menu-hotkey');
+            const enableStandaloneRunnerMenu = this._settings.get_boolean('enable-standlone-runner-menu');
 
-            const runnerHotKey = Me.settings.get_enum('runner-menu-hotkey-type');
-            const menuHotkey = Me.settings.get_enum('menu-hotkey-type');
+            const runnerHotKey = this._settings.get_enum('runner-menu-hotkey-type');
+            const menuHotkey = this._settings.get_enum('menu-hotkey-type');
 
             this._customKeybinding.unbind('ToggleArcMenu');
             this._customKeybinding.unbind('ToggleRunnerMenu');
@@ -368,7 +374,7 @@ var MenuSettingsController = class {
     }
 
     _setButtonAppearance() {
-        const menuButtonAppearance = Me.settings.get_enum('menu-button-appearance');
+        const menuButtonAppearance = this._settings.get_enum('menu-button-appearance');
         const {menuButtonWidget} = this._menuButton;
 
         this._menuButton.container.set_width(-1);
@@ -403,29 +409,29 @@ var MenuSettingsController = class {
         const {menuButtonWidget} = this._menuButton;
         const label = menuButtonWidget.getPanelLabel();
 
-        const customTextLabel = Me.settings.get_string('custom-menu-button-text');
+        const customTextLabel = this._settings.get_string('custom-menu-button-text');
         label.set_text(customTextLabel);
     }
 
     _setButtonIcon() {
-        const path = Me.settings.get_string('custom-menu-button-icon');
+        const path = this._settings.get_string('custom-menu-button-icon');
         const {menuButtonWidget} = this._menuButton;
         const stIcon = menuButtonWidget.getPanelIcon();
 
-        const iconString = Utils.getMenuButtonIcon(Me.settings, path);
+        const iconString = Utils.getMenuButtonIcon(this._settings, path);
         stIcon.set_gicon(Gio.icon_new_for_string(iconString));
     }
 
     _setButtonIconSize() {
         const {menuButtonWidget} = this._menuButton;
         const stIcon = menuButtonWidget.getPanelIcon();
-        const iconSize = Me.settings.get_double('custom-menu-button-icon-size');
+        const iconSize = this._settings.get_double('custom-menu-button-icon-size');
         const size = iconSize;
         stIcon.icon_size = size;
     }
 
     _setButtonIconPadding() {
-        const padding = Me.settings.get_int('button-padding');
+        const padding = this._settings.get_int('button-padding');
         if (padding > -1)
             this._menuButton.style = `-natural-hpadding: ${padding  * 2}px; -minimum-hpadding: ${padding}px;`;
         else
@@ -446,8 +452,8 @@ var MenuSettingsController = class {
     }
 
     _getMenuPosition() {
-        const offset = Me.settings.get_int('menu-button-position-offset');
-        switch (Me.settings.get_enum('position-in-panel')) {
+        const offset = this._settings.get_int('menu-button-position-offset');
+        switch (this._settings.get_enum('position-in-panel')) {
         case Constants.MenuPosition.CENTER:
             return [offset, 'center'];
         case Constants.MenuPosition.RIGHT: {
@@ -467,7 +473,7 @@ var MenuSettingsController = class {
     }
 
     _configureActivitiesButton() {
-        const showActivities = Me.settings.get_boolean('show-activities-button');
+        const showActivities = this._settings.get_boolean('show-activities-button');
         if (this.panel.statusArea.activities)
             this.panel.statusArea.activities.visible = showActivities;
     }
