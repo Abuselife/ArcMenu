@@ -7,6 +7,7 @@ import Shell from 'gi://Shell';
 import {InputSourceManager} from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+import {ArcMenuManager} from './arcmenuManager.js';
 import * as Constants from './constants.js';
 import * as Keybinder from './keybinder.js';
 import {MenuButton} from './menuButton.js';
@@ -15,14 +16,14 @@ import {StandaloneRunner} from './standaloneRunner.js';
 import * as Utils from './utils.js';
 
 export const MenuSettingsController = class {
-    constructor(extension, panelInfo, index) {
+    constructor(panelInfo, index) {
         this.panel = panelInfo.panel;
         this.currentMonitorIndex = 0;
         this.isPrimaryPanel = index === 0;
 
-        this._extension = extension;
-        this._settingsControllers = extension.settingsControllers;
-        this._settings = extension.getSettings();
+        this._extension = ArcMenuManager.extension;
+        this._settingsControllers = ArcMenuManager.settingsControllers;
+        this._settings = ArcMenuManager.settings;
 
         // Allow other extensions and DBus command to open/close ArcMenu
         if (!global.toggleArcMenu) {
@@ -34,7 +35,7 @@ export const MenuSettingsController = class {
         }
 
         this._settingsConnections = new Utils.SettingsConnectionsHandler(this._settings);
-        this._menuButton = new MenuButton(this._extension, panelInfo, index);
+        this._menuButton = new MenuButton(panelInfo, index);
 
         if (this.isPrimaryPanel) {
             this._overrideOverlayKey = new Keybinder.OverrideOverlayKey();
@@ -182,7 +183,7 @@ export const MenuSettingsController = class {
             GLib.source_remove(this._writeTimeoutId);
 
         this._writeTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-            Theming.updateStylesheet(this._extension);
+            Theming.updateStylesheet();
             this._writeTimeoutId = null;
             return GLib.SOURCE_REMOVE;
         });
@@ -335,7 +336,7 @@ export const MenuSettingsController = class {
 
             if (enableStandaloneRunnerMenu) {
                 if (!this.runnerMenu) {
-                    this.runnerMenu = new StandaloneRunner(this._extension);
+                    this.runnerMenu = new StandaloneRunner();
                     this.runnerMenu.initiate();
                 }
                 if (runnerHotKey === Constants.HotkeyType.CUSTOM) {
@@ -418,7 +419,7 @@ export const MenuSettingsController = class {
         const {menuButtonWidget} = this._menuButton;
         const stIcon = menuButtonWidget.getPanelIcon();
 
-        const iconString = Utils.getMenuButtonIcon(this._extension, path);
+        const iconString = Utils.getMenuButtonIcon(path);
         stIcon.set_gicon(Gio.icon_new_for_string(iconString));
     }
 

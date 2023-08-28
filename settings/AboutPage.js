@@ -13,7 +13,7 @@ import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions
 
 export const AboutPage = GObject.registerClass(
 class ArcMenuAboutPage extends Adw.PreferencesPage {
-    _init(settings, metadata) {
+    _init(metadata) {
         super._init({
             title: _('About'),
             icon_name: 'help-about-symbolic',
@@ -24,8 +24,6 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         const PROJECT_DESCRIPTION = _('Application Menu Extension for GNOME');
         const PROJECT_IMAGE = 'settings-arcmenu-logo';
         const SCHEMA_PATH = '/org/gnome/shell/extensions/arcmenu/';
-
-        this._settings = settings;
 
         // Project Logo, title, description-------------------------------------
         const projectHeaderGroup = new Adw.PreferencesGroup();

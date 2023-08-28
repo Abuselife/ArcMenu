@@ -2,6 +2,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 
+import {ArcMenuManager} from './arcmenuManager.js';
 import * as Constants from './constants.js';
 import {MenuSettingsController} from './controller.js';
 import {SearchProviderEmitter} from './searchProviders/searchProviderEmitter.js';
@@ -14,11 +15,11 @@ export default class ArcMenu extends Extension {
     }
 
     enable() {
-        this._settings = this.getSettings();
-
+        this._arcmenuManager = new ArcMenuManager(this);
+        this.settings = this.getSettings();
         this.searchProviderEmitter = new SearchProviderEmitter();
 
-        const hideOverviewOnStartup = this._settings.get_boolean('hide-overview-on-startup');
+        const hideOverviewOnStartup = this.settings.get_boolean('hide-overview-on-startup');
         if (hideOverviewOnStartup && Main.layoutManager._startingUp) {
             Main.sessionMode.hasOverview = false;
             Main.layoutManager.connect('startup-complete', () => {
@@ -29,11 +30,11 @@ export default class ArcMenu extends Extension {
                 Main.layoutManager.startInOverview = false;
         }
 
-        this._settings.connect('changed::multi-monitor', () => this._reload());
-        this._settings.connect('changed::dash-to-panel-standalone', () => this._reload());
+        this.settings.connect('changed::multi-monitor', () => this._reload());
+        this.settings.connect('changed::dash-to-panel-standalone', () => this._reload());
         this.settingsControllers = [];
 
-        Theming.createStylesheet(this);
+        Theming.createStylesheet();
 
         this._enableButtons();
 
@@ -66,15 +67,18 @@ export default class ArcMenu extends Extension {
             this._extensionChangedId = null;
         }
 
-        Theming.deleteStylesheet(this);
+        Theming.deleteStylesheet();
 
         this._disconnectExtensionSignals();
 
         this._disableButtons();
         this.settingsControllers = null;
 
-        this._settings.run_dispose();
-        delete this._settings;
+        this._arcmenuManager.destroy();
+        this._arcmenuManager = null;
+
+        this.settings.run_dispose();
+        this.settings = null;
     }
 
     _connectExtensionSignals() {
@@ -104,7 +108,7 @@ export default class ArcMenu extends Extension {
     }
 
     _enableButtons() {
-        const multiMonitor = this._settings.get_boolean('multi-monitor');
+        const multiMonitor = this.settings.get_boolean('multi-monitor');
 
         let panelExtensionEnabled = false;
         let panels;
@@ -136,13 +140,13 @@ export default class ArcMenu extends Extension {
 
             // Place ArcMenu in main top panel when
             // Dash to Panel setting "Keep original gnome-shell top panel" is on
-            const isStandalone = this._settings.get_boolean('dash-to-panel-standalone') &&
+            const isStandalone = this.settings.get_boolean('dash-to-panel-standalone') &&
                                  global.dashToPanel && panelExtensionEnabled;
             if (isStandalone && ('isPrimary' in panelParent && panelParent.isPrimary) && panelParent.isStandalone)
                 panel = Main.panel;
 
             const panelInfo = {panel, panelBox, panelParent};
-            const settingsController = new MenuSettingsController(this, panelInfo, i);
+            const settingsController = new MenuSettingsController(panelInfo, i);
 
             settingsController.monitorIndex = panelParent.monitor?.index ?? 0;
 

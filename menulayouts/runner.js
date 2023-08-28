@@ -19,7 +19,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
     }
 
     constructor(menuButton, isStandalone) {
-        const settings = menuButton.extension.getSettings();
+        const settings = menuButton.extension.settings;
 
         let displayType, searchDisplayType, columnSpacing, rowSpacing, defaultMenuWidth, iconGridSize;
         const searchDisplayStyle = settings.get_enum('runner-search-display-style');

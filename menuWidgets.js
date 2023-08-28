@@ -149,14 +149,12 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         this.set_offscreen_redirect(Clutter.OffscreenRedirect.ON_IDLE);
         this.hasContextMenu = false;
         this._delegate = this;
-        this._menuLayout = menuLayout;
 
-        ({
-            menuButton: this._menuButton,
-            settings: this._settings,
-            arcMenu: this._arcMenu,
-            extension: this._extension,
-        } = menuLayout);
+        this._menuButton = menuLayout.menuButton;
+        this._settings = menuLayout.settings;
+        this._arcMenu = menuLayout.arcMenu;
+        this._extension = menuLayout.extension;
+        this._menuLayout = menuLayout;
 
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM;
         this.shouldShow = true;
@@ -1519,7 +1517,7 @@ export class ShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
         } else if (this._displayType === Constants.DisplayType.GRID) {
             iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else {
             defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
                 : this._menuLayout.quicklinks_icon_size;
@@ -1791,7 +1789,7 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this._displayType === Constants.DisplayType.GRID) {
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
@@ -2220,7 +2218,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
 
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(this._settings, iconSizeEnum, defaultIconSize).iconSize;
+            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ||
@@ -2802,7 +2800,7 @@ export class CategoryMenuItem extends ArcMenuPopupBaseMenuItem {
             }
         }
 
-        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._extension, this._category);
+        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._category);
         this._name = _(name);
         this.label.text = _(name);
 
@@ -3143,10 +3141,8 @@ export class SearchBox extends St.Entry {
             style_class: 'arcmenu-search-entry',
         });
 
-        ({
-            settings: this._settings,
-            searchResults: this.searchResults,
-        } = menuLayout);
+        this._settings = menuLayout.settings;
+        this.searchResults = menuLayout.searchResults;
 
         this._menuLayout = menuLayout;
         this.triggerSearchChangeEvent = true;

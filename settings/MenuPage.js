@@ -214,7 +214,7 @@ class ArcMenuMenuPage extends Adw.PreferencesPage {
         } else if (subpage === Constants.SettingsPage.RUNNER_TWEAKS) {
             const row = this.tweaksRow;
             this._window.present_subpage(row.settingPage);
-            row.settingPage.setActiveLayout(Constants.Constants.MenuLayout.RUNNER);
+            row.settingPage.setActiveLayout(Constants.MenuLayout.RUNNER);
         }
     }
 });

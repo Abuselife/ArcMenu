@@ -12,6 +12,7 @@ import * as PointerWatcher from 'resource:///org/gnome/shell/ui/pointerWatcher.j
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
 
+import {ArcMenuManager} from './arcmenuManager.js';
 import * as Constants from './constants.js';
 import * as LayoutHandler from './menulayouts/layoutHandler.js';
 import * as MW from './menuWidgets.js';
@@ -21,7 +22,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 
 export const MenuButton = GObject.registerClass(
 class ArcMenuMenuButton extends PanelMenu.Button {
-    _init(extension, panelInfo, index) {
+    _init(panelInfo, index) {
         super._init(0.5, null, true);
 
         this.set({
@@ -29,15 +30,12 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             y_expand: false,
         });
 
-        this._settings = extension.getSettings();
-        this.extension = extension;
+        this._settings = ArcMenuManager.settings;
         this.index = index;
 
-        ({
-            panel: this._panel,
-            panelBox: this._panelBox,
-            panelParent: this._panelParent,
-        } = panelInfo);
+        this._panel = panelInfo.panel;
+        this._panelBox = panelInfo.panelBox;
+        this._panelParent = panelInfo.panelParent;
 
         this.menu.destroy();
         this.menu = null;
@@ -538,18 +536,13 @@ export const ArcMenu = class ArcMenuArcMenu extends PopupMenu.PopupMenu {
 var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.PopupMenu {
     constructor(sourceActor, arrowAlignment, arrowSide) {
         super(sourceActor, arrowAlignment, arrowSide);
-        this._menuButton = sourceActor;
+        this._settings = ArcMenuManager.settings;
+        this._extension = ArcMenuManager.extension;
+        this._systemActions = SystemActions.getDefault();
 
         this.actor.add_style_class_name('panel-menu app-menu');
         Main.uiGroup.add_child(this.actor);
         this.actor.hide();
-
-        this.systemActions = SystemActions.getDefault();
-
-        ({
-            extension: this._extension,
-            settings: this._settings,
-        } = sourceActor);
 
         const menuItemsChangedId = this._settings.connect('changed::context-menu-shortcuts',
             () => this.populateMenuItems());
@@ -611,9 +604,9 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
 
     disconnectPowerOptions() {
         if (this.canSuspendId)
-            this.systemActions.disconnect(this.canSuspendId);
+            this._systemActions.disconnect(this.canSuspendId);
         if (this.canSwitchUserId)
-            this.systemActions.disconnect(this.canSwitchUserId);
+            this._systemActions.disconnect(this.canSwitchUserId);
 
         this.canSuspendId = null;
         this.canSwitchUserId = null;
@@ -637,23 +630,23 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
         const powerOptionsItem = new PopupMenu.PopupSubMenuMenuItem(_('Power Off / Log Out'));
 
         const suspendItem = powerOptionsItem.menu.addAction(_('Suspend'),
-            () => this.systemActions.activateSuspend());
-        suspendItem.visible = this.systemActions.canSuspend;
-        powerOptionsItem.menu.addAction(_('Restart...'), () => this.systemActions.activateRestart());
-        powerOptionsItem.menu.addAction(_('Power Off...'), () => this.systemActions.activatePowerOff());
+            () => this._systemActions.activateSuspend());
+        suspendItem.visible = this._systemActions.canSuspend;
+        powerOptionsItem.menu.addAction(_('Restart...'), () => this._systemActions.activateRestart());
+        powerOptionsItem.menu.addAction(_('Power Off...'), () => this._systemActions.activatePowerOff());
 
         powerOptionsItem.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        powerOptionsItem.menu.addAction(_('Lock'), () => this.systemActions.activateLockScreen());
-        powerOptionsItem.menu.addAction(_('Log Out...'), () => this.systemActions.activateLogout());
+        powerOptionsItem.menu.addAction(_('Lock'), () => this._systemActions.activateLockScreen());
+        powerOptionsItem.menu.addAction(_('Log Out...'), () => this._systemActions.activateLogout());
         const switchUserItem = powerOptionsItem.menu.addAction(_('Switch User'),
-            () => this.systemActions.activateSwitchUser());
-        switchUserItem.visible = this.systemActions.canSwitchUser;
+            () => this._systemActions.activateSwitchUser());
+        switchUserItem.visible = this._systemActions.canSwitchUser;
 
-        this.canSuspendId = this.systemActions.connect('notify::can-suspend',
-            () => (suspendItem.visible = this.systemActions.canSuspend));
-        this.canSwitchUserId = this.systemActions.connect('notify::can-switch-user',
-            () => (switchUserItem.visible = this.systemActions.canSwitchUser));
+        this.canSuspendId = this._systemActions.connect('notify::can-suspend',
+            () => (suspendItem.visible = this._systemActions.canSuspend));
+        this.canSwitchUserId = this._systemActions.connect('notify::can-switch-user',
+            () => (switchUserItem.visible = this._systemActions.canSwitchUser));
 
         this.addMenuItem(powerOptionsItem);
     }

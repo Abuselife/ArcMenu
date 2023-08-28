@@ -8,6 +8,7 @@ import St from 'gi://St';
 
 import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 
+import {ArcMenuManager} from '../arcmenuManager.js';
 import * as Constants from '../constants.js';
 import * as MW from '../menuWidgets.js';
 import * as PlaceDisplay from '../placeDisplay.js';
@@ -91,15 +92,14 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             y_align: Clutter.ActorAlign.FILL,
         });
         this._delegate = this;
-        this.menuButton = menuButton;
 
-        ({
-            contextMenuManager: this.contextMenuManager,
-            subMenuManager: this.subMenuManager,
-            arcMenu: this.arcMenu,
-            extension: this.extension,
-            settings: this._settings,
-        } = menuButton);
+        this._menuButton = menuButton;
+        this._settings = ArcMenuManager.settings;
+        this._extension = ArcMenuManager.extension;
+
+        this.contextMenuManager = menuButton.contextMenuManager;
+        this.subMenuManager = menuButton.subMenuManager;
+        this.arcMenu = menuButton.arcMenu;
 
         this._focusChild = null;
         this.hasPinnedApps = false;
@@ -146,6 +146,14 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         return this._settings;
     }
 
+    get extension() {
+        return this._extension;
+    }
+
+    get menuButton() {
+        return this._menuButton;
+    }
+
     setDefaultMenuView() {
         if (this.has_search) {
             this.searchBox.clearWithoutSearchChangeEvent();
@@ -187,7 +195,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         const gridIconPadding = 10;
         const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
 
-        const {width, height_, iconSize_} = Utils.getGridIconSize(this._settings, iconSizeEnum, this.icon_grid_size);
+        const {width, height_, iconSize_} = Utils.getGridIconSize(iconSizeEnum, this.icon_grid_size);
         return width + gridIconPadding;
     }
 
@@ -1037,12 +1045,12 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         panAction.connectObject('pan', action => {
             // blocks activate event while panning scroll view
             this.blockActivateEvent = true;
-            if (this.menuButton.tooltipShowingID) {
-                GLib.source_remove(this.menuButton.tooltipShowingID);
-                this.menuButton.tooltipShowingID = null;
+            if (this._menuButton.tooltipShowingID) {
+                GLib.source_remove(this._menuButton.tooltipShowingID);
+                this._menuButton.tooltipShowingID = null;
             }
-            if (this.menuButton.tooltip.visible)
-                this.menuButton.tooltip.hide(true);
+            if (this._menuButton.tooltip.visible)
+                this._menuButton.tooltip.hide(true);
             this.onPan(action, scrollBox);
         }, this);
         panAction.connectObject('gesture-cancel', action => this.onPanEnd(action, scrollBox), this);

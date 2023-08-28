@@ -1,4 +1,6 @@
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+import {ArcMenuManager} from './arcmenuManager.js';
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -11,8 +13,7 @@ export const RecentFilesManager = class ArcMenuRecentFilesManager {
         this._recentFile = GLib.build_filenamev([GLib.get_user_data_dir(), 'recently-used.xbel']);
         this._queryCancellables = [];
 
-        const extension = Extension.lookupByURL(import.meta.url);
-        this._settings = extension.getSettings();
+        this._settings = ArcMenuManager.settings;
     }
 
     getRecentFiles() {

@@ -3,6 +3,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
 
+import {ArcMenuManager} from './arcmenuManager.js';
+
 Gio._promisify(Gio.File.prototype, 'replace_contents_bytes_async', 'replace_contents_finish');
 Gio._promisify(Gio.File.prototype, 'delete_async');
 
@@ -10,13 +12,12 @@ const FileName = 'XXXXXX-arcmenu-stylesheet.css';
 
 /**
  * Create and load a custom stylesheet file into global.stage St.Theme
- * @param {Extension} extension
  */
-export function createStylesheet(extension) {
+export function createStylesheet() {
     try {
         const [file] = Gio.File.new_tmp(FileName);
-        extension.customStylesheet = file;
-        updateStylesheet(extension);
+        ArcMenuManager.customStylesheet = file;
+        updateStylesheet();
     } catch (e) {
         log(`ArcMenu - Error creating custom stylesheet: ${e}`);
     }
@@ -24,24 +25,23 @@ export function createStylesheet(extension) {
 
 /**
  * Unload the custom stylesheet from global.stage St.Theme
- * @param {Extension} extension
  */
-function unloadStylesheet(extension) {
-    if (!extension.customStylesheet)
+function unloadStylesheet() {
+    if (!ArcMenuManager.customStylesheet)
         return;
 
     const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-    theme.unload_stylesheet(extension.customStylesheet);
+    theme.unload_stylesheet(ArcMenuManager.customStylesheet);
 }
 
 /**
  * Delete and unload the custom stylesheet file from global.stage St.Theme
- * @param {Extension} extension
  */
-export async function deleteStylesheet(extension) {
-    unloadStylesheet(extension);
+export async function deleteStylesheet() {
+    unloadStylesheet();
 
-    const stylesheet = extension.customStylesheet;
+    const {extension} = ArcMenuManager;
+    const stylesheet = ArcMenuManager.customStylesheet;
 
     try {
         if (stylesheet.query_exists(null))
@@ -56,18 +56,17 @@ export async function deleteStylesheet(extension) {
 
 /**
  * Write theme data to custom stylesheet and reload into global.stage St.Theme
- * @param {Extension} extension
  */
-export async function updateStylesheet(extension) {
-    const settings = extension.getSettings();
-    const stylesheet = extension.customStylesheet;
+export async function updateStylesheet() {
+    const {settings} = ArcMenuManager;
+    const stylesheet = ArcMenuManager.customStylesheet;
 
     if (!stylesheet) {
         log('ArcMenu - Warning: Custom stylesheet not found! Unable to set contents of custom stylesheet.');
         return;
     }
 
-    unloadStylesheet(extension);
+    unloadStylesheet();
 
     let customMenuThemeCSS = '';
     let extraStylingCSS = '';
@@ -265,9 +264,9 @@ export async function updateStylesheet(extension) {
             return;
         }
 
-        extension.customStylesheet = stylesheet;
+        ArcMenuManager.customStylesheet = stylesheet;
         const theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-        theme.load_stylesheet(extension.customStylesheet);
+        theme.load_stylesheet(ArcMenuManager.customStylesheet);
     } catch (e) {
         log(`ArcMenu - Error replacing contents of custom stylesheet: ${e}`);
     }

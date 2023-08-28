@@ -30,10 +30,8 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
     constructor(sourceActor, menuLayout) {
         super(sourceActor, St.Side.TOP);
 
-        ({
-            menuButton: this._menuButton,
-            settings: this._settings,
-        } = menuLayout);
+        this._settings = menuLayout.settings;
+        this._menuButton = menuLayout.menuButton;
 
         this._menuLayout = menuLayout;
         this._enableFavorites = true;

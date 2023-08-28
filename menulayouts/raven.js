@@ -16,7 +16,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
     }
 
     constructor(menuButton) {
-        const settings = menuButton.extension.getSettings();
+        const settings = menuButton.extension.settings;
 
         super(menuButton, {
             has_search: true,

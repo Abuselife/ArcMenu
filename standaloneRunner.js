@@ -8,17 +8,18 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {ArcMenu} from './menuButton.js';
+import {ArcMenuManager} from './arcmenuManager.js';
 import * as Constants from './constants.js';
 import * as LayoutHandler from './menulayouts/layoutHandler.js';
 import * as MW from './menuWidgets.js';
 
 export const StandaloneRunner = class ArcMenuStandaloneRunner {
-    constructor(extension) {
+    constructor() {
         this.tooltipShowing = false;
         this.tooltipShowingID = null;
 
-        this.settings = extension.getSettings();
-        this.extension = extension;
+        this._settings = ArcMenuManager.settings;
+        this._extension = ArcMenuManager.extension;
         this.tooltip = new MW.Tooltip(this);
         this.index = -1;
 
@@ -43,6 +44,14 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
         // Sub Menu Manager - Control all other popup menus
         this.subMenuManager = new PopupMenu.PopupMenuManager(this.arcMenu);
         this.subMenuManager._changeMenu = () => {};
+    }
+
+    get extension() {
+        return this._extension;
+    }
+
+    get settings() {
+        return this._settings;
     }
 
     initiate() {

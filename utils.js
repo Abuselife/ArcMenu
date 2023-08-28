@@ -1,6 +1,4 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
-
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -11,6 +9,10 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Constants from './constants.js';
 import {getLoginManager} from 'resource:///org/gnome/shell/misc/loginManager.js';
+
+import {ArcMenuManager} from './arcmenuManager.js';
+
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const InterfaceXml = `<node>
   <interface name="com.Extensions.ArcMenu">
@@ -141,7 +143,7 @@ export function convertToGridLayout(item) {
     const menuLayout = item._menuLayout;
     const icon = item._iconBin;
 
-    const settings = menuLayout.settings;
+    const settings = ArcMenuManager.settings;
 
     const iconSizeEnum = settings.get_enum('menu-item-grid-icon-size');
     const defaultIconSize = menuLayout.icon_grid_size;
@@ -208,7 +210,9 @@ export function getIconSize(iconSizeEnum, defaultIconSize) {
     }
 }
 
-export function getGridIconSize(settings, iconSizeEnum, defaultIconSize) {
+export function getGridIconSize(iconSizeEnum, defaultIconSize) {
+    const settings = ArcMenuManager.settings;
+
     if (iconSizeEnum === Constants.GridIconSize.CUSTOM) {
         const {width, height, iconSize} = settings.get_value('custom-grid-icon-size').deep_unpack();
         return {width, height, iconSize};
@@ -228,7 +232,9 @@ export function getGridIconSize(settings, iconSizeEnum, defaultIconSize) {
     return {width, height, iconSize};
 }
 
-export function getCategoryDetails(extension, currentCategory) {
+export function getCategoryDetails(currentCategory) {
+    const extensionPath = ArcMenuManager.extension.path;
+
     let name, gicon, fallbackIcon = null;
 
     for (const entry of Constants.Categories) {
@@ -246,7 +252,7 @@ export function getCategoryDetails(extension, currentCategory) {
     } else {
         name = currentCategory.get_name();
         const categoryIcon = currentCategory.get_icon();
-        const fallbackIconDirectory = `${extension.path}/icons/category-icons/`;
+        const fallbackIconDirectory = `${extensionPath}/icons/category-icons/`;
 
         if (!categoryIcon) {
             gicon = null;
@@ -288,11 +294,12 @@ export function getPowerTypeFromShortcutCommand(command) {
     }
 }
 
-export function getMenuButtonIcon(extension, path) {
-    const settings = extension.getSettings();
+export function getMenuButtonIcon(path) {
+    const extensionPath = ArcMenuManager.extension.path;
+    const settings = ArcMenuManager.settings;
 
     const iconType = settings.get_enum('menu-button-icon');
-    const iconDirectory = `${extension.path}/icons/hicolor/16x16/actions/`;
+    const iconDirectory = `${extensionPath}/icons/hicolor/16x16/actions/`;
 
     if (iconType === Constants.MenuIconType.CUSTOM) {
         if (path && GLib.file_test(path, GLib.FileTest.IS_REGULAR))
