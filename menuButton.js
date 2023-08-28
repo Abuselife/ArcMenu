@@ -30,6 +30,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             y_expand: false,
         });
 
+        this._extension = ArcMenuManager.extension;
         this._settings = ArcMenuManager.settings;
         this.index = index;
 
@@ -74,6 +75,10 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.menuButtonWidget = new MW.MenuButtonWidget();
         this.add_child(this.menuButtonWidget);
+    }
+
+    get extension() {
+        return this._extension;
     }
 
     get settings() {
