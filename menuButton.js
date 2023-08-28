@@ -30,9 +30,13 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             y_expand: false,
         });
 
+        this.add_style_class_name('arcmenu-panel-menu');
+
         this._extension = ArcMenuManager.extension;
         this._settings = ArcMenuManager.settings;
-        this.index = index;
+
+        // Link search providers to this menu
+        this.searchProviderDisplayId = `ArcMenu_${index}`;
 
         this._panel = panelInfo.panel;
         this._panelBox = panelInfo.panelBox;
@@ -40,11 +44,11 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.menu.destroy();
         this.menu = null;
-        this.add_style_class_name('arcmenu-panel-menu');
+
         this.tooltipShowing = false;
         this.tooltipShowingID = null;
-
         this.tooltip = new MW.Tooltip(this);
+
         this._dtpNeedsRelease = false;
 
         // Create Main Menus - ArcMenu and ArcMenu's context menu

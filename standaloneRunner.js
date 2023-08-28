@@ -15,13 +15,15 @@ import * as MW from './menuWidgets.js';
 
 export const StandaloneRunner = class ArcMenuStandaloneRunner {
     constructor() {
-        this.tooltipShowing = false;
-        this.tooltipShowingID = null;
-
         this._settings = ArcMenuManager.settings;
         this._extension = ArcMenuManager.extension;
+
+        // Link search providers to this menu
+        this.searchProviderDisplayId = 'StandaloneRunner';
+
+        this.tooltipShowing = false;
+        this.tooltipShowingID = null;
         this.tooltip = new MW.Tooltip(this);
-        this.index = -1;
 
         // Create Main Menus - ArcMenu and arcMenu's context menu
         this.arcMenu = new ArcMenu(Main.layoutManager.dummyCursor, 0.5, St.Side.TOP, this);

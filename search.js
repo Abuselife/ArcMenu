@@ -417,12 +417,12 @@ export class SearchResults extends St.BoxLayout {
             x_align: Clutter.ActorAlign.FILL,
         });
         this._menuLayout = menuLayout;
-        const index = menuLayout.menuButton.index;
-        this._displayId = `display_${index}`;
+
+        const {searchProviderDisplayId} = menuLayout.menuButton;
+        this._displayId = `display_${searchProviderDisplayId}`;
+
         this.searchType = this._menuLayout.search_display_type;
-
         this._settings = menuLayout.settings;
-
         this.layout = this._settings.get_enum('menu-layout');
 
         this._content = new St.BoxLayout({
