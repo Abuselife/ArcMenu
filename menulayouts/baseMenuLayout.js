@@ -121,9 +121,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         if (this.has_search) {
             this.searchResults = new SearchResults(this);
-            this.searchBox = new MW.SearchBox(this);
-            this.searchBox.connectObject('search-changed', this._onSearchBoxChanged.bind(this), this);
-            this.searchBox.connectObject('entry-key-press', this._onSearchBoxKeyPress.bind(this), this);
+            this.searchEntry = new MW.SearchEntry(this);
+            this.searchEntry.connectObject('search-changed', this._onSearchEntryChanged.bind(this), this);
+            this.searchEntry.connectObject('entry-key-press', this._onSearchEntryKeyPress.bind(this), this);
         }
 
         const layout = new Clutter.GridLayout({
@@ -156,7 +156,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     setDefaultMenuView() {
         if (this.has_search) {
-            this.searchBox.clearWithoutSearchChangeEvent();
+            this.searchEntry.clearWithoutSearchChangeEvent();
             this.searchResults.setTerms([]);
         }
 
@@ -623,7 +623,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     _createPlaces(id) {
         const places = this.placesManager.get(id);
 
-        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
+        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const haveApplicationShortcuts = applicationShortcuts.length > 0;
         const haveNetworkDevices = this.placesManager.get('network').length > 0;
         const haveExternalDevices = this.placesManager.get('devices').length > 0;
         const haveBookmarks = this.placesManager.get('bookmarks').length > 0;
@@ -809,8 +810,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this._activeMenuItem = item;
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        if (searchBox.isEmpty()) {
+    _onSearchEntryChanged(searchEntry, searchString) {
+        if (searchEntry.isEmpty()) {
             if (this.applicationsBox.contains(this.searchResults))
                 this.applicationsBox.remove_child(this.searchResults);
 
@@ -842,7 +843,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         }
     }
 
-    _onSearchBoxKeyPress(searchBox, event) {
+    _onSearchEntryKeyPress(searchEntry, event) {
         const symbol = event.get_key_symbol();
         switch (symbol) {
         case Clutter.KEY_Up:
@@ -857,7 +858,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             if (symbol === Clutter.KEY_Left)
                 direction = St.DirectionType.LEFT;
 
-            let cursorPosition = this.searchBox.clutter_text.get_cursor_position();
+            let cursorPosition = this.searchEntry.clutter_text.get_cursor_position();
 
             if (cursorPosition === Constants.CaretPosition.END && symbol === Clutter.KEY_Right)
                 cursorPosition = Constants.CaretPosition.END;
@@ -897,22 +898,22 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         const unicode = Clutter.keysym_to_unicode(symbol);
 
         /*
-        * Pass ctrl key event to searchbox.
+        * Pass ctrl key event to searchEntry.
         * Useful for paste event (ctrl+v),
-        * if searchbox entry doesn't have key focus
+        * if searchEntry entry doesn't have key focus
         */
-        if (this.searchBox && (symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R)) {
-            global.stage.set_key_focus(this.searchBox.clutter_text);
-            this.searchBox.clutter_text.event(event, false);
+        if (this.searchEntry && (symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R)) {
+            global.stage.set_key_focus(this.searchEntry.clutter_text);
+            this.searchEntry.clutter_text.event(event, false);
             return Clutter.EVENT_PROPAGATE;
         }
 
         switch (symbol) {
         case Clutter.KEY_BackSpace:
-            if (this.searchBox && !this.searchBox.hasKeyFocus() && !this.searchBox.isEmpty()) {
-                this.searchBox.grab_key_focus();
-                const newText = this.searchBox.getText().slice(0, -1);
-                this.searchBox.setText(newText);
+            if (this.searchEntry && !this.searchEntry.hasKeyFocus() && !this.searchEntry.isEmpty()) {
+                this.searchEntry.grab_key_focus();
+                const newText = this.searchEntry.getText().slice(0, -1);
+                this.searchEntry.setText(newText);
             }
             return Clutter.EVENT_PROPAGATE;
         case Clutter.KEY_Tab:
@@ -935,7 +936,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             else if (symbol === Clutter.KEY_ISO_Left_Tab)
                 direction = St.DirectionType.TAB_BACKWARD;
 
-            if (this.has_search && this.searchBox.hasKeyFocus() &&
+            if (this.has_search && this.searchEntry.hasKeyFocus() &&
                 this.searchResults.hasActiveResult() && this.searchResults.get_parent()) {
                 const topSearchResult = this.searchResults.getTopResult();
                 if (topSearchResult.has_style_pseudo_class('active')) {
@@ -958,9 +959,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         case Clutter.KEY_Escape:
             return Clutter.EVENT_PROPAGATE;
         default:
-            if (unicode !== 0 && this.searchBox) {
-                global.stage.set_key_focus(this.searchBox.clutter_text);
-                this.searchBox.clutter_text.event(event, false);
+            if (unicode !== 0 && this.searchEntry) {
+                global.stage.set_key_focus(this.searchEntry.clutter_text);
+                this.searchEntry.clutter_text.event(event, false);
             }
         }
         return Clutter.EVENT_PROPAGATE;
@@ -994,16 +995,17 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         if (this.placesManager) {
             for (const id in this._placesSections) {
-                this._placesSections[id].get_children().forEach(child => {
-                    child.destroy();
-                });
+                if (Object.hasOwn(this._placesSections, id)) {
+                    const children = this._placesSections[id].get_children();
+                    children.forEach(child => child.destroy());
+                }
             }
             this.placesManager.destroy();
             this.placesManager = null;
         }
 
-        if (this.searchBox)
-            this.searchBox.destroy();
+        if (this.searchEntry)
+            this.searchEntry.destroy();
 
         if (this.searchResults) {
             this.searchResults.setTerms([]);

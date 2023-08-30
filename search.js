@@ -146,8 +146,11 @@ class SearchResultsBase extends St.BoxLayout {
 
     clear() {
         this._cancellable.cancel();
-        for (const resultId in this._resultDisplays)
-            this._resultDisplays[resultId].destroy();
+        for (const resultId in this._resultDisplays) {
+            if (Object.hasOwn(this._resultDisplays, resultId))
+                this._resultDisplays[resultId].destroy();
+        }
+
         this._resultDisplays = {};
         this._clearResultDisplay();
         this.hide();
@@ -462,9 +465,11 @@ export class SearchResults extends St.BoxLayout {
         this._searchSettings.connectObject('changed::disable-external', this._reloadRemoteProviders.bind(this), this);
         this._searchSettings.connectObject('changed::sort-order', this._reloadRemoteProviders.bind(this), this);
 
-        const extension = menuLayout.extension;
-        extension.searchProviderEmitter.connectObject('search-provider-added', (_, provider) => this._registerProvider(provider), this);
-        extension.searchProviderEmitter.connectObject('search-provider-removed', (_, provider) => this._unregisterProvider(provider), this);
+        const {extension} = menuLayout;
+        extension.searchProviderEmitter.connectObject('search-provider-added',
+            (_, provider) => this._registerProvider(provider), this);
+        extension.searchProviderEmitter.connectObject('search-provider-removed',
+            (_, provider) => this._unregisterProvider(provider), this);
 
         this._searchTimeoutId = null;
         this._cancellable = new Gio.Cancellable();

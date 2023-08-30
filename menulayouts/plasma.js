@@ -75,7 +75,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
 
         this.leftTopBox.add_child(userMenuIcon);
         this.rightTopBox.add_child(userMenuIcon.label);
-        this.rightTopBox.add_child(this.searchBox);
+        this.rightTopBox.add_child(this.searchEntry);
         this.topBox.add_child(this.leftTopBox);
         this.topBox.add_child(this.rightTopBox);
 
@@ -133,7 +133,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.style = 'margin: 3px 10px 5px 10px;';
+            this.searchEntry.style = 'margin: 3px 10px 5px 10px;';
             this.topBox.style = 'padding-top: 0.5em;';
             this.navigateBoxContainer.set({
                 y_expand: false,
@@ -155,7 +155,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
 
             this.add_child(this.topBox);
         } else if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.style = 'margin: 3px 10px 10px 10px;';
+            this.searchEntry.style = 'margin: 3px 10px 10px 10px;';
             this.navigateBoxContainer.set({
                 y_expand: true,
                 y_align: Clutter.ActorAlign.END,
@@ -415,9 +415,9 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         this.categoryHeader.setActiveCategory(this.activeCategoryName);
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        super._onSearchBoxChanged(searchBox, searchString);
-        if (!searchBox.isEmpty()) {
+    _onSearchEntryChanged(searchEntry, searchString) {
+        super._onSearchEntryChanged(searchEntry, searchString);
+        if (!searchEntry.isEmpty()) {
             this.clearActiveItem();
             this.activeCategoryType = Constants.CategoryType.SEARCH_RESULTS;
         }

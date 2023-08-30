@@ -57,7 +57,7 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
             style: 'font-weight: bold;',
         });
 
-        this.searchBox.set({
+        this.searchEntry.set({
             x_expand: false,
             y_align: Clutter.ActorAlign.CENTER,
         });
@@ -99,8 +99,8 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
         this._mainBox.add_child(horizontalFlip ? this.rightBox : this.leftBox);
         this._mainBox.add_child(verticalSeparator);
         this._mainBox.add_child(horizontalFlip ? this.leftBox : this.rightBox);
-        this.topBox.add_child(horizontalFlip ? this.searchBox : this.userMenuBox);
-        this.topBox.add_child(horizontalFlip ? this.userMenuBox : this.searchBox);
+        this.topBox.add_child(horizontalFlip ? this.searchEntry : this.userMenuBox);
+        this.topBox.add_child(horizontalFlip ? this.userMenuBox : this.searchEntry);
         this.userMenuBox.add_child(horizontalFlip ? this.userMenuIcon.label : this.userMenuIcon);
         this.userMenuBox.add_child(horizontalFlip ? this.userMenuIcon : this.userMenuIcon.label);
         this.userMenuIcon.label.style += horizontalFlip ? 'padding-right: 14px;' : 'padding-left: 14px;';
@@ -162,7 +162,7 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
         this.applicationsScrollBox.style = `width: ${menuWidth}px;`;
         this.menu_width = menuWidth;
 
-        this.searchBox.style = `width: ${menuWidth - 26}px;`;
+        this.searchEntry.style = `width: ${menuWidth - 26}px;`;
 
         if (setDefaultMenuView)
             this.setDefaultMenuView();

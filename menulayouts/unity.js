@@ -57,12 +57,12 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         });
         this.add_child(this._mainBox);
 
-        this.searchBox.set({
+        this.searchEntry.set({
             y_align: Clutter.ActorAlign.CENTER,
             y_expand: true,
             style: 'margin: 0px 15px 0px 15px;',
         });
-        this.topBox.add_child(this.searchBox);
+        this.topBox.add_child(this.searchEntry);
 
         this.categoriesButton = new MW.CategoriesButton(this);
         this.topBox.add_child(this.categoriesButton);

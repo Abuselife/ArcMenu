@@ -338,14 +338,15 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         this.emit('activate', event);
     }
 
-    vfunc_key_press_event(keyEvent) {
+    vfunc_key_press_event(event) {
+        this._menuLayout.blockHoverState = true;
         if (global.focus_manager.navigate_from_event(Clutter.get_current_event()))
             return Clutter.EVENT_STOP;
 
         if (!this._activatable)
-            return super.vfunc_key_press_event(keyEvent);
+            return super.vfunc_key_press_event(event);
 
-        let state = keyEvent.modifier_state;
+        let state = event.get_state();
 
         // if user has a modifier down (except capslock and numlock)
         // then don't handle the key press here
@@ -356,7 +357,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         if (state)
             return Clutter.EVENT_PROPAGATE;
 
-        const symbol = keyEvent.keyval;
+        const symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             this.active = false;
             this._menuLayout.grab_key_focus();
@@ -1189,7 +1190,7 @@ export class PlasmaMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     activate(event) {
-        this._menuLayout.searchBox.clearWithoutSearchChangeEvent();
+        this._menuLayout.searchEntry.clearWithoutSearchChangeEvent();
         this._menuLayout.clearActiveItem();
         this.setActive(true);
         super.activate(event);
@@ -1517,7 +1518,7 @@ export class ShortcutMenuItem extends ArcMenuPopupBaseMenuItem {
         } else if (this._displayType === Constants.DisplayType.GRID) {
             iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            ({iconSize} = Utils.getGridIconSize(iconSizeEnum, defaultIconSize));
         } else {
             defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
                 : this._menuLayout.quicklinks_icon_size;
@@ -1634,7 +1635,7 @@ export class UserMenuIcon extends St.Bin {
     }
 
     constructor(menuLayout, iconSize, hasTooltip) {
-        const settings = menuLayout.settings;
+        const {settings} = menuLayout;
 
         let avatarStyle;
         if (settings.get_enum('avatar-style') === Constants.AvatarStyle.ROUND)
@@ -1789,7 +1790,7 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this._displayType === Constants.DisplayType.GRID) {
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            ({iconSize} = Utils.getGridIconSize(iconSizeEnum, defaultIconSize));
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ? this._menuLayout.apps_icon_size
@@ -2005,7 +2006,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
                 x_expand: true,
                 x_align: Clutter.ActorAlign.FILL,
             });
-            const descriptionText = this.description.split('\n')[0];
+            const [descriptionText] = this.description.split('\n');
             this.descriptionLabel = new St.Label({
                 text: descriptionText,
                 y_expand: true,
@@ -2218,7 +2219,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
 
             const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
             const defaultIconSize = this._menuLayout.icon_grid_size;
-            iconSize = Utils.getGridIconSize(iconSizeEnum, defaultIconSize).iconSize;
+            ({iconSize} = Utils.getGridIconSize(iconSizeEnum, defaultIconSize));
         } else if (this._displayType === Constants.DisplayType.LIST) {
             const iconSizeEnum = this._settings.get_enum('menu-item-icon-size');
             const defaultIconSize = this.isContainedInCategory ||
@@ -2714,7 +2715,7 @@ export class GroupFolderMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     displayAppList() {
-        this._menuLayout.searchBox?.clearWithoutSearchChangeEvent();
+        this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
         this._menuLayout.activeCategoryName = this._name;
 
         this._menuLayout.displayCategoryAppList(this.appList, this._name);
@@ -2833,7 +2834,7 @@ export class CategoryMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 
     displayAppList() {
-        this._menuLayout.searchBox?.clearWithoutSearchChangeEvent();
+        this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
         this._menuLayout.activeCategoryName = this._name;
 
         switch (this._category) {
@@ -3118,7 +3119,7 @@ export class PlaceMenuItem extends ArcMenuPopupBaseMenuItem {
     }
 }
 
-export class SearchBox extends St.Entry {
+export class SearchEntry extends St.Entry {
     static [GObject.signals] = {
         'search-changed': {param_types: [GObject.TYPE_STRING]},
         'entry-key-focus-in': { },
@@ -3170,14 +3171,6 @@ export class SearchBox extends St.Entry {
         this._text.connectObject('key-focus-in', this._onKeyFocusIn.bind(this), this);
         this._text.connectObject('key-focus-out', this._onKeyFocusOut.bind(this), this);
         this.connect('destroy', this._onDestroy.bind(this));
-    }
-
-    get entryBox() {
-        return this;
-    }
-
-    get actor() {
-        return this;
     }
 
     getText() {

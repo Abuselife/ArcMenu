@@ -102,11 +102,11 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            mainBox.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            mainBox.insert_child_at_index(this.searchEntry, 0);
         } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            mainBox.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            mainBox.add_child(this.searchEntry);
         }
 
         const userAvatar = this._settings.get_boolean('disable-user-avatar');
@@ -254,9 +254,9 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
         super.loadCategories();
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        if (!searchBox.isEmpty())
+    _onSearchEntryChanged(searchEntry, searchString) {
+        if (!searchEntry.isEmpty())
             this.navBox.hide();
-        super._onSearchBoxChanged(searchBox, searchString);
+        super._onSearchEntryChanged(searchEntry, searchString);
     }
 };

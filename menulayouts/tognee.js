@@ -74,11 +74,11 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-bottom-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.appBox.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.appBox.insert_child_at_index(this.searchEntry, 0);
         } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.appBox.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.appBox.add_child(this.searchEntry);
         }
 
         // Contains shortcutsBox and power buttons
@@ -227,11 +227,11 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
         this.navigateBox.show();
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        super._onSearchBoxChanged(searchBox, searchString);
-        if (searchBox.isEmpty()) {
+    _onSearchEntryChanged(searchEntry, searchString) {
+        super._onSearchEntryChanged(searchEntry, searchString);
+        if (searchEntry.isEmpty()) {
             this.navigateBox.hide();
-        } else if (!searchBox.isEmpty()) {
+        } else if (!searchEntry.isEmpty()) {
             this.navigateBox.show();
             this.activeCategoryType = Constants.CategoryType.SEARCH_RESULTS;
         }

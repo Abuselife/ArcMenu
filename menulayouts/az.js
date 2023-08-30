@@ -38,7 +38,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
                 this.backButton.activate(event);
         });
 
-        this.searchBox.style = 'margin: 5px 10px;';
+        this.searchEntry.style = 'margin: 5px 10px;';
         this.arcMenu.box.style = 'padding: 0px; margin: 0px;';
 
         this._mainBox = new St.BoxLayout({
@@ -115,11 +115,11 @@ export const Layout = class AzLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.topBox.add_child(this.searchBox);
+            this.topBox.add_child(this.searchEntry);
             this.bottomBox.add_child(this.actionsBox);
         } else {
             this.topBox.add_child(this.actionsBox);
-            this.bottomBox.add_child(this.searchBox);
+            this.bottomBox.add_child(this.searchEntry);
         }
 
         this._settings.connectObject('changed::az-extra-buttons', () => this._createExtraButtons(), this);
@@ -262,10 +262,10 @@ export const Layout = class AzLayout extends BaseMenuLayout {
         this.backButton.visible = false;
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        if (!searchBox.isEmpty())
+    _onSearchEntryChanged(searchEntry, searchString) {
+        if (!searchEntry.isEmpty())
             this._hideNavigationRow();
-        super._onSearchBoxChanged(searchBox, searchString);
+        super._onSearchEntryChanged(searchEntry, searchString);
     }
 
     destroy() {

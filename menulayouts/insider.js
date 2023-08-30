@@ -74,8 +74,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         userMenuBox.add_child(userMenuIcon.label);
         this._mainBox.add_child(userMenuBox);
 
-        this.searchBox.style = 'margin: 10px;';
-        this._mainBox.add_child(this.searchBox);
+        this.searchEntry.style = 'margin: 10px;';
+        this._mainBox.add_child(this.searchEntry);
 
         this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({

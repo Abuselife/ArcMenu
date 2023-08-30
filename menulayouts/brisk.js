@@ -100,16 +100,16 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.searchBox.style = 'margin-bottom: 0px;';
-            this.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.searchEntry.style = 'margin-bottom: 0px;';
+            this.insert_child_at_index(this.searchEntry, 0);
 
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.add_child(this.searchEntry);
         }
 
         this._settings.connectObject('changed::brisk-extra-shortcuts', () => this._createExtraShortcuts(), this);
@@ -147,7 +147,8 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
         let separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.HORIZONTAL);
         this.actionsBox.insert_child_at_index(separator, 0);
-        separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM, Constants.SeparatorAlignment.HORIZONTAL);
+        separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
+            Constants.SeparatorAlignment.HORIZONTAL);
         this.actionsBox.add_child(separator);
     }
 

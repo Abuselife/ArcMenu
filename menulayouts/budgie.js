@@ -97,21 +97,21 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
                 Constants.SeparatorAlignment.HORIZONTAL);
             separator.style += 'margin-bottom: 6px;';
 
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.searchBox.style = 'margin-bottom: 0px;';
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.searchEntry.style = 'margin-bottom: 0px;';
 
-            this.insert_child_at_index(this.searchBox, 0);
+            this.insert_child_at_index(this.searchEntry, 0);
             this.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
             separator.style += 'margin-top: 6px;';
 
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.searchBox.style = 'margin-top: 0px;';
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.searchEntry.style = 'margin-top: 0px;';
 
             this.add_child(separator);
-            this.add_child(this.searchBox);
+            this.add_child(this.searchEntry);
         }
 
         this.updateWidth();

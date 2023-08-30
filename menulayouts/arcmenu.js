@@ -86,11 +86,11 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-bottom-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.insert_child_at_index(this.searchEntry, 0);
         } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.leftBox.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.leftBox.add_child(this.searchEntry);
         }
 
         const verticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
@@ -378,9 +378,9 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         super._clearActorsFromBox(box);
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        super._onSearchBoxChanged(searchBox, searchString);
-        if (!searchBox.isEmpty()) {
+    _onSearchEntryChanged(searchEntry, searchString) {
+        super._onSearchEntryChanged(searchEntry, searchString);
+        if (!searchEntry.isEmpty()) {
             this.extraCategoriesLinksBox.visible = false;
             this.backButton.show();
             this._viewAllAppsButton.hide();

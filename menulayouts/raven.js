@@ -16,7 +16,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
     }
 
     constructor(menuButton) {
-        const settings = menuButton.extension.settings;
+        const {settings} = menuButton.extension;
 
         super(menuButton, {
             has_search: true,
@@ -37,7 +37,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         });
 
         this.arcMenu.box.style = 'padding: 0px; margin: 0px; border-radius: 0px;';
-        this.searchBox.style = 'margin: 10px 10px 10px 10px;';
+        this.searchEntry.style = 'margin: 10px 10px 10px 10px;';
 
         this._settings.connectObject('changed::raven-position', () => this._updatePosition(), this);
 
@@ -85,7 +85,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             vertical: false,
         });
-        this.topBox.add_child(this.searchBox);
+        this.topBox.add_child(this.searchEntry);
 
         this._mainBox = new St.BoxLayout({
             x_expand: true,

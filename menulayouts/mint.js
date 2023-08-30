@@ -105,22 +105,22 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         this.categoriesBox = new St.BoxLayout({vertical: true});
         this.categoriesScrollBox.add_actor(this.categoriesBox);
 
-        this.searchBox.style = 'margin: 0px;';
+        this.searchEntry.style = 'margin: 0px;';
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
 
-            this.rightPanelParentBox.insert_child_at_index(this.searchBox, 0);
+            this.rightPanelParentBox.insert_child_at_index(this.searchEntry, 0);
             this.rightPanelParentBox.insert_child_at_index(separator, 1);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MAX,
                 Constants.SeparatorAlignment.HORIZONTAL);
 
             this.rightPanelParentBox.add_child(separator);
-            this.rightPanelParentBox.add_child(this.searchBox);
+            this.rightPanelParentBox.add_child(this.searchEntry);
         }
 
         this._settings.connectObject('changed::mint-extra-buttons', () => this._createExtraButtons(), this);

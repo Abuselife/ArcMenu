@@ -105,63 +105,46 @@ export const MenuSettingsController = class {
     }
 
     connectSettingsEvents() {
-        this._settingsConnections.connectMultipleEvents(
-            ['override-menu-theme', 'menu-background-color', 'menu-foreground-color', 'menu-border-color',
-                'menu-border-width', 'menu-border-radius', 'menu-font-size', 'menu-separator-color',
-                'menu-item-hover-bg-color', 'menu-item-hover-fg-color', 'menu-item-active-bg-color',
-                'menu-item-active-fg-color', 'menu-button-fg-color', 'menu-button-bg-color',
-                'menu-button-hover-bg-color', 'menu-button-hover-fg-color', 'menu-button-active-bg-color',
-                'menu-button-active-fg-color', 'menu-button-border-radius', 'menu-button-border-width',
-                'menu-button-border-color', 'menu-arrow-rise', 'search-entry-border-radius'],
-            this._overrideMenuTheme.bind(this)
-        );
+        this._settingsConnections.connect('override-menu-theme', 'menu-background-color', 'menu-foreground-color',
+            'menu-border-color', 'menu-border-width', 'menu-border-radius', 'menu-font-size', 'menu-separator-color',
+            'menu-item-hover-bg-color', 'menu-item-hover-fg-color', 'menu-item-active-bg-color',
+            'menu-item-active-fg-color', 'menu-button-fg-color', 'menu-button-bg-color',
+            'menu-button-hover-bg-color', 'menu-button-hover-fg-color', 'menu-button-active-bg-color',
+            'menu-button-active-fg-color', 'menu-button-border-radius', 'menu-button-border-width',
+            'menu-button-border-color', 'menu-arrow-rise', 'search-entry-border-radius',
+            this._overrideMenuTheme.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['enable-menu-hotkey', 'menu-hotkey-type', 'runner-menu-hotkey-type',
-                'enable-standlone-runner-menu'],
-            this._updateHotKeyBinder.bind(this)
-        );
+        this._settingsConnections.connect('enable-menu-hotkey', 'menu-hotkey-type', 'runner-menu-hotkey-type',
+            'enable-standlone-runner-menu', this._updateHotKeyBinder.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['position-in-panel', 'menu-button-position-offset'],
-            this._setButtonPosition.bind(this)
-        );
+        this._settingsConnections.connect('position-in-panel', 'menu-button-position-offset',
+            this._setButtonPosition.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['menu-button-icon', 'distro-icon', 'arc-menu-icon', 'custom-menu-button-icon'],
-            this._setButtonIcon.bind(this)
-        );
+        this._settingsConnections.connect('menu-button-icon', 'distro-icon', 'arc-menu-icon', 'custom-menu-button-icon',
+            this._setButtonIcon.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['directory-shortcuts-list', 'application-shortcuts-list', 'extra-categories',
-                'power-options', 'show-external-devices', 'show-bookmarks', 'disable-user-avatar',
-                'avatar-style', 'enable-activities-shortcut', 'enable-horizontal-flip', 'power-display-style',
-                'searchbar-default-bottom-location', 'searchbar-default-top-location', 'multi-lined-labels',
-                'apps-show-extra-details', 'show-search-result-details', 'search-provider-open-windows',
-                'search-provider-recent-files', 'misc-item-icon-size', 'windows-disable-pinned-apps',
-                'disable-scrollview-fade-effect', 'windows-disable-frequent-apps', 'default-menu-view',
-                'default-menu-view-tognee', 'alphabetize-all-programs', 'menu-item-grid-icon-size',
-                'menu-item-icon-size', 'button-item-icon-size', 'quicklinks-item-icon-size',
-                'menu-item-category-icon-size', 'category-icon-type', 'shortcut-icon-type',
-                'arcmenu-extra-categories-links', 'arcmenu-extra-categories-links-location',
-                'runner-show-frequent-apps', 'default-menu-view-redmond', 'disable-recently-installed-apps',
-                'runner-search-display-style', 'raven-search-display-style', 'custom-grid-icon-size'],
-            this._recreateMenuLayout.bind(this)
-        );
+        this._settingsConnections.connect('directory-shortcuts-list', 'application-shortcuts-list', 'extra-categories',
+            'power-options', 'show-external-devices', 'show-bookmarks', 'disable-user-avatar',
+            'avatar-style', 'enable-activities-shortcut', 'enable-horizontal-flip', 'power-display-style',
+            'searchbar-default-bottom-location', 'searchbar-default-top-location', 'multi-lined-labels',
+            'apps-show-extra-details', 'show-search-result-details', 'search-provider-open-windows',
+            'search-provider-recent-files', 'misc-item-icon-size', 'windows-disable-pinned-apps',
+            'disable-scrollview-fade-effect', 'windows-disable-frequent-apps', 'default-menu-view',
+            'default-menu-view-tognee', 'alphabetize-all-programs', 'menu-item-grid-icon-size',
+            'menu-item-icon-size', 'button-item-icon-size', 'quicklinks-item-icon-size',
+            'menu-item-category-icon-size', 'category-icon-type', 'shortcut-icon-type',
+            'arcmenu-extra-categories-links', 'arcmenu-extra-categories-links-location',
+            'runner-show-frequent-apps', 'default-menu-view-redmond', 'disable-recently-installed-apps',
+            'runner-search-display-style', 'raven-search-display-style', 'custom-grid-icon-size',
+            this._recreateMenuLayout.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['left-panel-width', 'right-panel-width', 'menu-width-adjustment'],
-            this._updateMenuWidth.bind(this)
-        );
+        this._settingsConnections.connect('left-panel-width', 'right-panel-width', 'menu-width-adjustment',
+            this._updateMenuWidth.bind(this));
 
-        this._settingsConnections.connectMultipleEvents(
-            ['pinned-app-list', 'enable-weather-widget-unity', 'enable-clock-widget-unity',
-                'enable-weather-widget-raven', 'enable-clock-widget-raven'],
-            this._updatePinnedApps.bind(this)
-        );
+        this._settingsConnections.connect('pinned-app-list', 'enable-weather-widget-unity', 'enable-clock-widget-unity',
+            'enable-weather-widget-raven', 'enable-clock-widget-raven', this._updatePinnedApps.bind(this));
 
-        this._settingsConnections.connect('menu-position-alignment',
-            this._setMenuPositionAlignment.bind(this));
+        this._settingsConnections.connect('menu-position-alignment', this._setMenuPositionAlignment.bind(this));
         this._settingsConnections.connect('menu-button-appearance', this._setButtonAppearance.bind(this));
         this._settingsConnections.connect('custom-menu-button-text', this._setButtonText.bind(this));
         this._settingsConnections.connect('custom-menu-button-icon-size', this._setButtonIconSize.bind(this));
@@ -170,8 +153,7 @@ export const MenuSettingsController = class {
         this._settingsConnections.connect('enable-unity-homescreen', this._setDefaultMenuView.bind(this));
         this._settingsConnections.connect('menu-layout', this._changeMenuLayout.bind(this));
         this._settingsConnections.connect('runner-position', this._updateLocation.bind(this));
-        this._settingsConnections.connect('show-activities-button',
-            this._configureActivitiesButton.bind(this));
+        this._settingsConnections.connect('show-activities-button', this._configureActivitiesButton.bind(this));
         this._settingsConnections.connect('force-menu-location', this._forceMenuLocation.bind(this));
     }
 

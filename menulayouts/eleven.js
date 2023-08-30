@@ -39,7 +39,7 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
                 this.backButton.activate(event);
         });
 
-        this.searchBox.style = 'margin: 5px 15px 10px 15px;';
+        this.searchEntry.style = 'margin: 5px 15px 10px 15px;';
 
         this._mainBox = new St.BoxLayout({
             x_expand: true,
@@ -79,7 +79,7 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             vertical: false,
         });
-        topBox.add_child(this.searchBox);
+        topBox.add_child(this.searchEntry);
         this.insert_child_at_index(topBox, 0);
 
         this.applicationsBox = new St.BoxLayout({
@@ -316,10 +316,10 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
         this.backButton.visible = false;
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        if (!searchBox.isEmpty())
+    _onSearchEntryChanged(searchEntry, searchString) {
+        if (!searchEntry.isEmpty())
             this._hideNavigationButtons();
-        super._onSearchBoxChanged(searchBox, searchString);
+        super._onSearchEntryChanged(searchEntry, searchString);
     }
 
     destroy() {

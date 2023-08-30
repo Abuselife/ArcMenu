@@ -45,11 +45,11 @@ export const Layout = class ChromebookLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.insert_child_at_index(this.searchEntry, 0);
         } else if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.add_child(this.searchEntry);
         }
 
         this.updateWidth();

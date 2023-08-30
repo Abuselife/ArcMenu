@@ -19,7 +19,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
     }
 
     constructor(menuButton, isStandalone) {
-        const settings = menuButton.extension.settings;
+        const {settings} = menuButton.extension;
 
         let displayType, searchDisplayType, columnSpacing, rowSpacing, defaultMenuWidth, iconGridSize;
         const searchDisplayStyle = settings.get_enum('runner-search-display-style');
@@ -80,11 +80,11 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
         this.runnerTweaksButton.set({
             x_expand: false,
             y_expand: true,
-            y_align: this.searchBox.y_align = Clutter.ActorAlign.CENTER,
+            y_align: this.searchEntry.y_align = Clutter.ActorAlign.CENTER,
             x_align: Clutter.ActorAlign.CENTER,
         });
 
-        this.topBox.add_child(this.searchBox);
+        this.topBox.add_child(this.searchEntry);
         this.topBox.add_child(this.runnerTweaksButton);
         this.add_child(this.topBox);
 
@@ -192,7 +192,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
         this.style = `max-height: ${runnerHeight}px; margin: 0px 0px 0px ${padding}px; width: ${runnerWidth}px;`;
         if (runnerFontSize > 0) {
             this.style += `font-size: ${runnerFontSize}pt;`;
-            this.searchBox.style += `font-size: ${runnerFontSize}pt;`;
+            this.searchEntry.style += `font-size: ${runnerFontSize}pt;`;
         }
         this.updateWidth();
     }

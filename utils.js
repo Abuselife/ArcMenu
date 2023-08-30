@@ -107,12 +107,9 @@ export const SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandle
         this._settings = settings;
     }
 
-    connect(event, callback) {
-        this._connections.set(this._settings.connect(this._eventPrefix + event, callback), this._settings);
-    }
-
-    connectMultipleEvents(events, callback) {
-        for (const event of events)
+    connect(...args) {
+        const callback = args.pop();
+        for (const event of args)
             this._connections.set(this._settings.connect(this._eventPrefix + event, callback), this._settings);
     }
 
@@ -143,7 +140,7 @@ export function convertToGridLayout(item) {
     const menuLayout = item._menuLayout;
     const icon = item._iconBin;
 
-    const settings = ArcMenuManager.settings;
+    const {settings} = ArcMenuManager;
 
     const iconSizeEnum = settings.get_enum('menu-item-grid-icon-size');
     const defaultIconSize = menuLayout.icon_grid_size;
@@ -211,7 +208,7 @@ export function getIconSize(iconSizeEnum, defaultIconSize) {
 }
 
 export function getGridIconSize(iconSizeEnum, defaultIconSize) {
-    const settings = ArcMenuManager.settings;
+    const {settings} = ArcMenuManager;
 
     if (iconSizeEnum === Constants.GridIconSize.CUSTOM) {
         const {width, height, iconSize} = settings.get_value('custom-grid-icon-size').deep_unpack();
@@ -296,7 +293,7 @@ export function getPowerTypeFromShortcutCommand(command) {
 
 export function getMenuButtonIcon(path) {
     const extensionPath = ArcMenuManager.extension.path;
-    const settings = ArcMenuManager.settings;
+    const {settings} = ArcMenuManager;
 
     const iconType = settings.get_enum('menu-button-icon');
     const iconDirectory = `${extensionPath}/icons/hicolor/16x16/actions/`;
@@ -356,18 +353,9 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
         parent = parent.get_parent();
     }
 
-    let adjustment, startPoint, endPoint;
-
-    if (axis === Clutter.Orientation.VERTICAL) {
-        adjustment = parent.vscroll.adjustment;
-        startPoint = y1;
-        endPoint = y2;
-    } else {
-        adjustment = parent.hscroll.adjustment;
-        startPoint = x1;
-        endPoint = x2;
-    }
-
+    const isVertical = axis === Clutter.Orientation.VERTICAL;
+    const {adjustment} = isVertical ? parent.vscroll : parent.hscroll;
+    const [startPoint, endPoint] = isVertical ? [y1, y2] : [x1, x2];
     const [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
     let offset = 0;
@@ -375,7 +363,7 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
 
     const fade = parent.get_effect('fade');
     if (fade)
-        offset = axis === Clutter.Orientation.VERTICAL ? fade.fade_margins.top : fade.fade_margins.left;
+        offset = isVertical ? fade.fade_margins.top : fade.fade_margins.left;
 
     if (startPoint < value + offset)
         newValue = Math.max(0, startPoint - offset);

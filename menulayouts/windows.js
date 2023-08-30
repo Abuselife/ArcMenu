@@ -99,7 +99,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.subMainBox.add_child(this.applicationsScrollBox);
 
-        this.subMainBox.add_child(this.searchBox);
+        this.subMainBox.add_child(this.searchEntry);
 
         const applicationShortcutsList = this._settings.get_value('application-shortcuts-list').deep_unpack();
         this.applicationShortcuts = [];

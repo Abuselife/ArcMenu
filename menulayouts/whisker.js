@@ -116,12 +116,12 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.add_style_class_name('arcmenu-search-top');
-            this.searchBox.style = 'margin-top: 0px; margin-bottom: 6px;';
-            this.insert_child_at_index(this.searchBox, 0);
+            this.searchEntry.add_style_class_name('arcmenu-search-top');
+            this.searchEntry.style = 'margin-top: 0px; margin-bottom: 6px;';
+            this.insert_child_at_index(this.searchEntry, 0);
         } else if (searchbarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.add_style_class_name('arcmenu-search-bottom');
-            this.add_child(this.searchBox);
+            this.searchEntry.add_style_class_name('arcmenu-search-bottom');
+            this.add_child(this.searchEntry);
         }
 
         this.updateWidth();

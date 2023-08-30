@@ -104,7 +104,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
         });
-        this.topBox.add_child(this.searchBox);
+        this.topBox.add_child(this.searchEntry);
 
         // Applications Box - Contains Favorites, Categories or programs
         this.applicationsScrollBox = this._createScrollBox({
@@ -144,7 +144,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
-            this.searchBox.style = 'margin: 10px 220px;';
+            this.searchEntry.style = 'margin: 10px 220px;';
             this.topBox.style = 'padding-top: 0.5em;';
 
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
@@ -160,7 +160,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
             this.add_child(this.topBox);
         } else if (searchBarLocation === Constants.SearchbarLocation.TOP) {
-            this.searchBox.style = 'margin: 10px 220px;';
+            this.searchEntry.style = 'margin: 10px 220px;';
             this.topBox.style = 'padding-bottom: 0.5em;';
             this.add_child(this.topBox);
 
@@ -573,9 +573,9 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         this.setActiveCategory(category, true);
     }
 
-    _onSearchBoxChanged(searchBox, searchString) {
-        super._onSearchBoxChanged(searchBox, searchString);
-        if (!searchBox.isEmpty())
+    _onSearchEntryChanged(searchEntry, searchString) {
+        super._onSearchEntryChanged(searchEntry, searchString);
+        if (!searchEntry.isEmpty())
             this.activeCategoryType = Constants.CategoryType.SEARCH_RESULTS;
     }
 };
