@@ -3,7 +3,6 @@ import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js'
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import Meta from 'gi://Meta';
 import St from 'gi://St';
 
 import {AppMenu} from 'resource:///org/gnome/shell/ui/appMenu.js';
@@ -321,12 +320,8 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
 
     _updateWindowsSection() {
         if (this._updateWindowsLaterId) {
-            if (global.compositor.get_laters) {
-                const laters = global.compositor.get_laters();
-                laters.remove(this._updateWindowsLaterId);
-            } else {
-                Meta.later_remove(this._updateWindowsLaterId);
-            }
+            const laters = global.compositor.get_laters();
+            laters.remove(this._updateWindowsLaterId);
         }
         this._updateWindowsLaterId = 0;
 
