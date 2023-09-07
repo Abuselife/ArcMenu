@@ -22,16 +22,16 @@ export default class ArcMenu extends Extension {
         const hideOverviewOnStartup = this.settings.get_boolean('hide-overview-on-startup');
         if (hideOverviewOnStartup && Main.layoutManager._startingUp) {
             Main.sessionMode.hasOverview = false;
-            Main.layoutManager.connect('startup-complete', () => {
+            Main.layoutManager.connectObject('startup-complete', () => {
                 Main.sessionMode.hasOverview = this._realHasOverview;
-            });
+            }, this);
             // handle Ubuntu's method
             if (Main.layoutManager.startInOverview)
                 Main.layoutManager.startInOverview = false;
         }
 
-        this.settings.connect('changed::multi-monitor', () => this._reload());
-        this.settings.connect('changed::dash-to-panel-standalone', () => this._reload());
+        this.settings.connectObject('changed::multi-monitor', () => this._reload(), this);
+        this.settings.connectObject('changed::dash-to-panel-standalone', () => this._reload(), this);
         this.settingsControllers = [];
 
         Theming.createStylesheet();
@@ -39,7 +39,7 @@ export default class ArcMenu extends Extension {
         this._enableButtons();
 
         // dash to panel might get enabled after ArcMenu
-        this._extensionChangedId = Main.extensionManager.connect('extension-state-changed', (data, extension) => {
+        Main.extensionManager.connectObject('extension-state-changed', (data, extension) => {
             const isDtp = extension.uuid === Constants.DASH_TO_PANEL_UUID;
             const isAzTaskbar = extension.uuid === Constants.AZTASKBAR_UUID;
             const isEnabled = extension.state === ExtensionState.ENABLED;
@@ -50,7 +50,7 @@ export default class ArcMenu extends Extension {
                 this._connectExtensionSignals();
                 this._reload();
             }
-        });
+        }, this);
 
         // listen to dash to panel if they are compatible and already enabled
         this._connectExtensionSignals();
@@ -62,11 +62,6 @@ export default class ArcMenu extends Extension {
 
         Main.sessionMode.hasOverview = this._realHasOverview;
 
-        if (this._extensionChangedId) {
-            Main.extensionManager.disconnect(this._extensionChangedId);
-            this._extensionChangedId = null;
-        }
-
         Theming.deleteStylesheet();
 
         this._disconnectExtensionSignals();
@@ -77,7 +72,9 @@ export default class ArcMenu extends Extension {
         this._arcmenuManager.destroy();
         this._arcmenuManager = null;
 
-        this.settings.run_dispose();
+        Main.layoutManager.disconnectObject(this);
+        Main.extensionManager.disconnectObject(this);
+        this.settings.disconnectObject(this);
         this.settings = null;
     }
 
