@@ -75,7 +75,7 @@ Additional credits:
 
 **@[omeritzics](https://gitlab.com/omeritzics) - Hebrew** | **@[prescott66](https://gitlab.com/prescott66) - Slovak** | **@[Mejans](https://gitlab.com/Mejans), @[Quentin](https://gitlab.com/quenty_occitania) - Occitan** | **@[KY4LU](https://gitlab.com/mjkim__) - Korean** |  **@[sayuri](https://gitlab.com/sayuri-), @[helabasa](https://gitlab.com/helabasa) - Sinhalese**
 
-**@[Latgardi](https://gitlab.com/Latgardi) - Belarusian** | **@[Hayao0819](https://gitlab.com/Hayao0819) - Japanese**
+**@[Latgardi](https://gitlab.com/Latgardi) - Belarusian** | **@[Hayao0819](https://gitlab.com/Hayao0819) - Japanese** | **@[cbsvitzer](https://gitlab.com/cbsvitzer) - Danish**
 
 -----
 
