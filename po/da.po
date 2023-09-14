@@ -354,7 +354,7 @@ msgstr "Anvend"
 #: menulayouts/redmond.js:82 menulayouts/redmond.js:85 menulayouts/unity.js:42
 #: menulayouts/unity.js:281 menulayouts/unity.js:357 menulayouts/windows.js:414
 msgid "Pinned"
-msgstr "Fastgjort
+msgstr "Fastgjort"
 
 #: menuWidgets.js:2892
 msgid "Unmount Drive"
@@ -362,7 +362,7 @@ msgstr "Afmonter Drev"
 
 #: menuWidgets.js:2894
 msgid "Eject Drive"
-msgstr "Skub Drev ud
+msgstr "Skub Drev ud"
 
 #: menuWidgets.js:2940
 msgid "Remove from Recent"
@@ -443,14 +443,14 @@ msgstr "Kune ikke åbne %s"
 
 #: placeDisplay.js:67
 #, javascript-format
-msgid "Failed to mount volume for %s
+msgid "Failed to mount volume for %s"
 msgstr "Kunne ikke montere %s"
 
 #: placeDisplay.js:115 placeDisplay.js:363
 #: settings/Menu/LayoutTweaksPage.js:585 settings/Menu/LayoutTweaksPage.js:620
 #: settings/Menu/ListPinnedPage.js:390 utils.js:253
 msgid "Home"
-msgstr "Hjem
+msgstr "Hjem"
 
 #: placeDisplay.js:226
 #, javascript-format
@@ -459,19 +459,19 @@ msgstr "Afmontering af %s fejlede"
 
 #: prefsWidgets.js:243
 msgid "Modify"
-msgstr "Ændre
+msgstr "Ændre"
 
 #: prefsWidgets.js:258
 msgid "Move Up"
-msgstr "Flyt Op
+msgstr "Flyt Op"
 
 #: prefsWidgets.js:265
 msgid "Move Down"
-msgstr "Flyt Ned
+msgstr "Flyt Ned"
 
 #: prefsWidgets.js:272
 msgid "Remove"
-msgstr "Fjern
+msgstr "Fjern"
 
 #: settings/AboutPage.js:11
 msgid "Application Menu Extension for GNOME"
@@ -479,7 +479,7 @@ msgstr "Programmenu Udvidelser for GNOME"
 
 #: settings/AboutPage.js:19 settings/Menu/ListPinnedPage.js:361
 msgid "About"
-msgstr "Om
+msgstr "Om"
 
 #: settings/AboutPage.js:63
 msgid "ArcMenu Version"
@@ -487,7 +487,7 @@ msgstr "ArcMenu-ersion"
 
 #: settings/AboutPage.js:73
 msgid "Git Commit"
-msgstr "Anvend Git
+msgstr "Anvend Git"
 
 #: settings/AboutPage.js:83
 msgid "GNOME Version"
@@ -499,7 +499,7 @@ msgstr "Styresystem"
 
 #: settings/AboutPage.js:105
 msgid "Windowing System"
-msgstr "Vinduessystem
+msgstr "Vinduessystem"
 
 #: settings/AboutPage.js:113
 msgid "ArcMenu GitLab"
