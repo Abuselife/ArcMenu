@@ -369,8 +369,8 @@ msgid "Remove from Recent"
 msgstr "Fjern fra Seneste"
 
 #: menuWidgets.js:3019
-msgid "Search"
-msgstr "Søg"
+msgid "Search…"
+msgstr "Søg…"
 
 #: menulayouts/baseMenuLayout.js:421
 msgid "Flere Seneste Filer..."
