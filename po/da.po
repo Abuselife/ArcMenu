@@ -3,19 +3,19 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Carsten Bo Svitzer <cbsvitzer@gmail.com>, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-07-22 06:52-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2023-09-15 11:50+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
 
 #: appMenu.js:52 appMenu.js:307
 msgid "Pin to ArcMenu"
@@ -238,7 +238,7 @@ msgstr "Søger..."
 
 #: gnome43/search.js:670 search.js:683
 msgid "No results."
-msgstr "Ingen resultater"
+msgstr "Ingen resultater."
 
 #: gnome43/search.js:749 search.js:762
 #, javascript-format
@@ -324,7 +324,7 @@ msgstr "Slet Mappe"
 #: menuWidgets.js:2314
 #, javascript-format
 msgid "Permanently delete %s folder?"
-msgstr "Slet mappen %s permanent"
+msgstr "Slet mappen %s permanent.?"
 
 #: menuWidgets.js:2319
 msgid "No"
@@ -455,7 +455,7 @@ msgstr "Hjem"
 #: placeDisplay.js:226
 #, javascript-format
 msgid "Ejecting drive %s failed:"
-msgstr "Afmontering af %s fejlede"
+msgstr "Afmontering af %s fejlede:"
 
 #: prefsWidgets.js:243
 msgid "Modify"
@@ -703,7 +703,7 @@ msgstr "Vis skjulte Seneste Filer"
 
 #: settings/Menu/FineTunePage.js:154
 msgid "Enable/Disable multi-lined labels on large application icon layouts."
-msgstr "Enable/Disable layout af Mange-linede program-ikoner"
+msgstr "Enable/Disable layout af Mange-linede program-ikoner."
 
 #: settings/Menu/FineTunePage.js:154 settings/Menu/FineTunePage.js:167
 msgid "Multi-Lined Labels"
@@ -897,7 +897,7 @@ msgstr "Nuværende Menu-layout"
 
 #: settings/Menu/LayoutsPage.js:40
 msgid "Choose a new menu layout?"
-msgstr "Vælg et nyt Menu-layout"
+msgstr "Vælg et nyt udseende Menu?"
 
 #: settings/Menu/LayoutsPage.js:46
 #, javascript-format
@@ -906,7 +906,7 @@ msgstr "%s Meny-layouts"
 
 #: settings/Menu/ListOtherPage.js:35
 msgid "Actions will be hidden from ArcMenu if not available on your system."
-msgstr "Handlinger vil være skjult på ArcMenu, hvis de ikke er tilgængelige i dit system"
+msgstr "Handlinger vil være skjult på ArcMenu, hvis de ikke er tilgængelige i dit system."
 
 #: settings/Menu/ListOtherPage.js:39
 msgid "Power Off / Log Out Buttons"
@@ -972,7 +972,7 @@ msgstr "Tilføj til Kontekstmenuen"
 
 #: settings/Menu/ListPinnedPage.js:343
 msgid "Run Command..."
-msgstr "ŽKør kommando"
+msgstr "Kør kommando."
 
 #: settings/Menu/ListPinnedPage.js:346
 msgid "Show All Apps"
@@ -1120,12 +1120,12 @@ msgstr "Nulstil Indstillinger"
 #: settings/Menu/SubPage.js:59 settings/MenuButtonPage.js:35
 #, javascript-format
 msgid "Reset all %s settings?"
-msgstr "Nulstil alle %s Indstillinger"
+msgstr "Nulstil alle %s Indstillinger?"
 
 #: settings/Menu/SubPage.js:60 settings/MenuButtonPage.js:36
 #, javascript-format
 msgid "All %s settings will be reset to the default value."
-msgstr "Alle %s Indstillinger til blive sat tilbage til standardværdi"
+msgstr "Alle %s Indstillinger til blive sat tilbage til standardværdi."
 
 #: settings/Menu/ThemePage.js:40
 msgid "Override Theme"
@@ -1196,7 +1196,7 @@ msgstr "Aktiv"
 
 #: settings/Menu/ThemingDialog.js:14
 msgid "Save Theme As..."
-msgstr "Gem Tema som"
+msgstr "Gem Tema som..."
 
 #: settings/Menu/ThemingDialog.js:26
 msgid "Theme Name"
@@ -1338,7 +1338,7 @@ msgstr "Knap-Widgets"
 
 #: settings/Menu/VisualSettings.js:240
 msgid "Power Buttons, Unity Bottom Bar, Mint Side Bar, etc"
-msgstr "Power-knap, Unity Bottom Bar, Mint Side Bar, osv."
+msgstr "Power-knap, Unity Bottom Bar, Mint Side Bar, osv"
 
 #: settings/Menu/VisualSettings.js:246
 msgid "Miscellaneous"
