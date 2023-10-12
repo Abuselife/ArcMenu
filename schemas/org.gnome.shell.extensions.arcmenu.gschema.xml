@@ -377,6 +377,11 @@
       <summary>disable tooltips</summary>
       <description>disable tooltips.</description>
     </key>
+      <key type="b" name="show-category-sub-menus">
+      <default>false</default>
+      <summary>Show category sub menus.</summary>
+      <description>Show category sub menus.</description>
+    </key>
     <key type="b" name="alphabetize-all-programs">
       <default>true</default>
       <summary>Separate All Programs by a Character Listing</summary>

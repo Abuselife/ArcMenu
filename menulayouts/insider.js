@@ -103,7 +103,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
 
-        this.pinnedAppsButton = new MW.PinnedAppsButton(this);
+        this.pinnedAppsButton = new PinnedAppsButton(this);
         this.pinnedAppsButton.y_expand = true;
         this.pinnedAppsButton.y_align = Clutter.ActorAlign.START;
         this.actionsBox.add_child(this.pinnedAppsButton);
@@ -266,3 +266,19 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             this.pinnedAppsBox.add_child(this.pinnedAppsGrid);
     }
 };
+
+class PinnedAppsButton extends MW.ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Pinned Apps'), 'open-menu-symbolic');
+        this.toggleMenuOnClick = false;
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._menuLayout.togglePinnedAppsMenu();
+    }
+}

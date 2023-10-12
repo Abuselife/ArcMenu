@@ -55,6 +55,20 @@ class ArcMenuSearchOptionsPage extends SubPage {
             title: _('Search Options'),
         });
 
+        const searchDescriptionsSwitch = new Gtk.Switch({
+            valign: Gtk.Align.CENTER,
+        });
+        searchDescriptionsSwitch.set_active(this.searchResultsDetails);
+        searchDescriptionsSwitch.connect('notify::active', widget => {
+            this._settings.set_boolean('show-search-result-details', widget.get_active());
+        });
+        const searchDescriptionsRow = new Adw.ActionRow({
+            title: _('Show Search Result Descriptions'),
+            activatable_widget: searchDescriptionsSwitch,
+        });
+        searchDescriptionsRow.add_suffix(searchDescriptionsSwitch);
+        searchOptionsFrame.add(searchDescriptionsRow);
+
         const highlightSearchResultSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER,
         });
@@ -155,6 +169,7 @@ class ArcMenuSearchOptionsPage extends SubPage {
                 this._settings.get_default_value('search-entry-border-radius').deep_unpack();
             searchBorderSpinButton.set_value(defaultSearchBorderValue);
             searchBorderSwitch.set_active(true);
+            searchDescriptionsSwitch.set_active(this.searchResultsDetails);
         };
     }
 });

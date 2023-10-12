@@ -64,7 +64,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         });
         this.topBox.add_child(this.searchEntry);
 
-        this.categoriesButton = new MW.CategoriesButton(this);
+        this.categoriesButton = new CategoriesButton(this);
         this.topBox.add_child(this.categoriesButton);
 
         this.applicationsBox = new St.BoxLayout({
@@ -395,7 +395,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         const label = this._createLabelWithSeparator(this.activeCategoryName);
         if (grid === this.applicationsGrid)
             this.applicationsBox.insert_child_at_index(label, 0);
-        else
+        else if (grid === this.shortcutsGrid)
             this.applicationsBox.insert_child_at_index(label, 2);
     }
 
@@ -410,3 +410,19 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         super.destroy();
     }
 };
+
+export class CategoriesButton extends MW.ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Categories'), 'open-menu-symbolic');
+        this.toggleMenuOnClick = false;
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._menuLayout.toggleCategoriesMenu();
+    }
+}

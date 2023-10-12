@@ -19,23 +19,21 @@ class ArcMenuFineTunePage extends SubPage {
         this.showHiddenRecentFiles = this._settings.get_boolean('show-hidden-recent-files');
 
         const miscGroup = new Adw.PreferencesGroup();
+        this.add(miscGroup);
 
-        const descriptionsGroup = new Adw.PreferencesGroup();
-        this.add(descriptionsGroup);
-
-        const searchDescriptionsSwitch = new Gtk.Switch({
+        const subMenusSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER,
         });
-        searchDescriptionsSwitch.set_active(this.searchResultsDetails);
-        searchDescriptionsSwitch.connect('notify::active', widget => {
-            this._settings.set_boolean('show-search-result-details', widget.get_active());
+        subMenusSwitch.set_active(this._settings.get_boolean('show-category-sub-menus'));
+        subMenusSwitch.connect('notify::active', widget => {
+            this._settings.set_boolean('show-category-sub-menus', widget.get_active());
         });
-        const searchDescriptionsRow = new Adw.ActionRow({
-            title: _('Show Search Result Descriptions'),
-            activatable_widget: searchDescriptionsSwitch,
+        const subMenusRow = new Adw.ActionRow({
+            title: _('Show Category Sub Menus'),
+            activatable_widget: subMenusSwitch,
         });
-        searchDescriptionsRow.add_suffix(searchDescriptionsSwitch);
-        descriptionsGroup.add(searchDescriptionsRow);
+        subMenusRow.add_suffix(subMenusSwitch);
+        miscGroup.add(subMenusRow);
 
         const appDescriptionsSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER,
@@ -49,35 +47,7 @@ class ArcMenuFineTunePage extends SubPage {
             activatable_widget: appDescriptionsSwitch,
         });
         appDescriptionsRow.add_suffix(appDescriptionsSwitch);
-        descriptionsGroup.add(appDescriptionsRow);
-
-        const iconStyleGroup = new Adw.PreferencesGroup();
-        this.add(iconStyleGroup);
-
-        const iconTypes = new Gtk.StringList();
-        iconTypes.append(_('Full Color'));
-        iconTypes.append(_('Symbolic'));
-        const categoryIconTypeRow = new Adw.ComboRow({
-            title: _('Category Icon Type'),
-            subtitle: _('Some icon themes may not include selected icon type'),
-            model: iconTypes,
-            selected: this._settings.get_enum('category-icon-type'),
-        });
-        categoryIconTypeRow.connect('notify::selected', widget => {
-            this._settings.set_enum('category-icon-type', widget.selected);
-        });
-        iconStyleGroup.add(categoryIconTypeRow);
-
-        const shortcutsIconTypeRow = new Adw.ComboRow({
-            title: _('Shortcuts Icon Type'),
-            subtitle: _('Some icon themes may not include selected icon type'),
-            model: iconTypes,
-            selected: this._settings.get_enum('shortcut-icon-type'),
-        });
-        shortcutsIconTypeRow.connect('notify::selected', widget => {
-            this._settings.set_enum('shortcut-icon-type', widget.selected);
-        });
-        iconStyleGroup.add(shortcutsIconTypeRow);
+        miscGroup.add(appDescriptionsRow);
 
         const fadeEffectSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER,
@@ -168,6 +138,34 @@ class ArcMenuFineTunePage extends SubPage {
         multiLinedLabelRow.add_suffix(multiLinedLabelInfoButton);
         miscGroup.add(multiLinedLabelRow);
 
+        const iconStyleGroup = new Adw.PreferencesGroup();
+        this.add(iconStyleGroup);
+
+        const iconTypes = new Gtk.StringList();
+        iconTypes.append(_('Full Color'));
+        iconTypes.append(_('Symbolic'));
+        const categoryIconTypeRow = new Adw.ComboRow({
+            title: _('Category Icon Type'),
+            subtitle: _('Some icon themes may not include selected icon type'),
+            model: iconTypes,
+            selected: this._settings.get_enum('category-icon-type'),
+        });
+        categoryIconTypeRow.connect('notify::selected', widget => {
+            this._settings.set_enum('category-icon-type', widget.selected);
+        });
+        iconStyleGroup.add(categoryIconTypeRow);
+
+        const shortcutsIconTypeRow = new Adw.ComboRow({
+            title: _('Shortcuts Icon Type'),
+            subtitle: _('Some icon themes may not include selected icon type'),
+            model: iconTypes,
+            selected: this._settings.get_enum('shortcut-icon-type'),
+        });
+        shortcutsIconTypeRow.connect('notify::selected', widget => {
+            this._settings.set_enum('shortcut-icon-type', widget.selected);
+        });
+        iconStyleGroup.add(shortcutsIconTypeRow);
+
         const recentAppsGroup = new Adw.PreferencesGroup();
         this.add(recentAppsGroup);
 
@@ -208,8 +206,6 @@ class ArcMenuFineTunePage extends SubPage {
 
         recentAppsSwitch.set_active(this._settings.get_boolean('disable-recently-installed-apps'));
 
-        this.add(miscGroup);
-
         this.restoreDefaults = () => {
             this.alphabetizeAllPrograms = this._settings.get_default_value('alphabetize-all-programs').unpack();
             this.multiLinedLabels = this._settings.get_default_value('multi-lined-labels').unpack();
@@ -226,8 +222,7 @@ class ArcMenuFineTunePage extends SubPage {
             categoryIconTypeRow.selected = 0;
             shortcutsIconTypeRow.selected = 1;
             appDescriptionsSwitch.set_active(this._settings.get_default_value('apps-show-extra-details').unpack());
-            searchDescriptionsSwitch.set_active(
-                this._settings.get_default_value('show-search-result-details').unpack());
+            subMenusSwitch.set_active(this._settings.get_default_value('show-category-sub-menus').unpack());
         };
     }
 });

@@ -60,7 +60,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
         'icon-grid-size': GObject.ParamSpec.uint(
             'icon-grid-size', 'icon-grid-size', 'icon-grid-size',
-            GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
+            GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 5),
         'category-icon-size': GObject.ParamSpec.uint(
             'category-icon-size', 'category-icon-size', 'category-icon-size',
             GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
@@ -262,15 +262,17 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         const iter = root.iter();
         let nextType;
         while ((nextType = iter.next()) !== GMenu.TreeItemType.INVALID) {
-            if (nextType === GMenu.TreeItemType.DIRECTORY) {
-                const dir = iter.get_directory();
-                if (!dir.get_is_nodisplay()) {
-                    const categoryId = dir.get_menu_id();
-                    const categoryMenuItem = new MW.CategoryMenuItem(this, dir, displayType);
-                    this.categoryDirectories.set(categoryId, categoryMenuItem);
-                    this._loadCategory(categoryMenuItem, dir);
-                }
-            }
+            if (nextType !== GMenu.TreeItemType.DIRECTORY)
+                continue;
+
+            const dir = iter.get_directory();
+            if (dir.get_is_nodisplay())
+                continue;
+
+            const categoryId = dir.get_menu_id();
+            const categoryMenuItem = new MW.CategoryMenuItem(this, dir, displayType);
+            this.categoryDirectories.set(categoryId, categoryMenuItem);
+            this._loadCategory(categoryMenuItem, dir);
         }
 
         let categoryMenuItem = this.categoryDirectories.get(Constants.CategoryType.ALL_PROGRAMS);
@@ -325,27 +327,56 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 } catch (e) {
                     continue;
                 }
+
                 let app = Shell.AppSystem.get_default().lookup_app(id);
                 if (!app)
                     app = new Shell.App({app_info: entry.get_app_info()});
-                if (app.get_app_info().should_show()) {
-                    let item = this.applicationsMap.get(app);
-                    if (!item) {
-                        const isContainedInCategory = true;
-                        item = new MW.ApplicationMenuItem(this, app, this.display_type, null, isContainedInCategory);
-                    }
+
+                const appInfo = app.get_app_info();
+                if (!appInfo.should_show())
+                    continue;
+
+                let item = this.applicationsMap.get(app);
+                if (!item) {
+                    const isContainedInCategory = true;
+                    item = new MW.ApplicationMenuItem(this, app, this.display_type, null, isContainedInCategory);
+                }
+
+                if (categoryMenuItem instanceof MW.SubCategoryMenuItem) {
+                    const subMenuItem = new MW.ApplicationMenuItem(this, app, Constants.DisplayType.GRID, null, true);
+                    categoryMenuItem.appList.push(subMenuItem);
+                } else {
                     categoryMenuItem.appList.push(app);
                     this.applicationsMap.set(app, item);
-
-                    if (showNewAppsIndicator && item.isRecentlyInstalled)
-                        categoryMenuItem.setNewAppIndicator(true);
                 }
+
+                if (showNewAppsIndicator && item.isRecentlyInstalled)
+                    categoryMenuItem.setNewAppIndicator(true);
             } else if (nextType === GMenu.TreeItemType.DIRECTORY) {
                 const subdir = iter.get_directory();
-                if (!subdir.get_is_nodisplay())
+                if (subdir.get_is_nodisplay())
+                    continue;
+
+                const showSubMenus = this._settings.get_boolean('show-category-sub-menus');
+                if (showSubMenus) {
+                    // Only go one layer deep for sub menus
+                    if (categoryMenuItem instanceof MW.SubCategoryMenuItem) {
+                        this._loadCategory(categoryMenuItem, subdir);
+                    } else {
+                        const subCategoryMenuItem = new MW.SubCategoryMenuItem(this, dir, subdir, this.display_type);
+                        categoryMenuItem.appList.push(subdir);
+                        this.applicationsMap.set(subdir, subCategoryMenuItem);
+
+                        this._loadCategory(subCategoryMenuItem, subdir);
+                        subCategoryMenuItem._updateIcon();
+                    }
+                } else {
                     this._loadCategory(categoryMenuItem, subdir);
+                }
             }
         }
+        if (categoryMenuItem instanceof MW.SubCategoryMenuItem)
+            categoryMenuItem.populateMenu();
     }
 
     setNewAppIndicator() {

@@ -135,7 +135,7 @@ export const MenuSettingsController = class {
             'menu-item-category-icon-size', 'category-icon-type', 'shortcut-icon-type',
             'arcmenu-extra-categories-links', 'arcmenu-extra-categories-links-location',
             'runner-show-frequent-apps', 'default-menu-view-redmond', 'disable-recently-installed-apps',
-            'runner-search-display-style', 'raven-search-display-style', 'custom-grid-icon-size',
+            'runner-search-display-style', 'raven-search-display-style', 'custom-grid-icon-size', 'show-category-sub-menus',
             this._recreateMenuLayout.bind(this));
 
         this._settingsConnections.connect('left-panel-width', 'right-panel-width', 'menu-width-adjustment',

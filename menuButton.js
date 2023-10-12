@@ -20,6 +20,83 @@ import * as Utils from './utils.js';
 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+class MenuButtonWidget extends St.BoxLayout {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor() {
+        super({
+            style_class: 'panel-status-menu-box',
+        });
+
+        this._icon = new St.Icon({
+            style_class: 'arcmenu-menu-button',
+            track_hover: true,
+            reactive: true,
+        });
+        this._label = new St.Label({
+            text: _('Apps'),
+            y_expand: true,
+            style_class: 'arcmenu-menu-button',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        this.add_child(this._icon);
+        this.add_child(this._label);
+    }
+
+    addStylePseudoClass(style) {
+        this._icon.add_style_pseudo_class(style);
+        this._label.add_style_pseudo_class(style);
+    }
+
+    removeStylePseudoClass(style) {
+        this._icon.remove_style_pseudo_class(style);
+        this._label.remove_style_pseudo_class(style);
+    }
+
+    showIcon() {
+        this._icon.show();
+        this._label.hide();
+
+        this.set_child_at_index(this._icon, 0);
+    }
+
+    showText() {
+        this._icon.hide();
+        this._label.show();
+
+        this.set_child_at_index(this._label, 0);
+    }
+
+    showIconText() {
+        this._icon.show();
+        this._label.show();
+
+        this.set_child_at_index(this._icon, 0);
+    }
+
+    showTextIcon() {
+        this._icon.show();
+        this._label.show();
+
+        this.set_child_at_index(this._label, 0);
+    }
+
+    getPanelLabel() {
+        return this._label;
+    }
+
+    getPanelIcon() {
+        return this._icon;
+    }
+
+    setLabelStyle(style) {
+        this._label.style = style;
+    }
+}
+
 export const MenuButton = GObject.registerClass(
 class ArcMenuMenuButton extends PanelMenu.Button {
     _init(panelInfo, index) {
@@ -77,7 +154,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this.subMenuManager = new PopupMenu.PopupMenuManager(this);
         this.subMenuManager._changeMenu = () => {};
 
-        this.menuButtonWidget = new MW.MenuButtonWidget();
+        this.menuButtonWidget = new MenuButtonWidget();
         this.add_child(this.menuButtonWidget);
     }
 
@@ -510,6 +587,11 @@ export const ArcMenu = class ArcMenuArcMenu extends PopupMenu.PopupMenu {
         this.connect('destroy', () => this._onDestroy());
 
         this.actor.connectObject('captured-event', this._onCapturedEvent.bind(this), this);
+
+        this._dimEffect = new Clutter.BrightnessContrastEffect({
+            enabled: false,
+        });
+        this._boxPointer.add_effect_with_name('dim', this._dimEffect);
     }
 
     _onCapturedEvent(actor, event) {

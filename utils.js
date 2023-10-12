@@ -232,7 +232,7 @@ export function getGridIconSize(iconSizeEnum, defaultIconSize) {
 export function getCategoryDetails(currentCategory) {
     const extensionPath = ArcMenuManager.extension.path;
 
-    let name, gicon, fallbackIcon = null;
+    let name = null, gicon = null, fallbackIcon = null;
 
     for (const entry of Constants.Categories) {
         if (entry.CATEGORY === currentCategory) {
@@ -251,11 +251,8 @@ export function getCategoryDetails(currentCategory) {
         const categoryIcon = currentCategory.get_icon();
         const fallbackIconDirectory = `${extensionPath}/icons/category-icons/`;
 
-        if (!categoryIcon) {
-            gicon = null;
-            fallbackIcon = Gio.icon_new_for_string(`${fallbackIconDirectory}applications-other-symbolic.svg`);
+        if (!categoryIcon)
             return [name, gicon, fallbackIcon];
-        }
 
         const categoryIconName = categoryIcon.to_string();
         const symbolicName = `${categoryIconName}-symbolic`;

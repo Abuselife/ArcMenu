@@ -76,7 +76,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
             vertical: false,
             style: `margin: ${padding}px ${padding}px 0px 0px; spacing: ${padding}px;`,
         });
-        this.runnerTweaksButton = new MW.RunnerTweaksButton(this);
+        this.runnerTweaksButton = new RunnerTweaksButton(this);
         this.runnerTweaksButton.set({
             x_expand: false,
             y_expand: true,
@@ -207,3 +207,32 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
         super.destroy();
     }
 };
+
+class RunnerTweaksButton extends MW.ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Configure Runner'), 'emblem-system-symbolic');
+        this.style_class = 'button arcmenu-button';
+        this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
+    }
+
+    set active(active) {
+        if (this.isDestroyed)
+            return;
+
+        const activeChanged = active !== this.active;
+        if (activeChanged) {
+            this._active = active;
+            this.notify('active');
+        }
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._settings.set_int('prefs-visible-page', Constants.SettingsPage.RUNNER_TWEAKS);
+        this._extension.openPreferences();
+    }
+}

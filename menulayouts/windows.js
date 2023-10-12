@@ -143,7 +143,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
 
-        this.extrasButton = new MW.ExtrasButton(this);
+        this.extrasButton = new ExtrasButton(this);
         this.extrasButton.set({
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
@@ -422,3 +422,19 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             this.activeMenuItem = this._frequentActiveItem;
     }
 };
+
+export class ExtrasButton extends MW.ArcMenuButtonItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super(menuLayout, _('Extras'), 'open-menu-symbolic');
+        this.toggleMenuOnClick = false;
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._menuLayout.toggleExtrasMenu();
+    }
+}

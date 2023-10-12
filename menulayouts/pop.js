@@ -1,13 +1,19 @@
 
 import Clutter from 'gi://Clutter';
+import Graphene from 'gi://Graphene';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
+import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
+import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
@@ -242,7 +248,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
     loadGroups() {
         const foldersData = {'Library Home': _('Library Home')};
-        const homeGroupMenuItem = new MW.GroupFolderMenuItem(this, null, {
+        const homeGroupMenuItem = new GroupFolderMenuItem(this, null, {
             folder_name: _('Library Home'),
             home_folder: true,
         });
@@ -259,7 +265,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             });
 
             const name = _getFolderName(folderSettings);
-            const categoryMenuItem = new MW.GroupFolderMenuItem(this, folderSettings, {
+            const categoryMenuItem = new GroupFolderMenuItem(this, folderSettings, {
                 folder_name: name,
                 folder_id: id,
             });
@@ -298,7 +304,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         });
         homeGroupMenuItem.appList = remainingApps;
 
-        this.placeHolderFolderItem = new MW.GroupFolderMenuItem(this, null, {
+        this.placeHolderFolderItem = new GroupFolderMenuItem(this, null, {
             folder_name: _('New Folder'),
             new_folder: true,
         });
@@ -579,3 +585,419 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             this.activeCategoryType = Constants.CategoryType.SEARCH_RESULTS;
     }
 };
+
+class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
+    static [GObject.properties] = {
+        'folder-name': GObject.ParamSpec.string('folder-name', 'folder-name', 'folder-name',
+            GObject.ParamFlags.READWRITE, ''),
+        'folder-id': GObject.ParamSpec.string('folder-id', 'folder-id', 'folder-id',
+            GObject.ParamFlags.READWRITE, ''),
+        'home-folder': GObject.ParamSpec.boolean('home-folder', 'home-folder', 'home-folder',
+            GObject.ParamFlags.READWRITE, false),
+        'new-folder': GObject.ParamSpec.boolean('new-folder', 'new-folder', 'new-folder',
+            GObject.ParamFlags.READWRITE, false),
+    };
+
+    static [GObject.signals] = {
+        'folder-moved': {},
+        'app-moved': {},
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, folderSettings, params = {}) {
+        super(menuLayout);
+        this.set(params);
+        this.pivot_point = new Graphene.Point({x: 0.5, y: 0.5});
+        this.folderSettings = folderSettings;
+        this.hasContextMenu = true;
+        this.add_style_class_name('ArcMenuIconGrid ArcMenuGroupFolder');
+        this.set({
+            vertical: true,
+            x_expand: false,
+            tooltipLocation: Constants.TooltipLocation.BOTTOM_CENTERED,
+            style: `width: ${110}px; height: ${72}px;`,
+        });
+        this._delegate = this;
+
+        if (this._ornamentLabel)
+            this.remove_child(this._ornamentLabel);
+
+        this._appList = [];
+        this._name = '';
+
+        this._iconBin = new St.Bin({
+            y_align: Clutter.ActorAlign.CENTER,
+            y_expand: true,
+        });
+        this.add_child(this._iconBin);
+
+        this.label = new St.Label({
+            text: this._name,
+            y_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this.label_actor = this.label;
+        this.add_child(this.label);
+
+        this._updateIcon();
+
+        if (!this.home_folder) {
+            this._draggable = DND.makeDraggable(this, {timeoutThreshold: 200});
+            this._draggable._animateDragEnd = eventTime => {
+                this._draggable._animationInProgress = true;
+                this._draggable._onAnimationComplete(this._draggable._dragActor, eventTime);
+            };
+            this._draggable.connect('drag-begin', this._onDragBegin.bind(this));
+            this._draggable.connect('drag-end', this._onDragEnd.bind(this));
+        }
+
+        if (!this._settings.get_boolean('multi-lined-labels'))
+            return;
+
+        this._iconBin?.set({
+            y_align: Clutter.ActorAlign.TOP,
+            y_expand: false,
+        });
+
+        const clutterText = this.label.get_clutter_text();
+        clutterText.set({
+            line_wrap: true,
+            line_wrap_mode: Pango.WrapMode.WORD_CHAR,
+        });
+    }
+
+    popupContextMenu() {
+        if (this.home_folder)
+            return;
+        if (this.tooltip)
+            this.tooltip.hide();
+
+        if (this.contextMenu === undefined) {
+            this.contextMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.contextMenu.actor.add_style_class_name('arcmenu-menu app-menu');
+            Main.uiGroup.add_child(this.contextMenu.actor);
+            this._menuLayout.contextMenuManager.addMenu(this.contextMenu);
+
+            this.contextMenu.addAction(_('Rename Folder'), () => this._createRenameDialog());
+            this.contextMenu.addAction(_('Delete Folder'), () => this._createDeleteDialog());
+        }
+
+        this.contextMenu.open(BoxPointer.PopupAnimation.FULL);
+    }
+
+    _createDeleteDialog() {
+        this.contextMenu.close();
+        const dialog = new ModalDialog.ModalDialog();
+        const content = new Dialog.MessageDialogContent({
+            title: _('Permanently delete %s folder?').format(this.folder_name),
+        });
+        dialog.contentLayout.add_child(content);
+
+        dialog.addButton({
+            label: _('No'),
+            action: () => {
+                dialog.close();
+            },
+            default: true,
+            key: Clutter.KEY_Escape,
+        });
+        dialog.addButton({
+            label: _('Yes'),
+            action: () => {
+                this._menuLayout.removeFolder(this);
+                dialog.close();
+            },
+            default: false,
+            key: null,
+        });
+        dialog.open();
+    }
+
+    _createRenameDialog() {
+        this.contextMenu.close();
+        const dialog = new ModalDialog.ModalDialog();
+        const content = new Dialog.MessageDialogContent({
+            title: _('Rename %s folder').format(this.folder_name),
+        });
+        dialog.contentLayout.add_child(content);
+
+        const entry = new St.Entry({
+            style_class: 'folder-name-entry',
+            text: this.folder_name,
+            reactive: true,
+            can_focus: true,
+        });
+        entry.clutter_text.set({
+            x_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+        });
+        content.add_child(entry);
+        dialog.setInitialKeyFocus(entry);
+
+        const saveName = () => {
+            const newFolderName = entry.text.trim();
+
+            if (newFolderName.length === 0 || newFolderName === this.folder_name) {
+                dialog.close();
+                return;
+            }
+
+            this.folderSettings.set_string('name', newFolderName);
+            this.folderSettings.set_boolean('translate', false);
+            dialog.close();
+        };
+
+        entry.clutter_text.set_selection(0, -1);
+        entry.clutter_text.connect('activate', () => saveName());
+
+        dialog.addButton({
+            label: _('Cancel'),
+            action: () => {
+                dialog.close();
+            },
+            default: false,
+            key: Clutter.KEY_Escape,
+        });
+        dialog.addButton({
+            label: _('Apply'),
+            action: () => saveName(),
+            default: false,
+            key: null,
+        });
+        dialog.open();
+    }
+
+    getDragActor() {
+        return this.createIcon();
+    }
+
+    getDragActorSource() {
+        return this;
+    }
+
+    _onDragBegin() {
+        if (this._menuButton.tooltipShowingID) {
+            GLib.source_remove(this._menuButton.tooltipShowingID);
+            this._menuButton.tooltipShowingID = null;
+            this._menuButton.tooltipShowing = false;
+        }
+        if (this.tooltip) {
+            this.tooltip.hide();
+            this._menuButton.tooltipShowing = false;
+        }
+
+        if (this.contextMenu && this.contextMenu.isOpen)
+            this.contextMenu.toggle();
+
+        this._cancelContextMenuTimeOut();
+
+        this.isDragging = true;
+        this._dragMonitor = {
+            dragMotion: this._onDragMotion.bind(this),
+        };
+        DND.addDragMonitor(this._dragMonitor);
+        this._parentBox = this.get_parent();
+        [this.posX, this.posY] = this._parentBox.get_transformed_position();
+
+        this.opacity = 55;
+        this.get_allocation_box();
+        this.rowHeight = this.height;
+        this.rowWidth = this.width;
+    }
+
+    _withinLeeways(x, y) {
+        return x < 20 || x > this.width - 20 ||
+            y < 20 || y > this.height - 20;
+    }
+
+    handleDragOver(source, _actor, x, y) {
+        if (!(source instanceof MW.ApplicationMenuItem)) {
+            this.setHovering(false);
+            return DND.DragMotionResult.NO_DROP;
+        }
+
+        if (this._withinLeeways(x, y) || this.appList.includes(source._app)) {
+            this.setHovering(false);
+            return DND.DragMotionResult.CONTINUE;
+        }
+
+        this.setHovering(true);
+        return DND.DragMotionResult.MOVE_DROP;
+    }
+
+    setHovering(hovering) {
+        if (hovering)
+            this.add_style_pseudo_class('drop');
+        else
+            this.remove_style_pseudo_class('drop');
+    }
+
+    acceptDrop(source) {
+        this.setHovering(false);
+        if (!(source instanceof MW.ApplicationMenuItem))
+            return false;
+
+        if (this.appList.includes(source._app))
+            return false;
+
+        const app = source._app;
+        const {folderMenuItem} = source;
+
+        if (this.new_folder) {
+            this._menuLayout.removeAppFromFolder(app, folderMenuItem);
+            this._menuLayout.createNewFolder(app);
+            return true;
+        }
+
+        this._menuLayout.removeAppFromFolder(app, folderMenuItem);
+        this._menuLayout.addAppToFolder(app, this);
+        source.setFolderGroup(this);
+
+        return true;
+    }
+
+    _onDragMotion() {
+        const layoutManager = this._parentBox.layout_manager;
+        if (layoutManager instanceof Clutter.GridLayout) {
+            this.xIndex = Math.floor((this._draggable._dragX - this.posX) /
+                         (this.rowWidth + layoutManager.column_spacing));
+            this.yIndex = Math.floor((this._draggable._dragY - this.posY) /
+                         (this.rowHeight + layoutManager.row_spacing));
+
+            if (this.xIndex === this.gridLocation[0] && this.yIndex === this.gridLocation[1])
+                return DND.DragMotionResult.CONTINUE;
+            else
+                this.gridLocation = [this.xIndex, this.yIndex];
+
+            this._parentBox.remove_child(this);
+            const children = this._parentBox.get_children();
+            const childrenCount = children.length;
+            const columns = layoutManager.gridColumns;
+            const rows = Math.floor(childrenCount / columns);
+            if (this.yIndex >= rows)
+                this.yIndex = rows;
+            if (this.yIndex < 0)
+                this.yIndex = 0;
+            if (this.xIndex >= columns - 1)
+                this.xIndex = columns - 1;
+            if (this.xIndex < 0)
+                this.xIndex = 0;
+
+            // the [0,0] grid location is reserved for the home library folder
+            if (this.yIndex === 0 && this.xIndex === 0)
+                this.xIndex = 1;
+
+            if (((this.xIndex + 1) + (this.yIndex * columns)) > childrenCount)
+                this.xIndex = Math.floor(childrenCount % columns);
+
+            this._parentBox.remove_all_children();
+
+            let x = 0, y = 0;
+            for (let i = 0; i < children.length; i++) {
+                if (this.xIndex === x && this.yIndex === y)
+                    [x, y] = this.gridLayoutIter(x, y, columns);
+                layoutManager.attach(children[i], x, y, 1, 1);
+                [x, y] = this.gridLayoutIter(x, y, columns);
+            }
+            layoutManager.attach(this, this.xIndex, this.yIndex, 1, 1);
+        }
+        return DND.DragMotionResult.CONTINUE;
+    }
+
+    _onDragEnd() {
+        if (this._dragMonitor) {
+            DND.removeDragMonitor(this._dragMonitor);
+            this._dragMonitor = null;
+        }
+        this.opacity = 255;
+        const layoutManager = this._parentBox.layout_manager;
+        const orderedList = [];
+        if (layoutManager instanceof Clutter.GridLayout) {
+            let x = 0, y = 0;
+            const columns = layoutManager.gridColumns;
+
+            const children = this._parentBox.get_children();
+            for (let i = 0; i < children.length; i++) {
+                orderedList.push(this._parentBox.layout_manager.get_child_at(x, y));
+                [x, y] = this.gridLayoutIter(x, y, columns);
+            }
+        }
+        this._menuLayout.reorderFolders(orderedList);
+    }
+
+    gridLayoutIter(x, y, columns) {
+        x++;
+        if (x === columns) {
+            y++;
+            x = 0;
+        }
+        return [x, y];
+    }
+
+    set appList(value) {
+        this._appList = value;
+        this._updateIcon();
+    }
+
+    get appList() {
+        return this._appList;
+    }
+
+    createIcon() {
+        const iconSize = 32;
+
+        this._name = _(this.folder_name);
+        this.label.text = _(this._name);
+
+        if (!this.appList.length || this.home_folder) {
+            const icon = new St.Icon({
+                style_class: 'popup-menu-icon',
+                icon_size: iconSize,
+                icon_name: this.home_folder ? 'user-home-symbolic' : 'folder-directory-symbolic',
+            });
+            return icon;
+        }
+
+        const layout = new Clutter.GridLayout({
+            row_homogeneous: true,
+            column_homogeneous: true,
+        });
+        const icon = new St.Widget({
+            layout_manager: layout,
+            x_align: Clutter.ActorAlign.CENTER,
+            style: `width: ${iconSize}px; height: ${iconSize}px;`,
+        });
+
+        const subSize = Math.floor(.4 * iconSize);
+
+        const numItems = this.appList.length;
+        const rtl = icon.get_text_direction() === Clutter.TextDirection.RTL;
+        for (let i = 0; i < 4; i++) {
+            const style = `width: ${subSize}px; height: ${subSize}px;`;
+            const bin = new St.Bin({style});
+            if (i < numItems)
+                bin.child = this.appList[i].create_icon_texture(subSize);
+            layout.attach(bin, rtl ? (i + 1) % 2 : i % 2, Math.floor(i / 2), 1, 1);
+        }
+
+        return icon;
+    }
+
+    displayAppList() {
+        this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
+        this._menuLayout.activeCategoryName = this._name;
+
+        this._menuLayout.displayCategoryAppList(this.appList, this._name);
+
+        this._menuLayout.activeCategoryType = this._name;
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._menuLayout.setActiveCategory(this);
+        this.displayAppList();
+    }
+}

@@ -1,4 +1,6 @@
+import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
@@ -112,24 +114,24 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         layout.hookup_style(this.grid);
         this.navigateBox.add_child(this.grid);
 
-        this.pinnedAppsButton = new MW.PlasmaMenuItem(this, _('Pinned'), `${this._extension.path}/${Constants.ArcMenuLogoSymbolic}`);
+        this.pinnedAppsButton = new PlasmaMenuItem(this, _('Pinned'), `${this._extension.path}/${Constants.ArcMenuLogoSymbolic}`);
         this.pinnedAppsButton.connect('activate', () => this.displayPinnedApps());
         this.grid.layout_manager.attach(this.pinnedAppsButton, 0, 0, 1, 1);
         this.pinnedAppsButton.set_style_pseudo_class('active-item');
 
-        this.applicationsButton = new MW.PlasmaMenuItem(this, _('Apps'), 'preferences-desktop-apps-symbolic');
+        this.applicationsButton = new PlasmaMenuItem(this, _('Apps'), 'preferences-desktop-apps-symbolic');
         this.applicationsButton.connect('activate', () => this.displayCategories());
         this.grid.layout_manager.attach(this.applicationsButton, 1, 0, 1, 1);
 
-        this.computerButton = new MW.PlasmaMenuItem(this, _('Computer'), 'computer-symbolic');
+        this.computerButton = new PlasmaMenuItem(this, _('Computer'), 'computer-symbolic');
         this.computerButton.connect('activate', () => this.displayComputerCategory());
         this.grid.layout_manager.attach(this.computerButton, 2, 0, 1, 1);
 
-        this.leaveButton = new MW.PlasmaMenuItem(this, _('Leave'), 'system-shutdown-symbolic');
+        this.leaveButton = new PlasmaMenuItem(this, _('Leave'), 'system-shutdown-symbolic');
         this.leaveButton.connect('activate', () => this.displayPowerItems());
         this.grid.layout_manager.attach(this.leaveButton, 3, 0, 1, 1);
 
-        this.categoryHeader = new MW.PlasmaCategoryHeader(this);
+        this.categoryHeader = new PlasmaCategoryHeader(this);
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
@@ -435,3 +437,151 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         super.destroy();
     }
 };
+
+class PlasmaMenuItem extends MW.ArcMenuPopupBaseMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, title, iconPath) {
+        super(menuLayout);
+        this.iconPath = iconPath;
+
+        this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
+        this.vertical = true;
+
+        this.remove_child(this._ornamentLabel);
+
+        const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
+        if (searchbarLocation === Constants.SearchbarLocation.TOP)
+            this.name = 'arcmenu-plasma-button-top';
+        else
+            this.name = 'arcmenu-plasma-button-bottom';
+
+        this._iconBin = new St.Bin({
+            y_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this.add_child(this._iconBin);
+
+        this._updateIcon();
+
+        this.label = new St.Label({
+            text: _(title),
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        this.label.get_clutter_text().set_line_wrap(true);
+        this.add_child(this.label);
+    }
+
+    createIcon() {
+        return new St.Icon({
+            gicon: Gio.icon_new_for_string(this.iconPath),
+            icon_size: Constants.MEDIUM_ICON_SIZE,
+        });
+    }
+
+    _onHover() {
+        if (this.hover) {
+            const description = null;
+            this._menuButton.tooltip.showTooltip(this, this.tooltipLocation, this.label,
+                description, Constants.DisplayType.LIST);
+        } else {
+            this._menuButton.tooltip.hide();
+        }
+        const shouldHover = this._settings.get_boolean('plasma-enable-hover');
+        if (shouldHover && this.hover && !this.isActive)
+            this.activate(Clutter.get_current_event());
+    }
+
+    set active(active) {
+        const activeChanged = active !== this.active;
+        if (activeChanged) {
+            this._active = active;
+            if (active) {
+                this.add_style_class_name('selected');
+                this._menuLayout.activeMenuItem = this;
+                if (this.can_focus)
+                    this.grab_key_focus();
+            } else {
+                this.remove_style_class_name('selected');
+            }
+            this.notify('active');
+        }
+    }
+
+    setActive(active) {
+        if (active) {
+            this.isActive = true;
+            this.set_style_pseudo_class('active-item');
+        } else {
+            this.isActive = false;
+            this.set_style_pseudo_class(null);
+        }
+    }
+
+    activate(event) {
+        this._menuLayout.searchEntry.clearWithoutSearchChangeEvent();
+        this._menuLayout.clearActiveItem();
+        this.setActive(true);
+        super.activate(event);
+    }
+}
+
+class PlasmaCategoryHeader extends St.BoxLayout {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout) {
+        super({
+            style_class: 'popup-menu-item',
+            style: 'padding: 0px;',
+            reactive: true,
+            track_hover: false,
+            can_focus: false,
+            accessible_role: Atk.Role.MENU_ITEM,
+        });
+        this._menuLayout = menuLayout;
+
+        this.backButton = new MW.ArcMenuPopupBaseMenuItem(this._menuLayout);
+        this.backButton.set({
+            x_expand: false,
+            x_align: Clutter.ActorAlign.CENTER,
+        });
+
+        this.label = new St.Label({
+            text: _('Apps'),
+            y_expand: false,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'font-weight: bold',
+        });
+
+        this.backButton.add_child(this.label);
+
+        this.add_child(this.backButton);
+        this.backButton.connect('activate', () => this._menuLayout.displayCategories());
+
+        this.categoryLabel = new St.Label({
+            text: '',
+            y_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        this.add_child(this.categoryLabel);
+    }
+
+    setActiveCategory(categoryText) {
+        if (categoryText) {
+            this.categoryLabel.text = _(categoryText);
+            this.categoryLabel.show();
+        } else {
+            this.categoryLabel.hide();
+        }
+    }
+}
