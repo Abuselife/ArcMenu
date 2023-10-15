@@ -202,6 +202,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
     }
 
     _onClicked(action) {
+        log(`ArcMenu: Menu item clicked. Button = ${action.get_button()}`);
         if (action.get_button() === Clutter.BUTTON_PRIMARY) {
             this.active = false;
             this._menuLayout.grab_key_focus();
