@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-09 12:15-0400\n"
+"POT-Creation-Date: 2023-10-15 08:34-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,15 +46,16 @@ msgstr ""
 msgid "Frequent Apps"
 msgstr ""
 
-#: constants.js:81 menuWidgets.js:1388 menulayouts/az.js:63
+#: constants.js:81 menuWidgets.js:1128 menulayouts/az.js:63
 #: menulayouts/az.js:72 menulayouts/eleven.js:54 menulayouts/eleven.js:63
 #: menulayouts/redmond.js:72 menulayouts/redmond.js:75
 #: menulayouts/redmond.js:79
 msgid "All Apps"
 msgstr ""
 
-#: constants.js:82 menuWidgets.js:823 settings/Menu/LayoutTweaksPage.js:701
-#: settings/Menu/LayoutTweaksPage.js:819 settings/MenuPage.js:101
+#: constants.js:82 menulayouts/insider.js:276
+#: settings/Menu/LayoutTweaksPage.js:701 settings/Menu/LayoutTweaksPage.js:819
+#: settings/MenuPage.js:101
 msgid "Pinned Apps"
 msgstr ""
 
@@ -63,23 +64,23 @@ msgstr ""
 msgid "Recent Files"
 msgstr ""
 
-#: constants.js:242 menuButton.js:650 settings/Menu/ListPinnedPage.js:377
+#: constants.js:242 menuButton.js:732 settings/Menu/ListPinnedPage.js:377
 msgid "Log Out..."
 msgstr ""
 
-#: constants.js:243 menuButton.js:649 settings/Menu/ListPinnedPage.js:376
+#: constants.js:243 menuButton.js:731 settings/Menu/ListPinnedPage.js:376
 msgid "Lock"
 msgstr ""
 
-#: constants.js:244 menuButton.js:644 settings/Menu/ListPinnedPage.js:379
+#: constants.js:244 menuButton.js:726 settings/Menu/ListPinnedPage.js:379
 msgid "Restart..."
 msgstr ""
 
-#: constants.js:245 menuButton.js:645 settings/Menu/ListPinnedPage.js:378
+#: constants.js:245 menuButton.js:727 settings/Menu/ListPinnedPage.js:378
 msgid "Power Off..."
 msgstr ""
 
-#: constants.js:246 menuButton.js:641 settings/Menu/ListPinnedPage.js:380
+#: constants.js:246 menuButton.js:723 settings/Menu/ListPinnedPage.js:380
 msgid "Suspend"
 msgstr ""
 
@@ -91,7 +92,7 @@ msgstr ""
 msgid "Hibernate"
 msgstr ""
 
-#: constants.js:249 menuButton.js:651 settings/Menu/ListPinnedPage.js:384
+#: constants.js:249 menuButton.js:733 settings/Menu/ListPinnedPage.js:384
 msgid "Switch User"
 msgstr ""
 
@@ -215,12 +216,12 @@ msgstr ""
 msgid "Tweaks"
 msgstr ""
 
-#: constants.js:539 menuButton.js:594 menuWidgets.js:528
+#: constants.js:539 menuButton.js:676 menuWidgets.js:497
 #: settings/Menu/ListPinnedPage.js:346 settings/Menu/ListPinnedPage.js:366
 msgid "Activities Overview"
 msgstr ""
 
-#: constants.js:539 menuButton.js:580 prefs.js:24 settings/AboutPage.js:128
+#: constants.js:539 menuButton.js:662 prefs.js:24 settings/AboutPage.js:128
 #: settings/Menu/ListPinnedPage.js:334 settings/Menu/ListPinnedPage.js:343
 #: settings/Menu/ListPinnedPage.js:353
 msgid "ArcMenu Settings"
@@ -230,116 +231,69 @@ msgstr ""
 msgid "Files"
 msgstr ""
 
-#: menuButton.js:625 settings/Menu/ListPinnedPage.js:369
-msgid "Show Desktop"
-msgstr ""
-
-#: menuButton.js:639 menuWidgets.js:909 menuWidgets.js:927
-msgid "Power Off / Log Out"
-msgstr ""
-
-#: menuButton.js:680
-msgid "Dash to Panel Settings"
-msgstr ""
-
-#: menuButton.js:684
-msgid "App Icons Taskbar Settings"
-msgstr ""
-
-#: menuWidgets.js:793
-msgid "Configure Runner"
-msgstr ""
-
-#: menuWidgets.js:840
-msgid "Extras"
-msgstr ""
-
-#: menuWidgets.js:964 menulayouts/plasma.js:319
-msgid "Session"
-msgstr ""
-
-#: menuWidgets.js:968 menulayouts/plasma.js:323
-msgid "System"
-msgstr ""
-
-#: menuWidgets.js:1035
-msgid "Categories"
-msgstr ""
-
-#: menuWidgets.js:1223 menuWidgets.js:3283 menulayouts/plasma.js:120
+#: menuButton.js:39 menulayouts/plasma.js:122 menulayouts/plasma.js:559
 msgid "Apps"
 msgstr ""
 
-#: menuWidgets.js:1318 menuWidgets.js:1339 menulayouts/az.js:64
+#: menuButton.js:707 settings/Menu/ListPinnedPage.js:369
+msgid "Show Desktop"
+msgstr ""
+
+#: menuButton.js:721 menuWidgets.js:814 menuWidgets.js:832
+msgid "Power Off / Log Out"
+msgstr ""
+
+#: menuButton.js:762
+msgid "Dash to Panel Settings"
+msgstr ""
+
+#: menuButton.js:766
+msgid "App Icons Taskbar Settings"
+msgstr ""
+
+#: menuWidgets.js:869 menulayouts/plasma.js:321
+msgid "Session"
+msgstr ""
+
+#: menuWidgets.js:873 menulayouts/plasma.js:325
+msgid "System"
+msgstr ""
+
+#: menuWidgets.js:1058 menuWidgets.js:1079 menulayouts/az.js:64
 #: menulayouts/eleven.js:55 menulayouts/redmond.js:73 menulayouts/redmond.js:78
 #: settings/Menu/SubPage.js:76 settings/Menu/ThemingDialog.js:338
 msgid "Back"
 msgstr ""
 
-#: menuWidgets.js:2027
+#: menuWidgets.js:1798
 msgid "New"
 msgstr ""
 
-#: menuWidgets.js:2412
-msgid "Rename Folder"
-msgstr ""
-
-#: menuWidgets.js:2413
-msgid "Delete Folder"
-msgstr ""
-
-#: menuWidgets.js:2423
-#, javascript-format
-msgid "Permanently delete %s folder?"
-msgstr ""
-
-#: menuWidgets.js:2428
-msgid "No"
-msgstr ""
-
-#: menuWidgets.js:2436
-msgid "Yes"
-msgstr ""
-
-#: menuWidgets.js:2451
-#, javascript-format
-msgid "Rename %s folder"
-msgstr ""
-
-#: menuWidgets.js:2485
-msgid "Cancel"
-msgstr ""
-
-#: menuWidgets.js:2493 settings/GeneralPage.js:462
-#: settings/Menu/ListPinnedPage.js:637 settings/Menu/VisualSettings.js:365
-msgid "Apply"
-msgstr ""
-
-#: menuWidgets.js:2842 menulayouts/az.js:71 menulayouts/eleven.js:62
-#: menulayouts/insider.js:171 menulayouts/plasma.js:115 menulayouts/raven.js:61
+#: menuWidgets.js:2486 menulayouts/az.js:71 menulayouts/eleven.js:62
+#: menulayouts/insider.js:171 menulayouts/plasma.js:117 menulayouts/raven.js:61
 #: menulayouts/raven.js:236 menulayouts/raven.js:284 menulayouts/redmond.js:74
 #: menulayouts/redmond.js:77 menulayouts/redmond.js:80 menulayouts/unity.js:39
 #: menulayouts/unity.js:278 menulayouts/unity.js:354 menulayouts/windows.js:411
 msgid "Pinned"
 msgstr ""
 
-#: menuWidgets.js:3007
+#: menuWidgets.js:2651
 msgid "Unmount Drive"
 msgstr ""
 
-#: menuWidgets.js:3009
+#: menuWidgets.js:2653
 msgid "Eject Drive"
 msgstr ""
 
-#: menuWidgets.js:3053
+#: menuWidgets.js:2697
 msgid "Remove from Recent"
 msgstr ""
 
-#: menuWidgets.js:3135
+#: menuWidgets.js:2779
 msgid "Search…"
 msgstr ""
 
-#: menulayouts/baseMenuLayout.js:435
+#: menulayouts/baseMenuLayout.js:466
 msgid "More Recent Files..."
 msgstr ""
 
@@ -347,48 +301,83 @@ msgstr ""
 msgid "Frequent"
 msgstr ""
 
-#: menulayouts/plasma.js:124 placeDisplay.js:131 placeDisplay.js:154
+#: menulayouts/plasma.js:126 placeDisplay.js:131 placeDisplay.js:154
 #: settings/Menu/ListPinnedPage.js:400
 msgid "Computer"
 msgstr ""
 
-#: menulayouts/plasma.js:128
+#: menulayouts/plasma.js:130
 msgid "Leave"
 msgstr ""
 
-#: menulayouts/plasma.js:267 menulayouts/windows.js:271
+#: menulayouts/plasma.js:269 menulayouts/windows.js:271
 #: settings/MenuPage.js:123
 msgid "Application Shortcuts"
 msgstr ""
 
-#: menulayouts/plasma.js:272 menulayouts/windows.js:275
+#: menulayouts/plasma.js:274 menulayouts/windows.js:275
 msgid "Places"
 msgstr ""
 
-#: menulayouts/plasma.js:287 menulayouts/windows.js:207
+#: menulayouts/plasma.js:289 menulayouts/windows.js:207
 #: settings/Menu/LayoutTweaksPage.js:748 settings/Menu/LayoutTweaksPage.js:867
 msgid "Bookmarks"
 msgstr ""
 
-#: menulayouts/plasma.js:289 menulayouts/windows.js:209
+#: menulayouts/plasma.js:291 menulayouts/windows.js:209
 msgid "Devices"
 msgstr ""
 
-#: menulayouts/plasma.js:291 menulayouts/windows.js:211
+#: menulayouts/plasma.js:293 menulayouts/windows.js:211
 #: settings/Menu/ListPinnedPage.js:401
 msgid "Network"
 msgstr ""
 
-#: menulayouts/pop.js:244 menulayouts/pop.js:246
+#: menulayouts/pop.js:250 menulayouts/pop.js:252
 msgid "Library Home"
 msgstr ""
 
-#: menulayouts/pop.js:302
+#: menulayouts/pop.js:308
 msgid "New Folder"
 msgstr ""
 
-#: menulayouts/pop.js:336
+#: menulayouts/pop.js:342
 msgid "Unnamed Folder"
+msgstr ""
+
+#: menulayouts/pop.js:686
+msgid "Rename Folder"
+msgstr ""
+
+#: menulayouts/pop.js:687
+msgid "Delete Folder"
+msgstr ""
+
+#: menulayouts/pop.js:697
+#, javascript-format
+msgid "Permanently delete %s folder?"
+msgstr ""
+
+#: menulayouts/pop.js:702
+msgid "No"
+msgstr ""
+
+#: menulayouts/pop.js:710
+msgid "Yes"
+msgstr ""
+
+#: menulayouts/pop.js:725
+#, javascript-format
+msgid "Rename %s folder"
+msgstr ""
+
+#: menulayouts/pop.js:759
+msgid "Cancel"
+msgstr ""
+
+#: menulayouts/pop.js:767 settings/GeneralPage.js:462
+#: settings/Menu/ListPinnedPage.js:637 settings/Menu/VisualSettings.js:365
+msgid "Apply"
 msgstr ""
 
 #: menulayouts/raven.js:61 menulayouts/raven.js:242 menulayouts/unity.js:39
@@ -403,6 +392,18 @@ msgstr ""
 msgid "Shortcuts"
 msgstr ""
 
+#: menulayouts/runner.js:217
+msgid "Configure Runner"
+msgstr ""
+
+#: menulayouts/unity.js:420
+msgid "Categories"
+msgstr ""
+
+#: menulayouts/windows.js:432
+msgid "Extras"
+msgstr ""
+
 #: placeDisplay.js:54
 #, javascript-format
 msgid "Failed to launch “%s”"
@@ -413,13 +414,13 @@ msgstr ""
 msgid "Failed to mount volume for “%s”"
 msgstr ""
 
-#: placeDisplay.js:117 placeDisplay.js:346
+#: placeDisplay.js:117 placeDisplay.js:340
 #: settings/Menu/LayoutTweaksPage.js:585 settings/Menu/LayoutTweaksPage.js:620
 #: settings/Menu/ListPinnedPage.js:392 utils.js:246
 msgid "Home"
 msgstr ""
 
-#: placeDisplay.js:227
+#: placeDisplay.js:221
 #, javascript-format
 msgid "Ejecting drive “%s” failed:"
 msgstr ""
@@ -663,67 +664,67 @@ msgstr ""
 msgid "New Hotkey"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:34
-msgid "Show Search Result Descriptions"
+#: settings/Menu/FineTunePage.js:32
+msgid "Show Category Sub Menus"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:48
+#: settings/Menu/FineTunePage.js:46
 msgid "Show Application Descriptions"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:58
-msgid "Full Color"
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:59
-msgid "Symbolic"
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:61
-msgid "Category Icon Type"
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:62 settings/Menu/FineTunePage.js:73
-msgid "Some icon themes may not include selected icon type"
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:72
-msgid "Shortcuts Icon Type"
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:90
+#: settings/Menu/FineTunePage.js:60
 msgid "Disable ScrollView Fade Effects"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:104
+#: settings/Menu/FineTunePage.js:74
 msgid "Disable Tooltips"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:118
+#: settings/Menu/FineTunePage.js:88
 msgid "Alphabetize 'All Programs' Category"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:132
+#: settings/Menu/FineTunePage.js:102
 msgid "Show Hidden Recent Files"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:151
+#: settings/Menu/FineTunePage.js:121
 msgid "Enable/Disable multi-lined labels on large application icon layouts."
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:151 settings/Menu/FineTunePage.js:164
+#: settings/Menu/FineTunePage.js:121 settings/Menu/FineTunePage.js:134
 msgid "Multi-Lined Labels"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:185
+#: settings/Menu/FineTunePage.js:145
+msgid "Full Color"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:146
+msgid "Symbolic"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:148
+msgid "Category Icon Type"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:149 settings/Menu/FineTunePage.js:160
+msgid "Some icon themes may not include selected icon type"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:159
+msgid "Shortcuts Icon Type"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:183
 msgid "Disable New Apps Tracker"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:194
+#: settings/Menu/FineTunePage.js:192
 msgid "Clear All"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:203
+#: settings/Menu/FineTunePage.js:201
 msgid "Clear Apps Marked 'New'"
 msgstr ""
 
@@ -1113,15 +1114,19 @@ msgstr ""
 msgid "Search Options"
 msgstr ""
 
-#: settings/Menu/SearchOptionsPage.js:67
+#: settings/Menu/SearchOptionsPage.js:66
+msgid "Show Search Result Descriptions"
+msgstr ""
+
+#: settings/Menu/SearchOptionsPage.js:81
 msgid "Highlight search result terms"
 msgstr ""
 
-#: settings/Menu/SearchOptionsPage.js:86
+#: settings/Menu/SearchOptionsPage.js:100
 msgid "Max Search Results"
 msgstr ""
 
-#: settings/Menu/SearchOptionsPage.js:130
+#: settings/Menu/SearchOptionsPage.js:144
 msgid "Search Box Border Radius"
 msgstr ""
 
