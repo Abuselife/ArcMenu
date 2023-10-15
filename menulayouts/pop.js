@@ -645,7 +645,9 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         this._updateIcon();
 
         if (!this.home_folder) {
+            this.remove_action(this._clickAction);
             this._draggable = DND.makeDraggable(this, {timeoutThreshold: 200});
+            this._draggable.addClickAction(this._clickAction);
             this._draggable._animateDragEnd = eventTime => {
                 this._draggable._animationInProgress = true;
                 this._draggable._onAnimationComplete(this._draggable._dragActor, eventTime);
@@ -791,8 +793,6 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
 
         if (this.contextMenu && this.contextMenu.isOpen)
             this.contextMenu.toggle();
-
-        this._cancelContextMenuTimeOut();
 
         this.isDragging = true;
         this._dragMonitor = {

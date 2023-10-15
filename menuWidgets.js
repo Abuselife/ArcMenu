@@ -13,7 +13,6 @@ import St from 'gi://St';
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-
 import * as Params from 'resource:///org/gnome/shell/misc/params.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {showScreenshotUI} from 'resource:///org/gnome/shell/ui/screenshot.js';
@@ -179,15 +178,76 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         if (params.reactive && params.hover)
             this.bind_property('hover', this, 'active', GObject.BindingFlags.SYNC_CREATE);
 
-        this._arcMenu.connectObject('open-state-changed', (menu, open) => {
-            if (!open)
-                this._cancelContextMenuTimeOut();
-        }, this);
-
         const textureCache = St.TextureCache.get_default();
         textureCache.connectObject('icon-theme-changed', () => this._updateIcon(), this);
 
+        const panAction = new Clutter.PanAction({interpolate: true});
+        panAction.connect('pan', this._onPan.bind(this));
+        // this.add_action(panAction);
+
+        this._clickAction = new Clutter.ClickAction({
+            enabled: this._activatable,
+        });
+        this._clickAction.connect('clicked', this._onClicked.bind(this));
+        this._clickAction.connect('long-press', this._onLongPress.bind(this));
+        this._clickAction.connect('notify::pressed', () => {
+            if (this._clickAction.pressed)
+                this.add_style_pseudo_class('active');
+            else
+                this.remove_style_pseudo_class('active');
+        });
+        this.add_action(this._clickAction);
+
         this.connect('destroy', () => this._onDestroy());
+    }
+
+    _onClicked(action) {
+        if (action.get_button() === Clutter.BUTTON_PRIMARY) {
+            this.active = false;
+            this._menuLayout.grab_key_focus();
+            this.remove_style_pseudo_class('active');
+            this.activate(Clutter.get_current_event());
+        } else if (action.get_button() === Clutter.BUTTON_SECONDARY) {
+            if (this.hasContextMenu)
+                this.popupContextMenu();
+            else
+                this.remove_style_pseudo_class('active');
+        }
+    }
+
+    _onLongPress(action, theActor, state) {
+        if (state === Clutter.LongPressState.QUERY)
+            return action.get_button() === Clutter.BUTTON_PRIMARY && this._menuLayout.arcMenu.isOpen && this.hasContextMenu;
+
+        if (state === Clutter.LongPressState.ACTIVATE) {
+            action.release();
+            this.popupContextMenu();
+        }
+
+        return true;
+    }
+
+    _onPan(action) {
+        let parent = this.get_parent();
+        while (!(parent instanceof St.ScrollView)) {
+            if (!parent)
+                return false;
+            parent = parent.get_parent();
+        }
+
+        this._clickAction.release();
+
+        if (this._menuButton.tooltipShowingID) {
+            GLib.source_remove(this._menuButton.tooltipShowingID);
+            this._menuButton.tooltipShowingID = null;
+        }
+        if (this._menuButton.tooltip.visible)
+            this._menuButton.tooltip.hide(true);
+
+        const [dist_, dx_, dy] = action.get_motion_delta(0);
+        const {adjustment} = parent.vscroll;
+        adjustment.value -=  dy;
+        return false;
     }
 
     _updateIcon() {
@@ -274,49 +334,6 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_button_press_event() {
-        this._pressed = false;
-
-        const event = Clutter.get_current_event();
-        if (event.get_button() === Clutter.BUTTON_PRIMARY) {
-            this._menuLayout.blockActivateEvent = false;
-            this._pressed = true;
-            this.add_style_pseudo_class('active');
-            if (this.hasContextMenu)
-                this._startContextMenuTimeOut();
-        } else if (event.get_button() === Clutter.BUTTON_SECONDARY) {
-            this._pressed = true;
-            this.add_style_pseudo_class('active');
-        }
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    vfunc_button_release_event() {
-        if (!this._pressed)
-            return Clutter.EVENT_PROPAGATE;
-
-        this._pressed = false;
-        const event = Clutter.get_current_event();
-        if (event.get_button() === Clutter.BUTTON_PRIMARY && !this._menuLayout.blockActivateEvent) {
-            this.active = false;
-            this._menuLayout.grab_key_focus();
-            this.remove_style_pseudo_class('active');
-            this._cancelContextMenuTimeOut();
-            this.activate(event);
-
-            return Clutter.EVENT_STOP;
-        } else if (event.get_button() === Clutter.BUTTON_SECONDARY) {
-            if (this.hasContextMenu)
-                this.popupContextMenu();
-            else
-                this.remove_style_pseudo_class('active');
-
-            return Clutter.EVENT_STOP;
-        }
-
-        return Clutter.EVENT_PROPAGATE;
-    }
-
     vfunc_key_focus_in() {
         super.vfunc_key_focus_in();
         if (!this.hover)
@@ -369,54 +386,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_touch_event(event) {
-        if (event.type === Clutter.EventType.TOUCH_END &&
-            !this._menuLayout.blockActivateEvent && this._pressed) {
-            this.active = false;
-            this._pressed = false;
-            this.remove_style_pseudo_class('active');
-            this._menuLayout.grab_key_focus();
-            this.activate(Clutter.get_current_event());
-
-            return Clutter.EVENT_STOP;
-        } else if (event.type === Clutter.EventType.TOUCH_BEGIN &&
-            !this._menuLayout.contextMenuManager.activeMenu) {
-            this._pressed = true;
-            this._menuLayout.blockActivateEvent = false;
-            if (this.hasContextMenu)
-                this._startContextMenuTimeOut();
-            this.add_style_pseudo_class('active');
-        } else if (event.type === Clutter.EventType.TOUCH_BEGIN &&
-            this._menuLayout.contextMenuManager.activeMenu) {
-            this._pressed = false;
-            this._menuLayout.blockActivateEvent = false;
-            this._menuLayout.contextMenuManager.activeMenu.toggle();
-        }
-        return Clutter.EVENT_PROPAGATE;
-    }
-
-    _startContextMenuTimeOut() {
-        this._contextMenuTimeOutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
-            this._pressed = false;
-            this._contextMenuTimeOutId = null;
-            if (this.hasContextMenu && this._menuLayout.arcMenu.isOpen &&
-                !this._menuLayout.blockActivateEvent) {
-                this.popupContextMenu();
-                this._menuLayout.contextMenuManager.ignoreRelease();
-            }
-            return GLib.SOURCE_REMOVE;
-        });
-    }
-
-    _cancelContextMenuTimeOut() {
-        if (this._contextMenuTimeOutId) {
-            GLib.source_remove(this._contextMenuTimeOutId);
-            this._contextMenuTimeOutId = null;
-        }
-    }
-
     _onDestroy() {
-        this._cancelContextMenuTimeOut();
         this.isDestroyed = true;
     }
 }
@@ -1479,7 +1449,7 @@ export class UserMenuIcon extends St.Bin {
 }
 
 export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
-    static [GObject.signals] = {'saveSettings': {}};
+    static [GObject.signals] = {'pinned-apps-changed': {}};
 
     static {
         GObject.registerClass(this);
@@ -1540,7 +1510,9 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
             this.add_child(this.label);
         }
 
+        this.remove_action(this._clickAction);
         this._draggable = DND.makeDraggable(this);
+        this._draggable.addClickAction(this._clickAction);
         this._draggable._animateDragEnd = eventTime => {
             this._draggable._animationInProgress = true;
             this._draggable._onAnimationComplete(this._draggable._dragActor, eventTime);
@@ -1605,65 +1577,83 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         if (this.contextMenu && this.contextMenu.isOpen)
             this.contextMenu.toggle();
 
-        this._cancelContextMenuTimeOut();
-
         this._dragMonitor = {
             dragMotion: this._onDragMotion.bind(this),
         };
         DND.addDragMonitor(this._dragMonitor);
-        this._parentBox = this.get_parent();
-        const p = this._parentBox.get_transformed_position();
-        [this.posX, this.posY] = p;
 
         this.opacity = 55;
-        this.get_allocation_box();
-        this.rowHeight = this.height;
-        this.rowWidth = this.width;
     }
 
-    _onDragMotion() {
-        const layoutManager = this._parentBox.layout_manager;
-        if (layoutManager instanceof Clutter.GridLayout) {
-            this.xIndex = Math.floor((this._draggable._dragX - this.posX) /
-                         (this.rowWidth + layoutManager.column_spacing));
-            this.yIndex = Math.floor((this._draggable._dragY - this.posY) /
-                         (this.rowHeight + layoutManager.row_spacing));
+    _onDragMotion(dragEvent) {
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
+        if (!(layoutManager instanceof Clutter.GridLayout))
+            return DND.DragMotionResult.CONTINUE;
 
-            if (this.xIndex === this.gridLocation[0] && this.yIndex === this.gridLocation[1])
-                return DND.DragMotionResult.CONTINUE;
-            else
-                this.gridLocation = [this.xIndex, this.yIndex];
+        const targetActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, dragEvent.x, dragEvent.y);
+        if (!(targetActor instanceof PinnedAppsMenuItem) || targetActor === this)
+            return DND.DragMotionResult.CONTINUE;
 
-
-            this._parentBox.remove_child(this);
-            const children = this._parentBox.get_children();
-            const childrenCount = children.length;
-            const columns = layoutManager.gridColumns;
-            const rows = Math.floor(childrenCount / columns);
-            if (this.yIndex >= rows)
-                this.yIndex = rows;
-            if (this.yIndex < 0)
-                this.yIndex = 0;
-            if (this.xIndex >= columns - 1)
-                this.xIndex = columns - 1;
-            if (this.xIndex < 0)
-                this.xIndex = 0;
-
-            if (((this.xIndex + 1) + (this.yIndex * columns)) > childrenCount)
-                this.xIndex = Math.floor(childrenCount % columns);
-
-            this._parentBox.remove_all_children();
-
-            let x = 0, y = 0;
-            for (let i = 0; i < children.length; i++) {
-                if (this.xIndex === x && this.yIndex === y)
-                    [x, y] = this.gridLayoutIter(x, y, columns);
-                layoutManager.attach(children[i], x, y, 1, 1);
-                [x, y] = this.gridLayoutIter(x, y, columns);
-            }
-            layoutManager.attach(this, this.xIndex, this.yIndex, 1, 1);
-        }
+        this._moveItems(this.gridLocation, targetActor.gridLocation);
+        Utils.ensureActorVisibleInScrollView(this);
         return DND.DragMotionResult.CONTINUE;
+    }
+
+    _moveItems(startLoc, destLoc) {
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
+        const columns = layoutManager.gridColumns;
+
+        let [x, y] = startLoc;
+        const [destX, destY] = destLoc;
+        let child = true;
+
+        let direction;
+        if (destY > y || (destY === y && destX > x))
+            direction = Constants.Direction.GO_PREVIOUS;
+        else if (destY < y || (destY === y && destX < x))
+            direction = Constants.Direction.GO_NEXT;
+
+        const endOfColumn = direction === Constants.Direction.GO_NEXT ? -1 : columns;
+        const childrenToMove = [];
+        while (child) {
+            if (x === destX && y === destY)
+                break;
+
+            const [newX, newY] = [x, y];
+
+            if (direction === Constants.Direction.GO_PREVIOUS)
+                x++;
+            else
+                x--;
+
+            if (x === endOfColumn) {
+                if (direction === Constants.Direction.GO_PREVIOUS) {
+                    y++;
+                    x = 0;
+                } else {
+                    y--;
+                    x = columns - 1;
+                }
+            }
+
+            child = layoutManager.get_child_at(x, y);
+            if (child) {
+                child.gridLocation = [newX, newY];
+                childrenToMove.push(child);
+            }
+        }
+
+        for (let i = 0; i < childrenToMove.length; i++) {
+            const childToMove = childrenToMove[i];
+            const [newX, newY] = childToMove.gridLocation;
+            parent.remove_child(childToMove);
+            layoutManager.attach(childToMove, newX, newY, 1, 1);
+        }
+        parent.remove_child(this);
+        layoutManager.attach(this, destX, destY, 1, 1);
+        this.gridLocation = [destX, destY];
     }
 
     _onDragEnd() {
@@ -1671,20 +1661,14 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
             DND.removeDragMonitor(this._dragMonitor);
             this._dragMonitor = null;
         }
+
         this.opacity = 255;
-        const layoutManager = this._parentBox.layout_manager;
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
         if (layoutManager instanceof Clutter.GridLayout) {
-            let x = 0, y = 0;
-            const columns = layoutManager.gridColumns;
-            const orderedList = [];
-            const children = this._parentBox.get_children();
-            for (let i = 0; i < children.length; i++) {
-                orderedList.push(this._parentBox.layout_manager.get_child_at(x, y));
-                [x, y] = this.gridLayoutIter(x, y, columns);
-            }
-            this._menuLayout.pinnedAppsArray = orderedList;
+            this._menuLayout.pinnedAppsArray = this._getOrderedChildren();
+            this.emit('pinned-apps-changed');
         }
-        this.emit('saveSettings');
     }
 
     getDragActor() {
@@ -1700,7 +1684,24 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         return this;
     }
 
-    gridLayoutIter(x, y, columns) {
+    _getOrderedChildren() {
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
+
+        let x = 0, y = 0;
+        const columns = layoutManager.gridColumns;
+        const orderedList = [];
+        const children = parent.get_children();
+        for (let i = 0; i < children.length; i++) {
+            const child = layoutManager.get_child_at(x, y);
+            orderedList.push(child);
+            [x, y] = this._iterGridLayout(x, y, columns);
+        }
+
+        return orderedList;
+    }
+
+    _iterGridLayout(x, y, columns) {
         x++;
         if (x === columns) {
             y++;
@@ -1811,8 +1812,9 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         const isDraggable = this._menuLayout.draggableApps;
         if (isDraggable && this._app) {
             this.pivot_point = new Graphene.Point({x: 0.5, y: 0.5});
+            this.remove_action(this._clickAction);
             this._draggable = DND.makeDraggable(this, {timeoutThreshold: 400});
-
+            this._draggable.addClickAction(this._clickAction);
             this._draggable.connect('drag-begin', this._onDragBegin.bind(this));
             this._draggable.connect('drag-end', this._onDragEnd.bind(this));
         }
@@ -1835,7 +1837,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
         return this;
     }
 
-    gridLayoutIter(x, y, columns) {
+    _iterGridLayout(x, y, columns) {
         x++;
         if (x === columns) {
             y++;
@@ -1864,8 +1866,6 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
 
         if (this.contextMenu && this.contextMenu.isOpen)
             this.contextMenu.toggle();
-
-        this._cancelContextMenuTimeOut();
 
         this._parentBox = this.get_parent();
         const p = this._parentBox.get_transformed_position();
@@ -1917,9 +1917,9 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
             let x = 0, y = 0;
             for (let i = 0; i < children.length; i++) {
                 if (this.xIndex === x && this.yIndex === y)
-                    [x, y] = this.gridLayoutIter(x, y, columns);
+                    [x, y] = this._iterGridLayout(x, y, columns);
                 layoutManager.attach(children[i], x, y, 1, 1);
-                [x, y] = this.gridLayoutIter(x, y, columns);
+                [x, y] = this._iterGridLayout(x, y, columns);
             }
             layoutManager.attach(this, this.xIndex, this.yIndex, 1, 1);
         }
@@ -1941,7 +1941,7 @@ export class ApplicationMenuItem extends ArcMenuPopupBaseMenuItem {
                 const child = this._parentBox.layout_manager.get_child_at(x, y);
                 const appId = child._app.id;
                 orderedList.push(appId);
-                [x, y] = this.gridLayoutIter(x, y, columns);
+                [x, y] = this._iterGridLayout(x, y, columns);
             }
             this._menuLayout.reorderFolderApps(this.folderMenuItem, orderedList);
         }
@@ -2144,11 +2144,10 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         Main.uiGroup.add_child(this._subMenuPopup.actor);
 
         this.disconnectObject(this._subMenuPopup);
-        this.connectObject(
-            'notify::mapped', () => {
-                if (!this.mapped)
-                    this._subMenuPopup.close();
-            }, this._subMenuPopup);
+        this.connectObject('notify::mapped', () => {
+            if (!this.mapped)
+                this._subMenuPopup.close();
+        }, this._subMenuPopup);
 
         this._headerLabel = new St.Label({
             style: 'font-weight: bold; padding-top: 10px; padding-bottom: 10px;',
@@ -2191,6 +2190,7 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         layout.hookup_style(this._subMenuGrid);
         this._subMenuPopup.box.add_child(scrollView);
         this._subMenuPopup.box.set({
+            pivot_point: new Graphene.Point({x: 0.5, y: 0.5}),
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
         });
@@ -2198,7 +2198,7 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
 
     _subMenuOpenStateChanged(menu, isOpen) {
         const [sourceX, sourceY] =
-            this._arcMenu.actor.get_transformed_position();
+        this._arcMenu.actor.get_transformed_position();
 
         const positionX = sourceX + (this._arcMenu.actor.width / 2);
         const positionY = sourceY + (this._arcMenu.actor.height / 2) - ((this._subMenuPopup.actor.height / 2));
@@ -2207,6 +2207,19 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
 
         this._setDimmed(isOpen);
         if (isOpen) {
+            this._subMenuPopup.box.set({
+                scale_x: .3,
+                scale_y: .3,
+                opacity: 0,
+            });
+            this._subMenuPopup.box.ease({
+                scale_x: 1,
+                scale_y: 1,
+                opacity: 255,
+                duration: 150,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+
             this.add_style_pseudo_class('active');
             if (this._menuButton.tooltipShowingID) {
                 GLib.source_remove(this._menuButton.tooltipShowingID);
@@ -2218,6 +2231,13 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
                 this._menuButton.tooltipShowing = false;
             }
         } else {
+            this._subMenuPopup.box.ease({
+                scale_x: .3,
+                scale_y: .3,
+                opacity: 0,
+                duration: 150,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
             this.remove_style_pseudo_class('active');
             this.active = false;
             this.sync_hover();

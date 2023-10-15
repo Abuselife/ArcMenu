@@ -622,7 +622,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             const pinnedAppData = [pinnedApps[i], pinnedApps[i + 1], pinnedApps[i + 2]];
             const pinnedAppsMenuItem = new MW.PinnedAppsMenuItem(this, pinnedAppData,
                 this.display_type, isContainedInCategory);
-            pinnedAppsMenuItem.connectObject('saveSettings', () => {
+            pinnedAppsMenuItem.connectObject('pinned-apps-changed', () => {
                 const array = [];
                 for (let j = 0; j < this.pinnedAppsArray.length; j++) {
                     array.push(this.pinnedAppsArray[j]._name);
@@ -1074,21 +1074,6 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             vscrollbar_policy: St.PolicyType.AUTOMATIC,
             overlay_scrollbars: true,
         });
-        const panAction = new Clutter.PanAction({interpolate: false});
-        panAction.connectObject('pan', action => {
-            // blocks activate event while panning scroll view
-            this.blockActivateEvent = true;
-            if (this._menuButton.tooltipShowingID) {
-                GLib.source_remove(this._menuButton.tooltipShowingID);
-                this._menuButton.tooltipShowingID = null;
-            }
-            if (this._menuButton.tooltip.visible)
-                this._menuButton.tooltip.hide(true);
-            this.onPan(action, scrollBox);
-        }, this);
-        panAction.connectObject('gesture-cancel', action => this.onPanEnd(action, scrollBox), this);
-        panAction.connectObject('gesture-end', action => this.onPanEnd(action, scrollBox), this);
-        scrollBox.add_action(panAction);
 
         return scrollBox;
     }
@@ -1140,19 +1125,5 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             return;
         this._focusChild = actor;
         Utils.ensureActorVisibleInScrollView(actor);
-    }
-
-    onPan(action, scrollbox) {
-        const [dist_, dx_, dy] = action.get_motion_delta(0);
-        const {adjustment} = scrollbox.vscroll;
-        adjustment.value -=  dy;
-        return false;
-    }
-
-    onPanEnd(action, scrollbox) {
-        const velocity = -action.get_velocity(0)[2];
-        const {adjustment} = scrollbox.vscroll;
-        const endPanValue = adjustment.value + velocity * 2;
-        adjustment.value = endPanValue;
     }
 };
