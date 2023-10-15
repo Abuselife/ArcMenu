@@ -1075,7 +1075,25 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             overlay_scrollbars: true,
         });
 
+        const panAction = new Clutter.PanAction({interpolate: true});
+        panAction.connect('pan', action => this._onPan(action, scrollBox));
+        // this.add_action(panAction);
+
         return scrollBox;
+    }
+
+    _onPan(action, scrollBox) {
+        if (this._menuButton.tooltipShowingID) {
+            GLib.source_remove(this._menuButton.tooltipShowingID);
+            this._menuButton.tooltipShowingID = null;
+        }
+        if (this._menuButton.tooltip.visible)
+            this._menuButton.tooltip.hide(true);
+
+        const [dist_, dx_, dy] = action.get_motion_delta(0);
+        const {adjustment} = scrollBox.vscroll;
+        adjustment.value -=  dy;
+        return false;
     }
 
     _createLabelWithSeparator(headerLabel) {

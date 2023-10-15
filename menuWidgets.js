@@ -201,9 +201,24 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         this.connect('destroy', () => this._onDestroy());
     }
 
+    _onPan(action) {
+        let parent = this.get_parent();
+        while (!(parent instanceof St.ScrollView)) {
+            if (!parent)
+                return false;
+            parent = parent.get_parent();
+        }
+
+        this._clickAction.release();
+
+        this._menuLayout._onPan(action, parent);
+        return false;
+    }
+
+
     _onClicked(action) {
-        log(`ArcMenu: Menu item clicked. Button = ${action.get_button()}`);
-        if (action.get_button() === Clutter.BUTTON_PRIMARY) {
+        const isPrimaryOrTouch = action.get_button() === Clutter.BUTTON_PRIMARY || action.get_button() === 0;
+        if (isPrimaryOrTouch) {
             this.active = false;
             this._menuLayout.grab_key_focus();
             this.remove_style_pseudo_class('active');
@@ -217,38 +232,15 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
     }
 
     _onLongPress(action, theActor, state) {
+        const isPrimaryOrTouch = action.get_button() === Clutter.BUTTON_PRIMARY || action.get_button() === 0;
         if (state === Clutter.LongPressState.QUERY)
-            return action.get_button() === Clutter.BUTTON_PRIMARY && this._menuLayout.arcMenu.isOpen && this.hasContextMenu;
+            return isPrimaryOrTouch && this._menuLayout.arcMenu.isOpen && this.hasContextMenu;
 
-        if (state === Clutter.LongPressState.ACTIVATE) {
-            action.release();
+        action.release();
+        if (state === Clutter.LongPressState.ACTIVATE && isPrimaryOrTouch)
             this.popupContextMenu();
-        }
 
         return true;
-    }
-
-    _onPan(action) {
-        let parent = this.get_parent();
-        while (!(parent instanceof St.ScrollView)) {
-            if (!parent)
-                return false;
-            parent = parent.get_parent();
-        }
-
-        this._clickAction.release();
-
-        if (this._menuButton.tooltipShowingID) {
-            GLib.source_remove(this._menuButton.tooltipShowingID);
-            this._menuButton.tooltipShowingID = null;
-        }
-        if (this._menuButton.tooltip.visible)
-            this._menuButton.tooltip.hide(true);
-
-        const [dist_, dx_, dy] = action.get_motion_delta(0);
-        const {adjustment} = parent.vscroll;
-        adjustment.value -=  dy;
-        return false;
     }
 
     _updateIcon() {
@@ -1512,7 +1504,9 @@ export class PinnedAppsMenuItem extends ArcMenuPopupBaseMenuItem {
         }
 
         this.remove_action(this._clickAction);
-        this._draggable = DND.makeDraggable(this);
+        this._draggable = DND.makeDraggable(this, {
+            timeoutThreshold: 400,
+        });
         this._draggable.addClickAction(this._clickAction);
         this._draggable._animateDragEnd = eventTime => {
             this._draggable._animationInProgress = true;
