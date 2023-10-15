@@ -1077,7 +1077,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         const panAction = new Clutter.PanAction({interpolate: true});
         panAction.connect('pan', action => this._onPan(action, scrollBox));
-        // this.add_action(panAction);
+        this.add_action(panAction);
 
         return scrollBox;
     }

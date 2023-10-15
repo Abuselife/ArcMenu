@@ -183,7 +183,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
 
         const panAction = new Clutter.PanAction({interpolate: true});
         panAction.connect('pan', this._onPan.bind(this));
-        // this.add_action(panAction);
+        this.add_action(panAction);
 
         this._clickAction = new Clutter.ClickAction({
             enabled: this._activatable,
