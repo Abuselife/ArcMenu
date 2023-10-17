@@ -450,8 +450,6 @@ class PlasmaMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
         this.vertical = true;
 
-        this.remove_child(this._ornamentLabel);
-
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP)
             this.name = 'arcmenu-plasma-button-top';

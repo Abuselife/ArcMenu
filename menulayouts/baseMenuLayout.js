@@ -812,7 +812,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                     this._futureActiveItem = item;
             }
         }
-        if (this.applicationsBox && !this.applicationsBox.contains(this.applicationsGrid))
+        if (this.applicationsBox && grid === this.applicationsGrid && !this.applicationsBox.contains(this.applicationsGrid))
             this.applicationsBox.add_child(this.applicationsGrid);
         if (this._futureActiveItem)
             this.activeMenuItem = this._futureActiveItem;

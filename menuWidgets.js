@@ -144,7 +144,6 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
             accessible_role: Atk.Role.MENU_ITEM,
         });
 
-        this.set_offscreen_redirect(Clutter.OffscreenRedirect.ON_IDLE);
         this.hasContextMenu = false;
         this._delegate = this;
 
@@ -160,9 +159,6 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         this._active = false;
         this._activatable = params.reactive && params.activate;
         this._sensitive = true;
-
-        this._ornamentLabel = new St.Label({style_class: 'popup-menu-ornament'});
-        this.add_child(this._ornamentLabel);
 
         this.x_align = Clutter.ActorAlign.FILL;
         this.x_expand = true;
@@ -215,7 +211,6 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
         return false;
     }
 
-
     _onClicked(action) {
         const isPrimaryOrTouch = action.get_button() === Clutter.BUTTON_PRIMARY || action.get_button() === 0;
         if (isPrimaryOrTouch) {
@@ -228,6 +223,14 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
                 this.popupContextMenu();
             else
                 this.remove_style_pseudo_class('active');
+        } else if (action.get_button() === 8) {
+            const backButton = this._menuLayout.backButton;
+            if (backButton && backButton.visible) {
+                this.active = false;
+                this._menuLayout.grab_key_focus();
+                this.remove_style_pseudo_class('active');
+                backButton.activate(Clutter.get_current_event());
+            }
         }
     }
 
@@ -264,7 +267,7 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
     }
 
     set active(active) {
-        if (this.isDestroyed || !this.get_stage())
+        if (this.isDestroyed || !this.mapped)
             return;
 
         // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
@@ -335,10 +338,10 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
     }
 
     vfunc_key_focus_out() {
+        super.vfunc_key_focus_out();
         if (this.contextMenu && this.contextMenu.isOpen)
             return;
 
-        super.vfunc_key_focus_out();
         this.active = false;
         this.hover = false;
     }
@@ -399,19 +402,12 @@ export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
 
         this._settings = menuLayout.settings;
 
-        if (this._ornamentLabel)
-            this.remove_child(this._ornamentLabel);
-
         this.label = new St.Label({
             text: text || '',
             style: 'font-weight: bold',
         });
         this.add_child(this.label);
         this.label_actor = this.label;
-
-        this.label.add_style_pseudo_class = () => {
-            return false;
-        };
 
         this.label.connect('notify::text', this._syncLabelVisibility.bind(this));
         this._syncLabelVisibility();
@@ -695,8 +691,6 @@ export class ArcMenuButtonItem extends ArcMenuPopupBaseMenuItem {
 
     constructor(menuLayout, tooltipText, iconName, gicon) {
         super(menuLayout);
-        this.remove_child(this._ornamentLabel);
-
         this.set({
             x_expand: false,
             x_align: Clutter.ActorAlign.CENTER,
@@ -812,7 +806,6 @@ export class LeaveButton extends ArcMenuPopupBaseMenuItem {
         } else {
             this.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
             this.style_class = 'popup-menu-item arcmenu-button';
-            this.remove_child(this._ornamentLabel);
             this.set({
                 x_expand: false,
                 x_align: Clutter.ActorAlign.CENTER,
@@ -2145,7 +2138,7 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         }, this._subMenuPopup);
 
         this._headerLabel = new St.Label({
-            style: 'font-weight: bold; padding-top: 10px; padding-bottom: 10px;',
+            style: 'font-weight: bold; padding-top: 10px; padding-bottom: 10px; text-align: center;',
             text: this._name,
             x_expand: true,
             y_expand: true,
@@ -2153,6 +2146,7 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
             y_align: Clutter.ActorAlign.CENTER,
         });
         this._subMenuPopup.box.add_child(this._headerLabel);
+
         const layout = new Clutter.GridLayout({
             orientation: Clutter.Orientation.VERTICAL,
             column_spacing: 12,
@@ -2270,9 +2264,9 @@ export class SubCategoryMenuItem extends ArcMenuPopupBaseMenuItem {
         }
 
         const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._category);
-        this._name = _(name);
-        this.label.text = _(name);
-        this._headerLabel.text = _(name);
+        this._name = `${this._parentDirectory.get_name()} - ${name}`;
+        this.label.text = `${name}`;
+        this._headerLabel.text = `${this._parentDirectory.get_name()}\n${name}`;
 
         if (!gicon) {
             if (!this.appList.length) {

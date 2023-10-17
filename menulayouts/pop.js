@@ -622,9 +622,6 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         });
         this._delegate = this;
 
-        if (this._ornamentLabel)
-            this.remove_child(this._ornamentLabel);
-
         this._appList = [];
         this._name = '';
 

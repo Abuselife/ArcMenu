@@ -125,7 +125,6 @@ export const SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandle
 
 export function convertToButton(item) {
     item.tooltipLocation = Constants.TooltipLocation.BOTTOM_CENTERED;
-    item.remove_child(item._ornamentLabel);
     item.remove_child(item.label);
     item.set({
         x_expand: false,
@@ -145,9 +144,6 @@ export function convertToGridLayout(item) {
     const iconSizeEnum = settings.get_enum('menu-item-grid-icon-size');
     const defaultIconSize = menuLayout.icon_grid_size;
     const {width, height, iconSize_} = getGridIconSize(iconSizeEnum, defaultIconSize);
-
-    if (item._ornamentLabel)
-        item.remove_child(item._ornamentLabel);
 
     item.add_style_class_name('ArcMenuIconGrid');
     item.set({
