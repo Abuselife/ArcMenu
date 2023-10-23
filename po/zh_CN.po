@@ -465,7 +465,7 @@ msgstr "打开窗口"
 #: searchProviders/openWindows.js:46
 #, javascript-format
 msgid "'%s' on Workspace %d"
-msgstr "工作区 %d 上的 '%s'"
+msgstr "工作区 %2$d 上的 '%1$s'"
 
 #: searchProviders/recentFiles.js:90
 #, javascript-format
