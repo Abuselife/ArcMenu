@@ -235,11 +235,8 @@ export class ArcMenuPopupBaseMenuItem extends St.BoxLayout {
 
     _onLongPress(action, theActor, state) {
         const isPrimaryOrTouch = action.get_button() === Clutter.BUTTON_PRIMARY || action.get_button() === 0;
-        if (state === Clutter.LongPressState.QUERY) {
-            const event = Clutter.get_current_event();
-            this._startLongPressTime = event.get_time();
+        if (state === Clutter.LongPressState.QUERY)
             return isPrimaryOrTouch && this._menuLayout.arcMenu.isOpen && this.hasContextMenu;
-        }
 
         if (state === Clutter.LongPressState.ACTIVATE && isPrimaryOrTouch)
             this.popupContextMenu();
