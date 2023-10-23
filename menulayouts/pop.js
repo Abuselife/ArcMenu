@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 
 import Clutter from 'gi://Clutter';
 import Graphene from 'gi://Graphene';
@@ -8,6 +9,7 @@ import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -18,6 +20,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
 import * as MW from '../menuWidgets.js';
+import * as Utils from '../utils.js';
 
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -640,10 +643,12 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         this.add_child(this.label);
 
         this._updateIcon();
+        this.remove_action(this._panAction);
 
         if (!this.home_folder) {
             this.remove_action(this._clickAction);
-            this._draggable = DND.makeDraggable(this, {timeoutThreshold: 200});
+            this.draggable = true;
+            this._draggable = DND.makeDraggable(this, {timeoutThreshold: 400});
             this._draggable.addClickAction(this._clickAction);
             this._draggable._animateDragEnd = eventTime => {
                 this._draggable._animationInProgress = true;
@@ -676,6 +681,12 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
 
         if (this.contextMenu === undefined) {
             this.contextMenu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.contextMenu.connect('open-state-changed', (menu, isOpen) => {
+                if (isOpen)
+                    this.add_style_pseudo_class('active');
+                else  if (!this.isActiveCategory)
+                    this.remove_style_pseudo_class('active');
+            });
             this.contextMenu.actor.add_style_class_name('arcmenu-menu app-menu');
             Main.uiGroup.add_child(this.contextMenu.actor);
             this._menuLayout.contextMenuManager.addMenu(this.contextMenu);
@@ -778,6 +789,7 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
     }
 
     _onDragBegin() {
+        this.isDragging = true;
         if (this._menuButton.tooltipShowingID) {
             GLib.source_remove(this._menuButton.tooltipShowingID);
             this._menuButton.tooltipShowingID = null;
@@ -791,18 +803,12 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         if (this.contextMenu && this.contextMenu.isOpen)
             this.contextMenu.toggle();
 
-        this.isDragging = true;
         this._dragMonitor = {
             dragMotion: this._onDragMotion.bind(this),
         };
         DND.addDragMonitor(this._dragMonitor);
-        this._parentBox = this.get_parent();
-        [this.posX, this.posY] = this._parentBox.get_transformed_position();
 
         this.opacity = 55;
-        this.get_allocation_box();
-        this.rowHeight = this.height;
-        this.rowWidth = this.width;
     }
 
     _withinLeeways(x, y) {
@@ -856,51 +862,21 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         return true;
     }
 
-    _onDragMotion() {
-        const layoutManager = this._parentBox.layout_manager;
-        if (layoutManager instanceof Clutter.GridLayout) {
-            this.xIndex = Math.floor((this._draggable._dragX - this.posX) /
-                         (this.rowWidth + layoutManager.column_spacing));
-            this.yIndex = Math.floor((this._draggable._dragY - this.posY) /
-                         (this.rowHeight + layoutManager.row_spacing));
+    _onDragMotion(dragEvent) {
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
+        if (!(layoutManager instanceof Clutter.GridLayout))
+            return DND.DragMotionResult.CONTINUE;
 
-            if (this.xIndex === this.gridLocation[0] && this.yIndex === this.gridLocation[1])
-                return DND.DragMotionResult.CONTINUE;
-            else
-                this.gridLocation = [this.xIndex, this.yIndex];
+        const targetActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, dragEvent.x, dragEvent.y);
+        if (!(targetActor instanceof GroupFolderMenuItem) || targetActor === this)
+            return DND.DragMotionResult.CONTINUE;
 
-            this._parentBox.remove_child(this);
-            const children = this._parentBox.get_children();
-            const childrenCount = children.length;
-            const columns = layoutManager.gridColumns;
-            const rows = Math.floor(childrenCount / columns);
-            if (this.yIndex >= rows)
-                this.yIndex = rows;
-            if (this.yIndex < 0)
-                this.yIndex = 0;
-            if (this.xIndex >= columns - 1)
-                this.xIndex = columns - 1;
-            if (this.xIndex < 0)
-                this.xIndex = 0;
+        const isFirstFolder = targetActor.gridLocation[0] === 0 && targetActor.gridLocation[1] === 0;
 
-            // the [0,0] grid location is reserved for the home library folder
-            if (this.yIndex === 0 && this.xIndex === 0)
-                this.xIndex = 1;
+        if (!isFirstFolder)
+            Utils.reorderMenuItems(this, targetActor.gridLocation);
 
-            if (((this.xIndex + 1) + (this.yIndex * columns)) > childrenCount)
-                this.xIndex = Math.floor(childrenCount % columns);
-
-            this._parentBox.remove_all_children();
-
-            let x = 0, y = 0;
-            for (let i = 0; i < children.length; i++) {
-                if (this.xIndex === x && this.yIndex === y)
-                    [x, y] = this.gridLayoutIter(x, y, columns);
-                layoutManager.attach(children[i], x, y, 1, 1);
-                [x, y] = this.gridLayoutIter(x, y, columns);
-            }
-            layoutManager.attach(this, this.xIndex, this.yIndex, 1, 1);
-        }
         return DND.DragMotionResult.CONTINUE;
     }
 
@@ -909,29 +885,14 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
             DND.removeDragMonitor(this._dragMonitor);
             this._dragMonitor = null;
         }
+
         this.opacity = 255;
-        const layoutManager = this._parentBox.layout_manager;
-        const orderedList = [];
+        const parent = this.get_parent();
+        const layoutManager = parent.layout_manager;
         if (layoutManager instanceof Clutter.GridLayout) {
-            let x = 0, y = 0;
-            const columns = layoutManager.gridColumns;
-
-            const children = this._parentBox.get_children();
-            for (let i = 0; i < children.length; i++) {
-                orderedList.push(this._parentBox.layout_manager.get_child_at(x, y));
-                [x, y] = this.gridLayoutIter(x, y, columns);
-            }
+            const orderedList = Utils.getOrderedGridChildren(parent);
+            this._menuLayout.reorderFolders(orderedList);
         }
-        this._menuLayout.reorderFolders(orderedList);
-    }
-
-    gridLayoutIter(x, y, columns) {
-        x++;
-        if (x === columns) {
-            y++;
-            x = 0;
-        }
-        return [x, y];
     }
 
     set appList(value) {

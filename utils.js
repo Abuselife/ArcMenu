@@ -371,6 +371,104 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
     });
 }
 
+/**
+ *
+ * @param {*} parent the parent box
+ * @returns {Array} the ordered list of children in the grid layout
+ */
+export function getOrderedGridChildren(parent) {
+    const layoutManager = parent.layout_manager;
+
+    let x = 0, y = 0;
+    const columns = layoutManager.gridColumns;
+    const orderedList = [];
+    const children = parent.get_children();
+    for (let i = 0; i < children.length; i++) {
+        const child = layoutManager.get_child_at(x, y);
+        orderedList.push(child);
+        [x, y] = getNextGridPosition(x, y, columns);
+    }
+
+    return orderedList;
+}
+
+/**
+ *
+ * @param {int} x x coordination
+ * @param {int} y y coordination
+ * @param {int} columns amount of columns in the grid
+ * @returns {[x, y]} [x, y] coordinates for the next menu item in the grid.
+ */
+export function getNextGridPosition(x, y, columns) {
+    x++;
+    if (x === columns) {
+        y++;
+        x = 0;
+    }
+    return [x, y];
+}
+
+/**
+ *
+ * @param {*} item the menu item currently being dragged
+ * @param {[x, y]} destLoc the destination location for the menu item being dragged
+ */
+export function reorderMenuItems(item, destLoc) {
+    const parent = item.get_parent();
+    const layoutManager = parent.layout_manager;
+    const columns = layoutManager.gridColumns;
+
+    let [x, y] = item.gridLocation;
+    const [destX, destY] = destLoc;
+    let child = true;
+
+    let direction;
+    if (destY > y || (destY === y && destX > x))
+        direction = Constants.Direction.GO_PREVIOUS;
+    else if (destY < y || (destY === y && destX < x))
+        direction = Constants.Direction.GO_NEXT;
+
+    const endOfColumn = direction === Constants.Direction.GO_NEXT ? -1 : columns;
+    const childrenToMove = [];
+    while (child) {
+        if (x === destX && y === destY)
+            break;
+
+        const [newX, newY] = [x, y];
+
+        if (direction === Constants.Direction.GO_PREVIOUS)
+            x++;
+        else
+            x--;
+
+        if (x === endOfColumn) {
+            if (direction === Constants.Direction.GO_PREVIOUS) {
+                y++;
+                x = 0;
+            } else {
+                y--;
+                x = columns - 1;
+            }
+        }
+
+        child = layoutManager.get_child_at(x, y);
+        if (child) {
+            child.gridLocation = [newX, newY];
+            childrenToMove.push(child);
+        }
+    }
+
+    for (let i = 0; i < childrenToMove.length; i++) {
+        const childToMove = childrenToMove[i];
+        const [newX, newY] = childToMove.gridLocation;
+        parent.remove_child(childToMove);
+        layoutManager.attach(childToMove, newX, newY, 1, 1);
+    }
+    parent.remove_child(item);
+    layoutManager.attach(item, destX, destY, 1, 1);
+    item.gridLocation = [destX, destY];
+}
+
 export function openPrefs(uuid) {
     const extension = Extension.lookupByUUID(uuid);
     if (extension !== null)
