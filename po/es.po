@@ -20,7 +20,7 @@ msgstr ""
 
 #: appMenu.js:52 appMenu.js:307
 msgid "Pin to ArcMenu"
-msgstr "Anclar a ArcMenu"
+msgstr "Fijarr a ArcMenu"
 
 #: appMenu.js:74 appMenu.js:263
 msgid "Create Desktop Shortcut"
@@ -32,7 +32,7 @@ msgstr "Eliminar el acceso directo al escritorio"
 
 #: appMenu.js:271 appMenu.js:307
 msgid "Unpin from ArcMenu"
-msgstr "Desanclar de ArcMenu"
+msgstr "Desfijar de ArcMenu"
 
 #: appMenu.js:350
 msgid "Open Folder Location"
