@@ -45,7 +45,7 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 **@[Alexander Rüedlinger](https://github.com/lexruee)** (2017) - Former Developer
 
 **History**:
-* The ArcMenu project initially started as a fork from the Zorin OS menu extension. Over time, the ArcMenu project has undergone significant modifications and enhancements, resulting in an entirely new and unique codebase.
+* ArcMenu initially started as a fork of the Zorin OS menu extension. Over time, ArcMenu has undergone significant modifications and enhancements, resulting in an entirely new and unique codebase.
 
 **Additional Credits**:
 * The 'ArcMenu' layout design is insipired by the Zorin OS menu extension.
