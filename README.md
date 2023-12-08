@@ -38,11 +38,11 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 
 ### Credits
 
-**@[AndrewZaech](https://gitlab.com/AndrewZaech) - Current Project Maintainer and Developer**
+**@[AndrewZaech](https://gitlab.com/AndrewZaech) (2019 - current) - Current Project Maintainer and Developer**
 
-**@[AndyC](https://gitlab.com/LinxGem33) - ArcMenu Founder, Former Maintainer, Digital Art Designer**
+**@[AndyC](https://gitlab.com/LinxGem33) (2017 - 2020) - ArcMenu Founder, Former Maintainer, Digital Art Designer**
 
-**@[lexruee](https://github.com/lexruee) - Former UI/UX Designer | @[Thomas Ingvarsson](https://gitlab.com/tingvarsson) -  Former Developer**
+**@[Alexander Rüedlinger](https://github.com/lexruee) (2017) - Former Developer**
 
 Additional credits:
 * The 'ArcMenu' layout design is insipired by the Zorin OS menu extension.
@@ -52,7 +52,7 @@ Additional credits:
 
 ### Contributors
 
-**@[fishears](https://github.com/fishears)** | **@[JasonLG1979](https://github.com/JasonLG1979)** | **@[itmitica](https://github.com/itmitica)** | **@[vikaig](https://gitlab.com/vikaig)** | **@[MagneFire](https://gitlab.com/MagneFire)**
+**@[Thomas Ingvarsson](https://gitlab.com/tingvarsson)** | **@[fishears](https://github.com/fishears)** | **@[JasonLG1979](https://github.com/JasonLG1979)** | **@[itmitica](https://github.com/itmitica)** | **@[vikaig](https://gitlab.com/vikaig)** | **@[MagneFire](https://gitlab.com/MagneFire)**
 
 **@[tognee](https://gitlab.com/tognee)** | **@[hlechner](https://gitlab.com/hlechner)** | **@[vanillajonathan](https://gitlab.com/vanillajonathan)** | **@[epskampie](https://gitlab.com/epskampie)** | **@[GnomeBook](https://gitlab.com/GnomeBook)** 
 
@@ -64,7 +64,7 @@ Additional credits:
 
 ### Translators
 
-**@[Nilvus](https://gitlab.com/Nilvus), @[steve.kossouho](https://gitlab.com/steve.kossouho) - French** | **@[Etamuk](https://gitlab.com/Etamuk) - German** | **@[alex4401](https://gitlab.com/alex4401), @[Karpfly](https://gitlab.com/MacKarp) - Polish** | **@[frnogueira](https://gitlab.com/frnogueira), @[Z Bed](https://gitlab.com/zbed), @[perry.werneck](https://gitlab.com/perry.werneck) - Brazilian Portuguese** | **@[sigbjokj](https://gitlab.com/sigbjokj), @[sssandum](https://gitlab.com/sssandum) - Norwegian**
+**@[Nilvus](https://gitlab.com/Nilvus), @[steve.kossouho](https://gitlab.com/steve.kossouho) - French** | **@[Etamuk](https://gitlab.com/Etamuk), @[daPhipz](https://gitlab.com/daPhipz) - German** | **@[alex4401](https://gitlab.com/alex4401), @[Karpfly](https://gitlab.com/MacKarp) - Polish** | **@[frnogueira](https://gitlab.com/frnogueira), @[Z Bed](https://gitlab.com/zbed), @[perry.werneck](https://gitlab.com/perry.werneck) - Brazilian Portuguese** | **@[sigbjokj](https://gitlab.com/sigbjokj), @[sssandum](https://gitlab.com/sssandum) - Norwegian**
 
  **@[Ivan](https://gitlab.com/vantu5z), @[Ser82-png](https://gitlab.com/Ser82-png) - Russian** | **@[gkkulik](https://gitlab.com/gkkulik) - Silesian** | **@[vikaig](https://gitlab.com/vikaig) - Ukrainian** | **@[jordim](https://gitlab.com/jordim) - Catalan** | **@[aylinux](https://gitlab.com/aylinux), @[Sabri Ünal](https://gitlab.com/sabriunal) - Turkish**
  
