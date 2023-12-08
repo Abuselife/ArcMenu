@@ -38,11 +38,11 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 
 ### Credits
 
-**@[AndrewZaech](https://gitlab.com/AndrewZaech) (2019 - current) - Current Project Maintainer and Developer**
+**@[AndrewZaech](https://gitlab.com/AndrewZaech)** (2019 - current) Project Maintainer and Developer
 
-**@[AndyC](https://gitlab.com/LinxGem33) (2017 - 2020) - ArcMenu Founder, Former Maintainer, Digital Art Designer**
+**@[AndyC](https://gitlab.com/LinxGem33)** (2017 - 2020) ArcMenu Founder, Former Maintainer, Digital Art Designer
 
-**@[Alexander Rüedlinger](https://github.com/lexruee) (2017) - Former Developer**
+**@[Alexander Rüedlinger](https://github.com/lexruee)** (2017) - Former Developer
 
 Additional credits:
 * The 'ArcMenu' layout design is insipired by the Zorin OS menu extension.
