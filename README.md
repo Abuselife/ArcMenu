@@ -52,7 +52,7 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 
 ### History
 
-ArcMenu initially started as a fork of the Zorin OS menu extension. Over time, ArcMenu has undergone significant modifications and enhancements, resulting in an entirely new and unique codebase.
+ArcMenu initially started as a fork of the Zorin OS menu extension. The original ArcMenu project can be found [here](https://gitlab.com/LinxGem33/Arc-Menu). Over time, ArcMenu has undergone significant modifications and enhancements, resulting in an entirely new and unique codebase.
 
 -----
 
