@@ -47,6 +47,8 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 **Additional Credits**:
 * The 'ArcMenu' layout design is insipired by the Zorin OS menu extension.
 * ArcMenu utilizes various code from GNOME Shell and the GNOME Shell extensions package.
+* ArcMenu Logo and other ArcMenu icon assets created by [AndyC](https://gitlab.com/LinxGem33). Licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* Fallback category icons included in ArcMenu are copied from [Ubuntu Yaru Icons](https://github.com/ubuntu/yaru) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 -----
 
@@ -89,11 +91,7 @@ ArcMenu initially started as a fork of the Zorin OS menu extension. The original
 
 ArcMenu is available under the terms of the GPL-2.0 license See [`COPYING`](https://gitlab.com/arcmenu/ArcMenu/blob/master/COPYING) for details.
 
-#### Icon Assets - Credits and Licenses
-
-**@[AndyC](https://gitlab.com/LinxGem33)** - Custom menu button icons, wire frame svgs, and custom settings icons. Licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-
-Fallback category icons included in ArcMenu are copied from [Ubuntu Yaru Icons](https://github.com/ubuntu/yaru) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+-----
 
 #### Distro Icons
 
