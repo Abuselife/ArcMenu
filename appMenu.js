@@ -17,6 +17,10 @@ const DESKTOP_ICONS_UUIDS = [
     'desktopicons-neo@darkdemon',
 ];
 
+/**
+ *
+ * @param child
+ */
 function isPopupMenuItemVisible(child) {
     if (child._delegate instanceof PopupMenu.PopupMenuSection) {
         if (child._delegate.isEmpty())
@@ -36,6 +40,8 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
         this._enableFavorites = true;
         this._showSingleWindows = true;
         this.actor.add_style_class_name('arcmenu-menu app-menu');
+
+        this._pinnedAppData = this.sourceActor.pinnedAppData;
 
         this._scrollBox = new St.ScrollView({
             clip_to_allocation: true,
@@ -61,24 +67,31 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
         this._detailsItem.connect('activate', () => this.closeMenus());
 
         this._arcMenuPinnedItem = this._createMenuItem(_('Pin to ArcMenu'), 8, () => {
-            const pinnedApps = this._settings.get_strv('pinned-app-list');
-            const _isPinnedApp = this._isPinnedApp();
-
             this.close();
 
-            if (_isPinnedApp) {
-                for (let i = 0; i < pinnedApps.length; i += 3) {
-                    if (pinnedApps[i + 2] === this._app.get_id()) {
-                        pinnedApps.splice(i, 3);
-                        this._settings.set_strv('pinned-app-list', pinnedApps);
+            if (this._pinnedAppData) {
+                let sourceSettings;
+                const isFolder = this.sourceActor.folderSettings;
+                if (isFolder)
+                    sourceSettings = this.sourceActor.folderSettings;
+                else
+                    sourceSettings = this._settings;
+
+                const pinnedAppsList = sourceSettings.get_value('pinned-apps').deepUnpack();
+                for (let i = 0; i < pinnedAppsList.length; i++) {
+                    if (pinnedAppsList[i].id === this._app.get_id()) {
+                        pinnedAppsList.splice(i, 1);
+                        sourceSettings.set_value('pinned-apps',  new GLib.Variant('aa{ss}', pinnedAppsList));
                         break;
                     }
                 }
             } else {
-                pinnedApps.push(this._app.get_app_info().get_display_name());
-                pinnedApps.push('');
-                pinnedApps.push(this._app.get_id());
-                this._settings.set_strv('pinned-app-list', pinnedApps);
+                const pinnedAppsList = this._settings.get_value('pinned-apps').deepUnpack();
+                const newPinnedAppData = {
+                    id: this._app.get_id(),
+                };
+                pinnedAppsList.push(newPinnedAppData);
+                this._settings.set_value('pinned-apps',  new GLib.Variant('aa{ss}', pinnedAppsList));
             }
         });
 
@@ -102,7 +115,7 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
         });
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 8);
 
-        this._settings.connectObject('changed::pinned-app-list', () => this._updateArcMenuPinnedItem(), this.actor);
+        this._settings.connectObject('changed::pinned-apps', () => this._updateArcMenuPinnedItem(), this.actor);
         this.desktopExtensionStateChangedId =
             Main.extensionManager.connect('extension-state-changed', (data, changedExtension) => {
                 if (DESKTOP_ICONS_UUIDS.includes(changedExtension.uuid))
@@ -275,35 +288,37 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
     }
 
     // For Custom Shortcuts in Pinned Apps category. ie ArcMenu Settings
-    addUnpinItem(command) {
+    addUnpinItem(id, folder = null) {
         this._disconnectSignals();
         this.removeAll();
-        this._command = command;
+        this._id = id;
         this._arcMenuPinnedItem = this._createMenuItem(_('Unpin from ArcMenu'), 0, () => {
             this.close();
-            const pinnedApps = this._settings.get_strv('pinned-app-list');
-            for (let i = 0; i < pinnedApps.length; i += 3) {
-                if (pinnedApps[i + 2] === this._command) {
-                    pinnedApps.splice(i, 3);
-                    this._settings.set_strv('pinned-app-list', pinnedApps);
+
+            let sourceSettings;
+            if (!folder && this.sourceActor.folderSettings)
+                sourceSettings = this.sourceActor.folderSettings;
+            else
+                sourceSettings = this._settings;
+
+            // Unpinned the folder, reset all folder settings keys
+            if (folder) {
+                let keys = folder.settings_schema.list_keys();
+                for (const key of keys)
+                    folder.reset(key);
+
+                return;
+            }
+
+            const pinnedAppsList = sourceSettings.get_value('pinned-apps').deepUnpack();
+            for (let i = 0; i < pinnedAppsList.length; i++) {
+                if (pinnedAppsList[i].id === this._id) {
+                    pinnedAppsList.splice(i, 1);
+                    sourceSettings.set_value('pinned-apps',  new GLib.Variant('aa{ss}', pinnedAppsList));
                     break;
                 }
             }
         });
-    }
-
-    _isPinnedApp() {
-        const pinnedApps = this._settings.get_strv('pinned-app-list');
-        let matchFound = false;
-
-        // 3rd entry contains the appID
-        for (let i = 2; i < pinnedApps.length; i += 3) {
-            if (pinnedApps[i] === this._app.get_id()) {
-                matchFound = true;
-                break;
-            }
-        }
-        return matchFound;
     }
 
     _updateArcMenuPinnedItem() {
@@ -313,9 +328,8 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
         }
 
         this._arcMenuPinnedItem.visible = this._menuLayout.hasPinnedApps;
-        const _isPinnedApp = this._isPinnedApp();
 
-        this._arcMenuPinnedItem.label.text = _isPinnedApp ?  _('Unpin from ArcMenu') : _('Pin to ArcMenu');
+        this._arcMenuPinnedItem.label.text = this._pinnedAppData ?  _('Unpin from ArcMenu') : _('Pin to ArcMenu');
     }
 
     _updateWindowsSection() {
@@ -388,7 +402,7 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
     }
 
     isEmpty() {
-        if (!this._app && !this._openFolderLocationItem && !this._command && !this._additionalAction)
+        if (!this._app && !this._openFolderLocationItem && !this._id && !this._additionalAction)
             return true;
 
         const hasVisibleChildren = this.box.get_children().some(child => {

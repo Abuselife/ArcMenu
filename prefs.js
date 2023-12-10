@@ -20,7 +20,7 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
             iconTheme.add_search_path(iconPath);
 
         window.set_search_enabled(true);
-        window.set_default_size(settings.get_int('settings-width'), settings.get_int('settings-height'));
+        window.set_size_request(settings.get_int('settings-width'), settings.get_int('settings-height'));
         window.set_title(_('ArcMenu Settings'));
 
         let pageChangedId = settings.connect('changed::prefs-visible-page', () => {
@@ -28,7 +28,7 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
                 this._setVisiblePage(window, settings);
         });
 
-        let pinnedAppsChangedId = settings.connect('changed::pinned-app-list', () => {
+        let pinnedAppsChangedId = settings.connect('changed::pinned-apps', () => {
             for (const page of window.pages) {
                 if (page instanceof MenuPage) {
                     const {settingPage} = page.pinnedAppsRow;
@@ -88,11 +88,10 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
     _setVisiblePage(window, settings) {
         const prefsVisiblePage = settings.get_int('prefs-visible-page');
 
+        window.pop_subpage();
         if (prefsVisiblePage === Constants.SettingsPage.MAIN) {
-            window.close_subpage();
             window.set_visible_page_name('GeneralPage');
         } else if (prefsVisiblePage === Constants.SettingsPage.CUSTOMIZE_MENU) {
-            window.close_subpage();
             window.set_visible_page_name('MenuPage');
         } else if (prefsVisiblePage === Constants.SettingsPage.MENU_LAYOUT) {
             window.set_visible_page_name('MenuPage');
@@ -103,17 +102,14 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
             const page = window.get_visible_page();
             page.presentSubpage(Constants.SettingsPage.MENU_THEME);
         } else if (prefsVisiblePage === Constants.SettingsPage.BUTTON_APPEARANCE) {
-            window.close_subpage();
             window.set_visible_page_name('MenuButtonPage');
         } else if (prefsVisiblePage === Constants.SettingsPage.RUNNER_TWEAKS) {
             window.set_visible_page_name('MenuPage');
             const page = window.get_visible_page();
             page.presentSubpage(Constants.SettingsPage.RUNNER_TWEAKS);
         } else if (prefsVisiblePage === Constants.SettingsPage.ABOUT) {
-            window.close_subpage();
             window.set_visible_page_name('AboutPage');
         } else if (prefsVisiblePage === Constants.SettingsPage.GENERAL) {
-            window.close_subpage();
             window.set_visible_page_name('GeneralPage');
         }
 

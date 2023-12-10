@@ -1,24 +1,24 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import Clutter from 'gi://Clutter';
-import Graphene from 'gi://Graphene';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
-import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
-import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
+import {DragMotionResult} from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+import {AppContextMenu} from '../appMenu.js';
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
+import {IconGrid} from '../iconGrid.js';
 import * as MW from '../menuWidgets.js';
 import * as Utils from '../utils.js';
 
@@ -36,51 +36,12 @@ function _getFolderName(folder) {
     return name;
 }
 
-function _getCategories(info) {
-    const categoriesStr = info.get_categories();
-    if (!categoriesStr)
-        return [];
-    return categoriesStr.split(';');
-}
-
 function _listsIntersect(a, b) {
     for (const itemA of a) {
         if (b.includes(itemA))
             return true;
     }
     return false;
-}
-
-function _findBestFolderName(apps) {
-    const appInfos = apps.map(app => app.get_app_info());
-
-    const categoryCounter = {};
-    const commonCategories = [];
-
-    appInfos.reduce((categories, appInfo) => {
-        for (const category of _getCategories(appInfo)) {
-            if (!(category in categoryCounter))
-                categoryCounter[category] = 0;
-
-            categoryCounter[category] += 1;
-
-            // If a category is present in all apps, its counter will
-            // reach appInfos.length
-            if (category.length > 0 &&
-                categoryCounter[category] === appInfos.length)
-                categories.push(category);
-        }
-        return categories;
-    }, commonCategories);
-
-    for (const category of commonCategories) {
-        const directory = `${category}.directory`;
-        const translated = Shell.util_get_translated_folder_name(directory);
-        if (translated !== null)
-            return translated;
-    }
-
-    return null;
 }
 
 export const Layout = class PopLayout extends BaseMenuLayout {
@@ -104,6 +65,11 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             buttons_icon_size: Constants.LARGE_ICON_SIZE,
             pinned_apps_icon_size: Constants.MEDIUM_ICON_SIZE,
         });
+
+        this._tree.disconnectObject(this);
+
+        this._folders = new Map();
+        this._orderedItems = [];
 
         this.draggableApps = true;
         this.topBox = new St.BoxLayout({
@@ -129,27 +95,25 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.HORIZONTAL,
-            column_spacing: 6,
-            row_spacing: 6,
-        });
-        this.categoriesContainer = new St.BoxLayout({
+        this.foldersContainer = new St.BoxLayout({
             vertical: true,
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
             y_expand: true,
             y_align: Clutter.ActorAlign.END,
         });
-        this.categoriesGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            y_expand: false,
-            y_align: Clutter.ActorAlign.END,
-            layout_manager: layout,
+        this.foldersGrid = new IconGrid({
+            column_spacing: 6,
+            row_spacing: 6,
+            halign: Clutter.ActorAlign.CENTER,
         });
-        this.categoriesContainer.add_child(this.categoriesGrid);
-        layout.hookup_style(this.categoriesGrid);
+        this._setFolderGridColumns();
+        this.foldersContainer.add_child(this.foldersGrid);
+
+        const homeGroupMenuItem = new HomeFolderMenuItem(this);
+        this._addItem(homeGroupMenuItem);
+        this.placeHolderFolderItem = new GroupFolderMenuItem(this, 'New Folder', null);
+        this._addItem(this.placeHolderFolderItem);
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchBarLocation === Constants.SearchbarLocation.BOTTOM) {
@@ -158,8 +122,8 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
-            this.add_child(this.categoriesContainer);
-            this.categoriesContainer.set({
+            this.add_child(this.foldersContainer);
+            this.foldersContainer.set({
                 y_align: Clutter.ActorAlign.START,
                 y_expand: false,
             });
@@ -177,28 +141,87 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                 Constants.SeparatorAlignment.HORIZONTAL);
-            this.categoriesContainer.insert_child_at_index(separator, 0);
-            this.add_child(this.categoriesContainer);
+            this.foldersContainer.insert_child_at_index(separator, 0);
+            this.add_child(this.foldersContainer);
         }
 
-        this._redisplayWorkId = Main.initializeDeferredWork(this, () => {
-            this.reloadApplications(true);
-        });
+        this._redisplayWorkId = Main.initializeDeferredWork(this, () => this._redisplay());
 
         this._folderSettings = new Gio.Settings({schema_id: 'org.gnome.desktop.app-folders'});
-        this._folderSettings.connectObject('changed::folder-children', () =>
-            Main.queueDeferredWork(this._redisplayWorkId), this);
+        this._folderSettings.connectObject('changed::folder-children', () => Main.queueDeferredWork(this._redisplayWorkId), this);
         this._parentalControlsManager = ParentalControlsManager.getDefault();
-        this._parentalControlsManager.connectObject('app-filter-changed',
-            () => Main.queueDeferredWork(this._redisplayWorkId), this);
+        this._parentalControlsManager.connectObject('app-filter-changed', () => Main.queueDeferredWork(this._redisplayWorkId), this);
+        Shell.AppSystem.get_default().connect('installed-changed', () => Main.queueDeferredWork(this._redisplayWorkId));
 
         this.updateWidth();
-        this.loadCategories();
+        this._redisplay();
         this.setDefaultMenuView();
-        global.settings.connectObject('changed::app-picker-layout',
-            this.syncLibraryHomeAppList.bind(this), this);
+        this._setGridColumns(this.applicationsGrid);
 
         this._settings.connectObject('changed::pop-default-view', () => this.setDefaultMenuView(), this);
+    }
+
+    reloadApplications() {
+    }
+
+    _redisplay() {
+        let oldFolders = this._orderedItems.slice();
+        let oldFoldersIds = oldFolders.map(icon => icon.folder_id);
+
+        let newFolders = this._loadFolders();
+        let newFoldersIds = newFolders.map(icon => icon.folder_id);
+
+        let addedFolders = newFolders.filter(icon => !oldFoldersIds.includes(icon.folder_id));
+        let removedFolders = oldFolders.filter(icon => !newFoldersIds.includes(icon.folder_id));
+
+        // Remove old app icons
+        removedFolders.forEach(item => {
+            this._removeItem(item);
+            item.destroy();
+        });
+
+        // Add new app icons, or move existing ones
+        newFolders.forEach(item => {
+            const index = newFolders.indexOf(item);
+            const position = this.foldersGrid.getItemPosition(item);
+            if (addedFolders.includes(item))
+                this._addItem(item, index);
+            else if (position !== index)
+                this._moveItem(item, index);
+        });
+
+        this._orderedItems.forEach(icon => {
+            icon._redisplay();
+        });
+    }
+
+    _addItem(item, position = 0) {
+        this._folders.set(item.folder_id, item);
+        this.foldersGrid.addItem(item, position);
+
+        this._orderedItems.splice(position, 0, item);
+    }
+
+    _moveItem(item, newPosition) {
+        this.foldersGrid.moveItem(item, newPosition);
+
+        // Update the _orderedItems array
+        this._orderedItems.splice(this._orderedItems.indexOf(item), 1);
+        this._orderedItems.splice(newPosition, 0, item);
+    }
+
+    _removeItem(item) {
+        const iconIndex = this._orderedItems.indexOf(item);
+
+        this._orderedItems.splice(iconIndex, 1);
+        this._folders.delete(item.folder_id);
+        this.foldersGrid.removeItem(item);
+    }
+
+    activateHomeFolder() {
+        const homeFolder = this._folders.get('Library Home');
+        this.setActiveCategory(homeFolder);
+        homeFolder.displayAppList();
     }
 
     updateWidth(setDefaultMenuView) {
@@ -211,14 +234,17 @@ export const Layout = class PopLayout extends BaseMenuLayout {
 
         if (setDefaultMenuView)
             this.setDefaultMenuView();
+
+        this._setFolderGridColumns();
+        this._setGridColumns(this.applicationsGrid);
     }
 
-    loadCategories() {
-        this.categoriesGrid.destroy_all_children();
-        this.categoryDirectories = null;
-        this.categoryDirectories = new Map();
-
-        this.applicationsMap = new Map();
+    _loadFolders() {
+        const newFolders = [];
+        const foldersData = {'Library Home': _('Library Home')};
+        const homeFolder = this._folders.get('Library Home');
+        newFolders.push(homeFolder);
+        const placeHolder = this._folders.get('New Folder');
 
         this._appInfoList = Shell.AppSystem.get_default().get_installed().filter(appInfo => {
             try {
@@ -229,96 +255,64 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             return this._parentalControlsManager.shouldShowApp(appInfo);
         });
 
-        this.loadGroups();
-    }
+        let apps = this._appInfoList.map(app => app.get_id());
 
-    _syncFolder(folderMenuItem) {
-        const {folderSettings} = folderMenuItem;
-        const name = _getFolderName(folderSettings);
+        let appSys = Shell.AppSystem.get_default();
 
-        const foldersData = this._settings.get_value('pop-folders-data').deep_unpack();
-        const folderEntryId = folderMenuItem.folder_id;
-        foldersData[folderEntryId] = name;
-        this._settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
+        const appsInsideFolders = new Set();
 
-        this._loadFolderApps(folderMenuItem);
-        folderMenuItem.folder_name = name;
-        folderMenuItem.createIcon();
-
-        if (this.activeCategoryItem === folderMenuItem)
-            folderMenuItem.displayAppList();
-    }
-
-    loadGroups() {
-        const foldersData = {'Library Home': _('Library Home')};
-        const homeGroupMenuItem = new GroupFolderMenuItem(this, null, {
-            folder_name: _('Library Home'),
-            home_folder: true,
-        });
-        this.categoryDirectories.set('Library Home', homeGroupMenuItem);
-
-        let usedApps = [];
-
+        // Load and Create GroupFolderMenuItems
         const folders = this._folderSettings.get_strv('folder-children');
         folders.forEach(id => {
             const path = `${this._folderSettings.path}folders/${id}/`;
-            const folderSettings = new Gio.Settings({
-                schema_id: 'org.gnome.desktop.app-folders.folder',
-                path,
-            });
+            let folderIcon = this._folders.get(id);
+            if (!folderIcon) {
+                folderIcon = new GroupFolderMenuItem(this, id, path);
+                folderIcon.connect('apps-changed', () => {
+                    this._redisplay();
+                });
 
-            const name = _getFolderName(folderSettings);
-            const categoryMenuItem = new GroupFolderMenuItem(this, folderSettings, {
-                folder_name: name,
-                folder_id: id,
-            });
-            this._loadFolderApps(categoryMenuItem);
-
-            // Don't display empty folders
-            if (categoryMenuItem.appList.length > 0) {
-                foldersData[id] = name;
-                this.categoryDirectories.set(id, categoryMenuItem);
-
-                usedApps = usedApps.concat(categoryMenuItem.appList);
-
-                folderSettings.connectObject('changed', () =>
-                    this._syncFolder(categoryMenuItem), categoryMenuItem);
-            } else {
-                categoryMenuItem.destroy();
+                this._folders.set(id, folderIcon);
             }
+
+            // Don't try to display empty folders
+            if (!folderIcon.visible)
+                return;
+
+            folderIcon.getAppIds().forEach(appId => appsInsideFolders.add(appId));
+            foldersData[id] = folderIcon.folder_name;
+            newFolders.push(folderIcon);
         });
 
+        // Store the id and name of each folder in 'pop-folders-data'
         this._settings.set_value('pop-folders-data', new GLib.Variant('a{ss}', foldersData));
 
+        // Find any remaining apps not contained within a folder.
         const remainingApps = [];
-        const apps = this._appInfoList.map(app => app.get_id());
         apps.forEach(appId => {
-            const app = Shell.AppSystem.get_default().lookup_app(appId);
-
-            if (!this.applicationsMap.get(app)) {
-                const item = new MW.ApplicationMenuItem(this, app, this.display_type);
-                item.setFolderGroup(homeGroupMenuItem);
-                this.applicationsMap.set(app, item);
+            if (appsInsideFolders.has(appId))
+                return;
+            const app = appSys.lookup_app(appId);
+            if (app)
                 remainingApps.push(app);
-            }
         });
         remainingApps.sort((a, b) => {
             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
         });
-        homeGroupMenuItem.appList = remainingApps;
+        homeFolder.appsList = remainingApps.map(app => app.id);
 
-        this.placeHolderFolderItem = new GroupFolderMenuItem(this, null, {
-            folder_name: _('New Folder'),
-            new_folder: true,
-        });
-        this.categoryDirectories.set('New Folder', this.placeHolderFolderItem);
-        this.placeHolderFolderItem.set({
+        placeHolder.set({
             visible: false,
             opacity: 0,
             scale_x: 0,
             scale_y: 0,
         });
-        this.displayCategories();
+        newFolders.push(placeHolder);
+        return newFolders;
+    }
+
+    loadCategories() {
+
     }
 
     createNewFolder(app) {
@@ -340,7 +334,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         }
 
         const appIds = [app.id];
-        let folderName = _findBestFolderName([app]);
+        let folderName = Utils.findBestFolderName([app]);
         if (!folderName)
             folderName = _('Unnamed Folder');
 
@@ -350,158 +344,6 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         newFolderSettings.apply();
 
         this._folderSettings.set_strv('folder-children', folders);
-    }
-
-    removeFolder(folderMenuItem) {
-        const {folderSettings, folder_id: folderId} = folderMenuItem;
-
-        // Resetting all keys deletes the relocatable schema
-        const keys = folderSettings.settings_schema.list_keys();
-        for (const key of keys)
-            folderSettings.reset(key);
-
-        const settings = new Gio.Settings({schema_id: 'org.gnome.desktop.app-folders'});
-        const folders = settings.get_strv('folder-children');
-        folders.splice(folders.indexOf(folderId), 1);
-        settings.set_strv('folder-children', folders);
-    }
-
-    removeAppFromFolder(app, folder) {
-        if (!folder)
-            return;
-
-        const appId = app.id;
-        const isHomeFolder = folder.home_folder;
-        const folderAppList = folder.appList;
-
-        const isAppInFolder = folderAppList.includes(app);
-        if (isAppInFolder && !isHomeFolder) {
-            const {folderSettings} = folder;
-            const folderApps = folderSettings.get_strv('apps');
-            const index = folderApps.indexOf(appId);
-
-            if (index >= 0)
-                folderApps.splice(index, 1);
-
-            if (folderApps.length === 0) {
-                this.removeFolder(folder);
-            } else {
-                const categories = folderSettings.get_strv('categories');
-                if (categories.length > 0) {
-                    const excludedApps = folderSettings.get_strv('excluded-apps');
-                    excludedApps.push(appId);
-                    folderSettings.set_strv('excluded-apps', excludedApps);
-                }
-                folderSettings.set_strv('apps', folderApps);
-            }
-        }
-    }
-
-    addAppToFolder(app, folder) {
-        const appId = app.id;
-
-        if (folder.home_folder)
-            return;
-
-        const {folderSettings} = folder;
-        const folderApps = folderSettings.get_strv('apps');
-        folderApps.push(appId);
-        folderSettings.set_strv('apps', folderApps);
-
-        const excludedApps = folderSettings.get_strv('excluded-apps');
-        const index = excludedApps.indexOf(appId);
-        if (index >= 0) {
-            excludedApps.splice(index, 1);
-            folderSettings.set_strv('excluded-apps', excludedApps);
-        }
-    }
-
-    reorderFolderApps(folder, appList) {
-        const {folderSettings} = folder;
-        folderSettings.set_strv('apps', appList);
-    }
-
-    syncLibraryHomeAppList() {
-        const layout = global.settings.get_value('app-picker-layout');
-        const appPages = layout.recursiveUnpack();
-        const appSys = Shell.AppSystem.get_default();
-
-        const appList = [];
-        for (const page of appPages) {
-            for (const [appId, properties_] of Object.entries(page)) {
-                const app = appSys.lookup_app(appId);
-                if (app)
-                    appList.push(app);
-            }
-        }
-        appList.sort((a, b) => {
-            return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-        });
-
-        const folder = this.categoryDirectories.get('Library Home');
-        folder.appList = appList;
-        if (this.activeCategoryItem === folder)
-            folder.displayAppList();
-    }
-
-    reorderFolders(orderedList) {
-        const orderedFolders = [];
-        orderedList.forEach(child => {
-            if (child.folder_id)
-                orderedFolders.push(child.folder_id);
-        });
-        this._folderSettings.set_strv('folder-children', orderedFolders);
-    }
-
-    _loadFolderApps(folderMenuItem) {
-        const {folderSettings} = folderMenuItem;
-        const apps = [];
-        const excludedApps = folderSettings.get_strv('excluded-apps');
-        const appSys = Shell.AppSystem.get_default();
-        const addAppId = appId => {
-            if (excludedApps.includes(appId))
-                return;
-
-            const app = appSys.lookup_app(appId);
-            if (!app)
-                return;
-
-            if (!this._parentalControlsManager.shouldShowApp(app.get_app_info()))
-                return;
-
-            if (apps.indexOf(app) !== -1)
-                return;
-
-            apps.push(app);
-        };
-
-        const folderApps = folderSettings.get_strv('apps');
-        folderApps.forEach(addAppId);
-
-        const folderCategories = folderSettings.get_strv('categories');
-        const appInfos = this._appInfoList;
-
-        appInfos.forEach(appInfo => {
-            const appCategories = _getCategories(appInfo);
-            if (!_listsIntersect(folderCategories, appCategories))
-                return;
-
-            addAppId(appInfo.get_id());
-        });
-
-        const items = [];
-        apps.forEach(app => {
-            let item = this.applicationsMap.get(app);
-            if (!item) {
-                item = new MW.ApplicationMenuItem(this, app, this.display_type);
-                this.applicationsMap.set(app, item);
-            }
-            item.setFolderGroup(folderMenuItem);
-
-            items.push(app);
-        });
-
-        folderMenuItem.appList = items;
     }
 
     fadeInPlaceHolder() {
@@ -528,55 +370,28 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         });
     }
 
-    displayCategories() {
+    _setFolderGridColumns() {
         const gridIconPadding = 10;
         const iconWidth = 110 + gridIconPadding;
 
         const padding = 12;
         const totalWidth = this.menu_width - padding;
-        const spacing = this.categoriesGrid.layout_manager.column_spacing;
+        const spacing = this.foldersGrid.layout_manager.column_spacing;
         const columns = Math.floor(totalWidth / (iconWidth + spacing));
-        this.categoriesGrid.layout_manager.gridColumns = columns;
+        this.foldersGrid.setColumns(columns);
+    }
 
-        this._futureActiveItem = false;
-
-        const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
-        let count = 0;
-        let top = -1;
-        let left = 0;
-
-        for (const categoryMenuItem of this.categoryDirectories.values()) {
-            if (categoryMenuItem.get_parent())
-                continue;
-            if (!rtl && (count % columns === 0)) {
-                top++;
-                left = 0;
-            } else if (rtl && (left === 0)) {
-                top++;
-                left = columns;
-            }
-
-            this.categoriesGrid.layout_manager.attach(categoryMenuItem, left, top, 1, 1);
-            categoryMenuItem.gridLocation = [left, top];
-            if (!rtl)
-                left++;
-            else
-                left--;
-            count++;
-            if (!this._futureActiveItem)
-                this._futureActiveItem = categoryMenuItem;
-        }
-
-        this.activeMenuItem = this._futureActiveItem;
+    getAppInfos() {
+        return this._appInfoList;
     }
 
     setDefaultMenuView() {
         super.setDefaultMenuView();
         const defaultView = this._settings.get_string('pop-default-view');
-        let category = this.categoryDirectories.get(defaultView);
+        let category = this._folders.get(defaultView);
 
         if (!category)
-            category = this.categoryDirectories.values().next().value;
+            category = this._folders.values().next().value;
 
         category.displayAppList();
         this.setActiveCategory(category, true);
@@ -587,35 +402,270 @@ export const Layout = class PopLayout extends BaseMenuLayout {
         if (!searchEntry.isEmpty())
             this.activeCategoryType = Constants.CategoryType.SEARCH_RESULTS;
     }
+
+    _onDestroy() {
+        if (this._folders) {
+            this._folders.forEach((value, _key, _map) => {
+                value.destroy();
+            });
+            this._folders = null;
+        }
+
+        this._orderedItems = null;
+        this._appInfoList = null;
+        super._onDestroy();
+    }
 };
 
-class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
+class HomeFolderMenuItem extends MW.DraggableMenuItem {
     static [GObject.properties] = {
         'folder-name': GObject.ParamSpec.string('folder-name', 'folder-name', 'folder-name',
             GObject.ParamFlags.READWRITE, ''),
         'folder-id': GObject.ParamSpec.string('folder-id', 'folder-id', 'folder-id',
             GObject.ParamFlags.READWRITE, ''),
         'home-folder': GObject.ParamSpec.boolean('home-folder', 'home-folder', 'home-folder',
-            GObject.ParamFlags.READWRITE, false),
-        'new-folder': GObject.ParamSpec.boolean('new-folder', 'new-folder', 'new-folder',
-            GObject.ParamFlags.READWRITE, false),
+            GObject.ParamFlags.READWRITE, true),
     };
 
     static [GObject.signals] = {
-        'folder-moved': {},
-        'app-moved': {},
+        'apps-changed': {},
     };
 
     static {
         GObject.registerClass(this);
     }
 
-    constructor(menuLayout, folderSettings, params = {}) {
-        super(menuLayout);
-        this.set(params);
-        this.pivot_point = new Graphene.Point({x: 0.5, y: 0.5});
-        this.folderSettings = folderSettings;
+    constructor(menuLayout) {
+        const displayType = Constants.DisplayType.GRID;
+        super(menuLayout, displayType, false);
+
+        this.folder_id = 'Library Home';
+        this.folder_name = _('Library Home');
+
+        this._grid = this._menuLayout.applicationsGrid;
+        this.hasContextMenu = false;
+
+        this._items = new Map();
+        this._orderedItems = [];
+
+        this.add_style_class_name('ArcMenuIconGrid ArcMenuGroupFolder');
+
+        this._iconBin = new St.Bin();
+        this.add_child(this._iconBin);
+
+        this.label.text = _('Library Home');
+        this.add_child(this.label);
+        this._updateIcon();
+
+        this.set({
+            vertical: true,
+            x_expand: false,
+            tooltipLocation: Constants.TooltipLocation.BOTTOM_CENTERED,
+            style: `width: ${110}px; height: ${72}px;`,
+        });
+    }
+
+    _isFolderDisplayed() {
+        return this._menuLayout.activeCategoryItem === this;
+    }
+
+    _showFolderPreview() {
+    }
+
+    _hideFolderPreview() {
+    }
+
+    acceptDrop(source, actor, x, y) {
+        const acceptDrop = super.acceptDrop(source, actor, x, y);
+        if (!acceptDrop)
+            return false;
+
+        const app = source._app;
+        const {folderMenuItem} = source;
+
+        folderMenuItem?.removeApp(app);
+
+        this._menuLayout.fadeOutPlaceHolder();
+        return true;
+    }
+
+    _canAccept(source) {
+        return source !== this && source instanceof ApplicationMenuItem && !this._apps.includes(source._app);
+    }
+
+    createIcon() {
+        const iconSize = 32;
+
+        const icon = new St.Icon({
+            style_class: 'popup-menu-icon',
+            icon_size: iconSize,
+            icon_name: 'user-home-symbolic',
+        });
+        return icon;
+    }
+
+    getAppIds() {
+        return this._orderedItems.map(item => item._app.id);
+    }
+
+    displayAppList() {
+        this._menuLayout._clearActorsFromBox();
+        this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
+        this._grid.removeAllItems();
+        this._menuLayout._setGridColumns(this._grid);
+
+        for (let i = 0; i < this._orderedItems.length; i++) {
+            const item = this._orderedItems[i];
+            const parent = item.get_parent();
+            if (parent)
+                parent.remove_child(item);
+
+            this._grid.appendItem(item);
+        }
+
+        if (this._menuLayout.applicationsBox && !this._menuLayout.applicationsBox.contains(this._grid))
+            this._menuLayout.applicationsBox.add_child(this._grid);
+
+        this._menuLayout.activeMenuItem = this._orderedItems[0];
+    }
+
+    _loadApps() {
+        this._apps = [];
+
+        const appSys = Shell.AppSystem.get_default();
+        const addAppId = appId => {
+            const app = appSys.lookup_app(appId);
+            if (!app)
+                return;
+
+            if (!ParentalControlsManager.getDefault().shouldShowApp(app.get_app_info()))
+                return;
+
+            if (this._apps.indexOf(app) !== -1)
+                return;
+
+            this._apps.push(app);
+        };
+
+        this.appsList.forEach(addAppId);
+
+        let items = [];
+        this._apps.forEach(app => {
+            let icon = this._items.get(app.get_id());
+            if (!icon) {
+                icon = new ApplicationMenuItem(this._menuLayout, app, this._menuLayout.display_type);
+                icon.setFolderGroup(this);
+            }
+
+            items.push(icon);
+        });
+
+        return items;
+    }
+
+    _compareItems(a, b) {
+        return a.name.localeCompare(b.name);
+    }
+
+    _redisplay() {
+        let oldApps = this._orderedItems.slice();
+        let oldAppIds = oldApps.map(icon => icon._app.id);
+
+        let newApps = this._loadApps();
+        let newAppIds = newApps.map(icon => icon._app.id);
+
+        let addedApps = newApps.filter(icon => !oldAppIds.includes(icon._app.id));
+        let removedApps = oldApps.filter(icon => !newAppIds.includes(icon._app.id));
+
+        // Remove old app icons
+        removedApps.forEach(item => {
+            this._removeItem(item);
+            item.destroy();
+        });
+
+        // Add new app icons, or move existing ones
+        newApps.forEach(item => {
+            const index = newApps.indexOf(item);
+            const position = this._orderedItems.indexOf(item);
+            if (addedApps.includes(item))
+                this._addItem(item, index);
+            else if (position !== index)
+                this._moveItem(item, index);
+        });
+    }
+
+    _addItem(item, position) {
+        this._items.set(item._app.id, item);
+
+        if (this._isFolderDisplayed())
+            this._grid.addItem(item, position);
+
+        this._orderedItems.splice(position, 0, item);
+    }
+
+    _moveItem(item, newPosition) {
+        if (this._isFolderDisplayed())
+            this._grid.moveItem(item, newPosition);
+
+        // Update the _orderedItems array
+        this._orderedItems.splice(this._orderedItems.indexOf(item), 1);
+        this._orderedItems.splice(newPosition, 0, item);
+    }
+
+    _removeItem(item) {
+        const iconIndex = this._orderedItems.indexOf(item);
+
+        this._orderedItems.splice(iconIndex, 1);
+        this._items.delete(item._app.id);
+        if (this._isFolderDisplayed())
+            this._grid.removeItem(item);
+    }
+
+    activate(event) {
+        super.activate(event);
+        this._menuLayout.setActiveCategory(this);
+        this.displayAppList();
+    }
+}
+
+class GroupFolderMenuItem extends MW.DraggableMenuItem {
+    static [GObject.properties] = {
+        'folder-name': GObject.ParamSpec.string('folder-name', 'folder-name', 'folder-name',
+            GObject.ParamFlags.READWRITE, ''),
+        'folder-id': GObject.ParamSpec.string('folder-id', 'folder-id', 'folder-id',
+            GObject.ParamFlags.READWRITE, ''),
+        'new-folder': GObject.ParamSpec.boolean('new-folder', 'new-folder', 'new-folder',
+            GObject.ParamFlags.READWRITE, false),
+    };
+
+    static [GObject.signals] = {
+        'folder-moved': {},
+        'apps-changed': {},
+    };
+
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, id, path) {
+        const displayType = Constants.DisplayType.GRID;
+        super(menuLayout, displayType);
+
+        if (path) {
+            this._folder = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.app-folders.folder',
+                path,
+            });
+        } else {
+            this.new_folder = true;
+        }
+        this._apps = [];
+        this._grid = this._menuLayout.applicationsGrid;
+        this.folder_id = id;
         this.hasContextMenu = true;
+        this._items = new Map();
+        this._orderedItems = [];
+
         this.add_style_class_name('ArcMenuIconGrid ArcMenuGroupFolder');
         this.set({
             vertical: true,
@@ -623,54 +673,99 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
             tooltipLocation: Constants.TooltipLocation.BOTTOM_CENTERED,
             style: `width: ${110}px; height: ${72}px;`,
         });
-        this._delegate = this;
 
-        this._appList = [];
-        this._name = '';
-
-        this._iconBin = new St.Bin({
-            y_align: Clutter.ActorAlign.CENTER,
-            y_expand: true,
-        });
-        this.add_child(this._iconBin);
-
-        this.label = new St.Label({
-            text: this._name,
-            y_expand: true,
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-        this.label_actor = this.label;
         this.add_child(this.label);
 
-        this._updateIcon();
-        this.remove_action(this._panAction);
 
-        if (!this.home_folder) {
-            this.remove_action(this._clickAction);
-            this.draggable = true;
-            this._draggable = DND.makeDraggable(this, {timeoutThreshold: 400});
-            this._draggable.addClickAction(this._clickAction);
-            this._draggable._animateDragEnd = eventTime => {
-                this._draggable._animationInProgress = true;
-                this._draggable._onAnimationComplete(this._draggable._dragActor, eventTime);
-            };
-            this._draggable.connect('drag-begin', this._onDragBegin.bind(this));
-            this._draggable.connect('drag-end', this._onDragEnd.bind(this));
+        if (this._folder) {
+            this._folder.connectObject(
+                'changed', this._sync.bind(this), this);
+        }
+        this._redisplay();
+        this._sync();
+    }
+
+    _isFolderDisplayed() {
+        return this._menuLayout.activeCategoryItem === this;
+    }
+
+    _updateName() {
+        if (this.new_folder) {
+            this.folder_name = _('New Folder');
+            this.label.text = this.folder_name;
+            return;
         }
 
-        if (!this._settings.get_boolean('multi-lined-labels'))
+        let name = _getFolderName(this._folder);
+        if (this.folder_name === name)
             return;
 
-        this._iconBin?.set({
-            y_align: Clutter.ActorAlign.TOP,
-            y_expand: false,
-        });
+        this.folder_name = name;
+        this.label.text = this.folder_name;
+    }
 
-        const clutterText = this.label.get_clutter_text();
-        clutterText.set({
-            line_wrap: true,
-            line_wrap_mode: Pango.WrapMode.WORD_CHAR,
-        });
+    _sync() {
+        if (this._deletingFolder)
+            return;
+
+        this.emit('apps-changed');
+        this._updateName();
+        if (!this.new_folder)
+            this.visible = this._apps.length > 0;
+
+        this._updateIcon();
+    }
+
+    addApp(app) {
+        const folderApps = this._folder.get_strv('apps');
+        folderApps.push(app.id);
+        this._folder.set_strv('apps', folderApps);
+
+        let excludedApps = this._folder.get_strv('excluded-apps');
+        let index = excludedApps.indexOf(app.id);
+        if (index >= 0) {
+            excludedApps.splice(index, 1);
+            this._folder.set_strv('excluded-apps', excludedApps);
+        }
+    }
+
+    removeApp(app) {
+        let folderApps = this._folder.get_strv('apps');
+        let index = folderApps.indexOf(app.id);
+        if (index >= 0)
+            folderApps.splice(index, 1);
+
+        // Remove the folder if this is the last app icon; otherwise,
+        // just remove the icon
+        if (folderApps.length === 0) {
+            this._deletingFolder = true;
+
+            // Resetting all keys deletes the relocatable schema
+            let keys = this._folder.settings_schema.list_keys();
+            for (const key of keys)
+                this._folder.reset(key);
+
+            let settings = new Gio.Settings({schema_id: 'org.gnome.desktop.app-folders'});
+            let folders = settings.get_strv('folder-children');
+            folders.splice(folders.indexOf(this.folder_id), 1);
+            settings.set_strv('folder-children', folders);
+
+            // if the folder is now deleted, activate the library home folder
+            this._menuLayout.activateHomeFolder();
+
+            this._deletingFolder = false;
+        } else {
+            // If this is a categories-based folder, also add it to
+            // the list of excluded apps
+            const categories = this._folder.get_strv('categories');
+            if (categories.length > 0) {
+                const excludedApps = this._folder.get_strv('excluded-apps');
+                excludedApps.push(app.id);
+                this._folder.set_strv('excluded-apps', excludedApps);
+            }
+
+            this._folder.set_strv('apps', folderApps);
+        }
     }
 
     popupContextMenu() {
@@ -784,137 +879,73 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
         return this.createIcon();
     }
 
-    getDragActorSource() {
-        return this;
+    _showFolderPreview() {
     }
 
-    _onDragBegin() {
-        this.isDragging = true;
-        if (this._menuButton.tooltipShowingID) {
-            GLib.source_remove(this._menuButton.tooltipShowingID);
-            this._menuButton.tooltipShowingID = null;
-            this._menuButton.tooltipShowing = false;
-        }
-        if (this.tooltip) {
-            this.tooltip.hide();
-            this._menuButton.tooltipShowing = false;
-        }
-
-        if (this.contextMenu && this.contextMenu.isOpen)
-            this.contextMenu.toggle();
-
-        this._dragMonitor = {
-            dragMotion: this._onDragMotion.bind(this),
-        };
-        DND.addDragMonitor(this._dragMonitor);
-
-        this.opacity = 55;
+    _hideFolderPreview() {
     }
 
-    _withinLeeways(x, y) {
-        return x < 20 || x > this.width - 20 ||
-            y < 20 || y > this.height - 20;
-    }
-
-    handleDragOver(source, _actor, x, y) {
-        if (!(source instanceof MW.ApplicationMenuItem)) {
-            this.setHovering(false);
-            return DND.DragMotionResult.NO_DROP;
-        }
-
-        if (this._withinLeeways(x, y) || this.appList.includes(source._app)) {
-            this.setHovering(false);
-            return DND.DragMotionResult.CONTINUE;
-        }
-
-        this.setHovering(true);
-        return DND.DragMotionResult.MOVE_DROP;
-    }
-
-    setHovering(hovering) {
-        if (hovering)
-            this.add_style_pseudo_class('drop');
-        else
-            this.remove_style_pseudo_class('drop');
-    }
-
-    acceptDrop(source) {
-        this.setHovering(false);
-        if (!(source instanceof MW.ApplicationMenuItem))
-            return false;
-
-        if (this.appList.includes(source._app))
+    acceptDrop(source, actor, x, y) {
+        const acceptDrop = super.acceptDrop(source, actor, x, y);
+        if (!acceptDrop)
             return false;
 
         const app = source._app;
         const {folderMenuItem} = source;
 
+        if (!folderMenuItem.home_folder)
+            folderMenuItem?.removeApp(app);
+
         if (this.new_folder) {
-            this._menuLayout.removeAppFromFolder(app, folderMenuItem);
             this._menuLayout.createNewFolder(app);
             return true;
         }
 
-        this._menuLayout.removeAppFromFolder(app, folderMenuItem);
-        this._menuLayout.addAppToFolder(app, this);
-        source.setFolderGroup(this);
+        this.addApp(app);
+
+        this._menuLayout.fadeOutPlaceHolder();
 
         return true;
     }
 
-    _onDragMotion(dragEvent) {
-        const parent = this.get_parent();
-        const layoutManager = parent.layout_manager;
-        if (!(layoutManager instanceof Clutter.GridLayout))
-            return DND.DragMotionResult.CONTINUE;
+    _canAccept(source) {
+        return source !== this && source instanceof ApplicationMenuItem && !this._apps.includes(source._app);
+    }
 
-        const targetActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, dragEvent.x, dragEvent.y);
-        if (!(targetActor instanceof GroupFolderMenuItem) || targetActor === this)
-            return DND.DragMotionResult.CONTINUE;
+    _getDropTarget(x, y, source, layoutManager) {
+        const [targetIndex, dragLocation] = super._getDropTarget(x, y, source, layoutManager);
 
-        const isFirstFolder = targetActor.gridLocation[0] === 0 && targetActor.gridLocation[1] === 0;
+        if (targetIndex === 0)
+            return [-1, 0];
 
-        if (!isFirstFolder)
-            Utils.reorderMenuItems(this, targetActor.gridLocation);
-
-        return DND.DragMotionResult.CONTINUE;
+        return [targetIndex, dragLocation];
     }
 
     _onDragEnd() {
-        if (this._dragMonitor) {
-            DND.removeDragMonitor(this._dragMonitor);
-            this._dragMonitor = null;
-        }
+        super._onDragEnd();
 
-        this.opacity = 255;
         const parent = this.get_parent();
+        if (!parent)
+            return;
+
         const layoutManager = parent.layout_manager;
-        if (layoutManager instanceof Clutter.GridLayout) {
-            const orderedList = Utils.getOrderedGridChildren(parent);
-            this._menuLayout.reorderFolders(orderedList);
-        }
-    }
-
-    set appList(value) {
-        this._appList = value;
-        this._updateIcon();
-    }
-
-    get appList() {
-        return this._appList;
+        const orderedList = layoutManager.getChildren();
+        const orderedFolders = [];
+        orderedList.forEach(child => {
+            if (!child.home_folder && !child.new_folder)
+                orderedFolders.push(child.folder_id);
+        });
+        this._menuLayout._folderSettings.set_strv('folder-children', orderedFolders);
     }
 
     createIcon() {
         const iconSize = 32;
 
-        this._name = _(this.folder_name);
-        this.label.text = _(this._name);
-
-        if (!this.appList.length || this.home_folder) {
+        if (!this._apps.length || this.new_folder) {
             const icon = new St.Icon({
                 style_class: 'popup-menu-icon',
                 icon_size: iconSize,
-                icon_name: this.home_folder ? 'user-home-symbolic' : 'folder-directory-symbolic',
+                icon_name: 'folder-directory-symbolic',
             });
             return icon;
         }
@@ -931,31 +962,316 @@ class GroupFolderMenuItem extends MW.ArcMenuPopupBaseMenuItem {
 
         const subSize = Math.floor(.4 * iconSize);
 
-        const numItems = this.appList.length;
+        const numItems = this._apps.length;
         const rtl = icon.get_text_direction() === Clutter.TextDirection.RTL;
         for (let i = 0; i < 4; i++) {
             const style = `width: ${subSize}px; height: ${subSize}px;`;
             const bin = new St.Bin({style});
             if (i < numItems)
-                bin.child = this.appList[i].create_icon_texture(subSize);
+                bin.child = this._apps[i].create_icon_texture(subSize);
             layout.attach(bin, rtl ? (i + 1) % 2 : i % 2, Math.floor(i / 2), 1, 1);
         }
 
         return icon;
     }
 
+    getAppIds() {
+        return this._folder.get_strv('apps');
+    }
+
     displayAppList() {
+        this._menuLayout._clearActorsFromBox();
         this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
-        this._menuLayout.activeCategoryName = this._name;
 
-        this._menuLayout.displayCategoryAppList(this.appList, this._name);
+        this._grid.removeAllItems();
 
-        this._menuLayout.activeCategoryType = this._name;
+        this._menuLayout._setGridColumns(this._grid);
+
+        for (let i = 0; i < this._orderedItems.length; i++) {
+            const item = this._orderedItems[i];
+            const parent = item.get_parent();
+            if (parent)
+                parent.remove_child(item);
+
+            this._grid.appendItem(item);
+        }
+
+        if (this._menuLayout.applicationsBox && !this._menuLayout.applicationsBox.contains(this._grid))
+            this._menuLayout.applicationsBox.add_child(this._grid);
+
+        this._menuLayout.activeMenuItem = this._orderedItems[0];
+    }
+
+    _loadApps() {
+        this._apps = [];
+        const excludedApps = this._folder.get_strv('excluded-apps');
+        const appSys = Shell.AppSystem.get_default();
+        const addAppId = appId => {
+            if (excludedApps.includes(appId))
+                return;
+
+            const app = appSys.lookup_app(appId);
+            if (!app)
+                return;
+
+            if (!ParentalControlsManager.getDefault().shouldShowApp(app.get_app_info()))
+                return;
+
+            if (this._apps.indexOf(app) !== -1)
+                return;
+
+            this._apps.push(app);
+        };
+
+        const folderApps = this._folder.get_strv('apps');
+        folderApps.forEach(addAppId);
+
+        const folderCategories = this._folder.get_strv('categories');
+        const appInfos = this._menuLayout.getAppInfos();
+        appInfos.forEach(appInfo => {
+            let appCategories = Utils.getCategories(appInfo);
+            if (!_listsIntersect(folderCategories, appCategories))
+                return;
+
+            addAppId(appInfo.get_id());
+        });
+
+        let items = [];
+        this._apps.forEach(app => {
+            let icon = this._items.get(app.get_id());
+            if (!icon) {
+                icon = new ApplicationMenuItem(this._menuLayout, app, this._menuLayout.display_type);
+                icon.setFolderGroup(this);
+            }
+
+            items.push(icon);
+        });
+
+        return items;
+    }
+
+    _compareItems(a, b) {
+        return a.name.localeCompare(b.name);
+    }
+
+    _redisplay() {
+        if (this.new_folder)
+            return;
+        let oldApps = this._orderedItems.slice();
+        let oldAppIds = oldApps.map(icon => icon._app.id);
+
+        let newApps = this._loadApps();
+        let newAppIds = newApps.map(icon => icon._app.id);
+
+        let addedApps = newApps.filter(icon => !oldAppIds.includes(icon._app.id));
+        let removedApps = oldApps.filter(icon => !newAppIds.includes(icon._app.id));
+
+        // Remove old app icons
+        removedApps.forEach(item => {
+            this._removeItem(item);
+            item.destroy();
+        });
+
+        // Add new app icons, or move existing ones
+        newApps.forEach(item => {
+            const index = newApps.indexOf(item);
+            const position = this._orderedItems.indexOf(item);
+            if (addedApps.includes(item)) {
+                this._addItem(item, index);
+            } else if (position !== index) {
+                this._moveItem(item, index);
+            } else {
+                this._orderedItems.splice(this._orderedItems.indexOf(item), 1);
+                this._orderedItems.splice(index, 0, item);
+            }
+        });
+    }
+
+    _addItem(item, position) {
+        this._items.set(item._app.id, item);
+
+        if (this._isFolderDisplayed())
+            this._grid.addItem(item, position);
+
+        this._orderedItems.splice(position, 0, item);
+    }
+
+    _moveItem(item, newPosition) {
+        if (this._isFolderDisplayed())
+            this._grid.moveItem(item, newPosition);
+
+        // Update the _orderedItems array
+        this._orderedItems.splice(this._orderedItems.indexOf(item), 1);
+        this._orderedItems.splice(newPosition, 0, item);
+    }
+
+    _removeItem(item) {
+        const iconIndex = this._orderedItems.indexOf(item);
+
+        this._orderedItems.splice(iconIndex, 1);
+        this._items.delete(item._app.id);
+        if (this._isFolderDisplayed())
+            this._grid.removeItem(item);
     }
 
     activate(event) {
         super.activate(event);
         this._menuLayout.setActiveCategory(this);
         this.displayAppList();
+    }
+}
+
+export class ApplicationMenuItem extends MW.DraggableMenuItem {
+    static {
+        GObject.registerClass(this);
+    }
+
+    constructor(menuLayout, app, displayType) {
+        super(menuLayout, displayType);
+        this._app = app;
+        this._displayType = displayType;
+
+        this.hasContextMenu = !!this._app;
+
+        const disableRecentAppsIndicator = this._settings.get_boolean('disable-recently-installed-apps');
+        if (!disableRecentAppsIndicator) {
+            const recentApps = this._settings.get_strv('recently-installed-apps');
+            this.isRecentlyInstalled = recentApps.some(appIter => appIter === this._app.get_id());
+        }
+
+        this._updateIcon();
+
+        this.label.text = this._app.get_name();
+        this.description = this._app.get_description();
+
+        this.add_child(this.label);
+
+        if (this.isRecentlyInstalled) {
+            this._indicator = new St.Label({
+                text: _('New'),
+                style_class: 'arcmenu-text-indicator',
+                x_expand: true,
+                x_align: Clutter.ActorAlign.END,
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+            this.add_child(this._indicator);
+        }
+
+        this.connect('notify::hover', () => this.removeIndicator());
+        this.connect('key-focus-in', () => this.removeIndicator());
+    }
+
+    setFolderGroup(folderMenuItem) {
+        this.folderMenuItem = folderMenuItem;
+    }
+
+    getDragActor() {
+        const icon = this.createIcon();
+        icon.set({
+            scale_x: 0.8,
+            scale_y: 0.8,
+        });
+        return icon;
+    }
+
+    _onDragBegin() {
+        this._menuLayout.fadeInPlaceHolder();
+        super._onDragBegin();
+    }
+
+    _onDragMotion(dragEvent) {
+        if (!this.folderMenuItem || this.folderMenuItem.home_folder)
+            return DragMotionResult.CONTINUE;
+
+        return super._onDragMotion(dragEvent);
+    }
+
+    _canAccept() {
+        return false;
+    }
+
+    acceptDrop() {
+        return false;
+    }
+
+    _onDragEnd() {
+        this._menuLayout.fadeOutPlaceHolder();
+        super._onDragEnd();
+
+        const parent = this.get_parent();
+        if (!parent || (this.folderMenuItem && this.folderMenuItem.home_folder))
+            return;
+
+        const layoutManager = parent.layout_manager;
+        const children = layoutManager.getChildren();
+        const appIds = children.map(child => child._app.id);
+
+        this.folderMenuItem._folder.set_strv('apps', appIds);
+    }
+
+    set folderPath(value) {
+        this.hasContextMenu = value;
+        this._folderPath = value;
+    }
+
+    get folderPath() {
+        return this._folderPath;
+    }
+
+    createIcon() {
+        this._iconBin.x_align = Clutter.ActorAlign.CENTER;
+
+        const iconSizeEnum = this._settings.get_enum('menu-item-grid-icon-size');
+        const defaultIconSize = this._menuLayout.icon_grid_size;
+        const {iconSize} = Utils.getGridIconSize(iconSizeEnum, defaultIconSize);
+
+        const icon = this._app.create_icon_texture(iconSize);
+
+        if (icon) {
+            icon.style_class = this._displayType === Constants.DisplayType.GRID ? '' : 'popup-menu-icon';
+            return icon;
+        } else {
+            return false;
+        }
+    }
+
+    removeIndicator() {
+        if (this.isRecentlyInstalled) {
+            this.isRecentlyInstalled = false;
+            const recentApps = this._settings.get_strv('recently-installed-apps');
+            const index = recentApps.indexOf(this._app.get_id());
+            if (index > -1)
+                recentApps.splice(index, 1);
+
+            this._settings.set_strv('recently-installed-apps', recentApps);
+
+            this._indicator.hide();
+            this._menuLayout.setNewAppIndicator();
+        }
+    }
+
+    popupContextMenu() {
+        this.removeIndicator();
+        if (this.tooltip)
+            this.tooltip.hide();
+
+        if (!this._app && !this.folderPath)
+            return;
+
+        if (this.contextMenu === undefined) {
+            this.contextMenu = new AppContextMenu(this, this._menuLayout);
+            this.contextMenu.setApp(this._app);
+            this.contextMenu.centerBoxPointerPosition();
+        }
+
+        this.contextMenu.open(BoxPointer.PopupAnimation.FULL);
+    }
+
+    activate(event) {
+        this.removeIndicator();
+
+        this._app.open_new_window(-1);
+        this._menuLayout.arcMenu.toggle();
+        super.activate(event);
     }
 }

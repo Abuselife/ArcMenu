@@ -200,11 +200,11 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
     loadCategories() {
     }
 
-    destroy() {
+    _onDestroy() {
         this.arcMenu.sourceActor = this.oldSourceActor;
         this.arcMenu.focusActor = this.oldFocusActor;
         this.arcMenu._boxPointer.setPosition(this.oldSourceActor, this.oldArrowAlignment);
-        super.destroy();
+        super._onDestroy();
     }
 };
 

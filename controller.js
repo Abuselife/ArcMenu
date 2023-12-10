@@ -114,8 +114,7 @@ export const MenuSettingsController = class {
             'menu-button-border-color', 'menu-arrow-rise', 'search-entry-border-radius',
             this._overrideMenuTheme.bind(this));
 
-        this._settingsConnections.connect('enable-menu-hotkey', 'menu-hotkey-type', 'runner-menu-hotkey-type',
-            'enable-standlone-runner-menu', this._updateHotKeyBinder.bind(this));
+        this._settingsConnections.connect('arcmenu-hotkey', 'runner-hotkey', this._updateHotKeyBinder.bind(this));
 
         this._settingsConnections.connect('position-in-panel', 'menu-button-position-offset',
             this._setButtonPosition.bind(this));
@@ -123,7 +122,7 @@ export const MenuSettingsController = class {
         this._settingsConnections.connect('menu-button-icon', 'distro-icon', 'arc-menu-icon', 'custom-menu-button-icon',
             this._setButtonIcon.bind(this));
 
-        this._settingsConnections.connect('directory-shortcuts-list', 'application-shortcuts-list', 'extra-categories',
+        this._settingsConnections.connect('directory-shortcuts', 'application-shortcuts', 'extra-categories',
             'power-options', 'show-external-devices', 'show-bookmarks', 'disable-user-avatar',
             'avatar-style', 'enable-activities-shortcut', 'enable-horizontal-flip', 'power-display-style',
             'searchbar-default-bottom-location', 'searchbar-default-top-location', 'multi-lined-labels',
@@ -141,7 +140,7 @@ export const MenuSettingsController = class {
         this._settingsConnections.connect('left-panel-width', 'right-panel-width', 'menu-width-adjustment',
             this._updateMenuWidth.bind(this));
 
-        this._settingsConnections.connect('pinned-app-list', 'enable-weather-widget-unity', 'enable-clock-widget-unity',
+        this._settingsConnections.connect('pinned-apps', 'enable-weather-widget-unity', 'enable-clock-widget-unity',
             'enable-weather-widget-raven', 'enable-clock-widget-raven', this._updatePinnedApps.bind(this));
 
         this._settingsConnections.connect('menu-position-alignment', this._setMenuPositionAlignment.bind(this));
@@ -293,53 +292,39 @@ export const MenuSettingsController = class {
 
     _updatePinnedApps() {
         this._menuButton.loadPinnedApps();
-
-        // If the active category is Pinned Apps, redisplay the new Pinned Apps
-        const activeCategoryType = this._menuButton.getActiveCategoryType();
-        if (!activeCategoryType)
-            return;
-
-        if (activeCategoryType === Constants.CategoryType.PINNED_APPS ||
-            activeCategoryType === Constants.CategoryType.HOME_SCREEN)
-            this._menuButton.displayPinnedApps();
     }
 
     _updateHotKeyBinder() {
         if (this.isPrimaryPanel) {
-            const enableMenuHotkey = this._settings.get_boolean('enable-menu-hotkey');
-            const enableStandaloneRunnerMenu = this._settings.get_boolean('enable-standlone-runner-menu');
-
-            const runnerHotKey = this._settings.get_enum('runner-menu-hotkey-type');
-            const menuHotkey = this._settings.get_enum('menu-hotkey-type');
+            const [runnerHotkey] = this._settings.get_strv('runner-hotkey');
+            const [menuHotkey] = this._settings.get_strv('arcmenu-hotkey');
 
             this._customKeybinding.unbind('ToggleArcMenu');
             this._customKeybinding.unbind('ToggleRunnerMenu');
             this._overrideOverlayKey.disable();
 
-            if (enableStandaloneRunnerMenu) {
+            if (runnerHotkey) {
                 if (!this.runnerMenu) {
                     this.runnerMenu = new StandaloneRunner();
                     this.runnerMenu.initiate();
                 }
-                if (runnerHotKey === Constants.HotkeyType.CUSTOM) {
-                    this._customKeybinding.bind('ToggleRunnerMenu', 'runner-menu-custom-hotkey',
-                        () => this.toggleStandaloneRunner());
-                } else if (runnerHotKey === Constants.HotkeyType.SUPER_L) {
+                if (runnerHotkey === Constants.SUPER_L) {
                     this._overrideOverlayKey.enable(() => this.toggleStandaloneRunner());
+                } else {
+                    this._customKeybinding.bind('ToggleRunnerMenu', 'runner-hotkey',
+                        () => this.toggleStandaloneRunner());
                 }
             } else if (this.runnerMenu) {
                 this.runnerMenu.destroy();
                 this.runnerMenu = null;
             }
 
-            if (enableMenuHotkey) {
-                if (menuHotkey === Constants.HotkeyType.CUSTOM) {
-                    this._customKeybinding.bind('ToggleArcMenu', 'arcmenu-custom-hotkey',
-                        () => this.toggleMenus());
-                } else if (menuHotkey === Constants.HotkeyType.SUPER_L) {
-                    this._overrideOverlayKey.disable();
-                    this._overrideOverlayKey.enable(() => this.toggleMenus());
-                }
+            if (menuHotkey === Constants.SUPER_L) {
+                this._overrideOverlayKey.disable();
+                this._overrideOverlayKey.enable(() => this.toggleMenus());
+            } else if (menuHotkey) {
+                this._customKeybinding.bind('ToggleArcMenu', 'arcmenu-hotkey',
+                    () => this.toggleMenus());
             }
         }
     }

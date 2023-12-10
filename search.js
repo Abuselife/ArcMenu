@@ -15,7 +15,7 @@ import {Highlighter} from 'resource:///org/gnome/shell/misc/util.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as RemoteSearch from 'resource:///org/gnome/shell/ui/remoteSearch.js';
 
-import {ApplicationMenuItem, ArcMenuPopupBaseMenuItem} from './menuWidgets.js';
+import {ApplicationMenuItem, BaseMenuItem} from './menuWidgets.js';
 import * as Constants from './constants.js';
 import {RecentFilesManager} from './recentFilesManager.js';
 import {OpenWindowSearchProvider} from './searchProviders/openWindows.js';
@@ -375,16 +375,14 @@ class AppSearchResults extends SearchResultsBase {
             colums = this._menuLayout.getBestFitColumnsForGrid(iconWidth, this._grid);
         }
 
-        const GridColumns = colums;
-        if (!this.rtl && (this.itemCount % GridColumns === 0)) {
+        if (!this.rtl && (this.itemCount % colums === 0)) {
             this.gridTop++;
             this.gridLeft = 0;
         } else if (this.rtl && (this.gridLeft === 0)) {
             this.gridTop++;
-            this.gridLeft = GridColumns;
+            this.gridLeft = colums;
         }
         this._grid.layout_manager.attach(display, this.gridLeft, this.gridTop, 1, 1);
-        display.gridLocation = [this.gridLeft, this.gridTop];
 
         if (!this.rtl)
             this.gridLeft++;
@@ -773,7 +771,7 @@ export class SearchResults extends St.BoxLayout {
     }
 }
 
-export class ArcSearchProviderInfo extends ArcMenuPopupBaseMenuItem {
+export class ArcSearchProviderInfo extends BaseMenuItem {
     static {
         GObject.registerClass(this);
     }

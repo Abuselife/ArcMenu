@@ -28,6 +28,26 @@ export const DialogWindow = GObject.registerClass({
     }
 });
 
+export const SettingRow = GObject.registerClass(
+class ArcMenuSettingRow extends Adw.ActionRow {
+    _init(params) {
+        super._init({
+            activatable: true,
+            ...params,
+        });
+
+        const goNextImage = new Gtk.Image({
+            gicon: Gio.icon_new_for_string('go-next-symbolic'),
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.CENTER,
+            hexpand: false,
+            vexpand: false,
+        });
+
+        this.add_suffix(goNextImage);
+    }
+});
+
 export const DragRow = GObject.registerClass({
     Properties: {
         'shortcut-name': GObject.ParamSpec.string(

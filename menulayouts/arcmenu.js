@@ -58,18 +58,25 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         this.applicationsScrollBox = this._createScrollBox({
             x_expand: true,
             y_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.leftBox.add_child(this.applicationsScrollBox);
 
-        this.applicationsBox = new St.BoxLayout({vertical: true});
+        this.applicationsBox = new St.BoxLayout({
+            vertical: true,
+            x_expand: true,
+            y_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.FILL,
+        });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
 
         this.navigateBox = new St.BoxLayout({
             vertical: true,
-            x_expand: true,
-            y_expand: true,
+            x_expand: false,
+            y_expand: false,
             y_align: Clutter.ActorAlign.END,
         });
         this.leftBox.add_child(this.navigateBox);
@@ -121,8 +128,8 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
         // Add place shortcuts to menu (Home,Documents,Downloads,Music,Pictures,Videos)
         this._displayPlaces();
 
-        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
-        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
+        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack().length > 0;
+        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack().length > 0;
 
         // check to see if should draw separator
         const needsSeparator = haveDirectoryShortcuts &&
@@ -153,7 +160,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             externalDevicesBox.add_child(this._placesSections[id]);
         }
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
@@ -208,8 +215,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             return;
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             const extraCategoryItem = this.categoryDirectories.get(categoryEnum);
 
             // Don't show the extra category if the default menu view is the same category.
@@ -246,8 +252,7 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             this.hasPinnedApps = true;
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
 
             // Don't show the extra category if the default menu view is the same category.
             if (shouldShow && categoryEnum === Constants.CategoryType.PINNED_APPS &&

@@ -5,6 +5,7 @@ import Gtk from 'gi://Gtk';
 import * as Constants from '../../constants.js';
 import {ListPinnedPage} from './ListPinnedPage.js';
 import {ListOtherPage} from './ListOtherPage.js';
+import * as PW from '../../prefsWidgets.js';
 import * as SettingsUtils from '../SettingsUtils.js';
 import {SubPage} from './SubPage.js';
 
@@ -21,7 +22,7 @@ class ArcMenuLayoutTweaksPage extends SubPage {
 
     setActiveLayout(menuLayout) {
         const layoutName = SettingsUtils.getMenuLayoutName(menuLayout);
-        this.headerLabel.title = _('%s Layout Tweaks').format(_(layoutName));
+        this.title = _('%s Layout Tweaks').format(_(layoutName));
 
         for (const child of this.page.children)
             this.page.remove(child);
@@ -102,6 +103,24 @@ class ArcMenuLayoutTweaksPage extends SubPage {
             this._loadPlaceHolderTweaks();
             break;
         }
+    }
+
+    _createExtraShortcutsRow(setting) {
+        const extraShortcutsPage = new ListPinnedPage(this._settings, {
+            title: _('Extra Shortcuts'),
+            setting_string: setting,
+            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
+        });
+        const extraShortcutsRow = new PW.SettingRow({
+            title: _('Extra Shortcuts'),
+        });
+        extraShortcutsRow.settingPage = extraShortcutsPage;
+
+        extraShortcutsRow.connect('activated', () => {
+            this.get_root().push_subpage(extraShortcutsPage);
+            extraShortcutsPage.resetScrollAdjustment();
+        });
+        return extraShortcutsRow;
     }
 
     _createVertSeparatorRow() {
@@ -283,17 +302,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(disableFrequentAppsRow);
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'eleven-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('eleven-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -302,17 +313,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createSearchBarLocationRow());
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'az-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('az-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -367,17 +370,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
 
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'windows-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('windows-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -410,17 +405,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createVertSeparatorRow());
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Extra Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Extra Shortcuts'),
-            preferences_page: false,
-            setting_string: 'brisk-extra-shortcuts',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('brisk-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -598,17 +585,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         const widgetGroup = this._createWidgetsRows(Constants.MenuLayout.UNITY);
         this.add(widgetGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'unity-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('unity-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -669,17 +648,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createVertSeparatorRow());
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'mint-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('mint-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 
@@ -758,17 +729,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createAvatarShapeRow());
         this.add(tweaksGroup);
 
-        const extraShortcutsGroup = new Adw.PreferencesGroup({
-            title: _('Button Shortcuts'),
-        });
-        const extraShortcutsPage = new ListPinnedPage(this._settings, {
-            title: _('Button Shortcuts'),
-            preferences_page: false,
-            setting_string: 'insider-extra-buttons',
-            list_type: Constants.MenuSettingsListType.EXTRA_SHORTCUTS,
-        });
-        extraShortcutsGroup.set_header_suffix(extraShortcutsPage.restoreDefaultsButton);
-        extraShortcutsGroup.add(extraShortcutsPage);
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('insider-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
         this.add(extraShortcutsGroup);
     }
 

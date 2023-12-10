@@ -48,7 +48,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
         });
         this.actionsBox.add_child(userMenuItem);
 
-        const settingsButton = this.createMenuItem([_('Settings'), '', 'org.gnothis._settings.desktop'],
+        const settingsButton = this.createMenuItem({'id': 'org.gnome.Settings.desktop'},
             Constants.DisplayType.BUTTON, false);
         if (settingsButton.shouldShow)
             this.actionsBox.add_child(settingsButton);
@@ -151,8 +151,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
 
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);

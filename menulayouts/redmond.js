@@ -129,8 +129,8 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
         // Add place shortcuts to menu (Home,Documents,Downloads,Music,Pictures,Videos)
         this._displayPlaces();
 
-        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
-        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
+        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack().length > 0;
+        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack().length > 0;
 
         // check to see if should draw separator
         const needsSeparator = haveDirectoryShortcuts &&
@@ -161,7 +161,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             externalDevicesBox.add_child(this._placesSections[id]);
         }
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)

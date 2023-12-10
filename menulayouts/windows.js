@@ -76,18 +76,6 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
-            column_spacing: 10,
-            row_spacing: 10,
-        });
-        this.pinnedAppsGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            layout_manager: layout,
-        });
-        layout.hookup_style(this.pinnedAppsGrid);
-
         this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             x_expand: false,
@@ -101,7 +89,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
         this.subMainBox.add_child(this.searchEntry);
 
-        const applicationShortcutsList = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcutsList = this._settings.get_value('application-shortcuts').deep_unpack();
         this.applicationShortcuts = [];
         for (let i = 0; i < applicationShortcutsList.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcutsList[i],
@@ -110,7 +98,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
                 this.applicationShortcuts.push(shortcutMenuItem);
         }
 
-        const directoryShortcutsList = this._settings.get_value('directory-shortcuts-list').deep_unpack();
+        const directoryShortcutsList = this._settings.get_value('directory-shortcuts').deep_unpack();
         this._loadPlaces(directoryShortcutsList);
 
         this.externalDevicesBox = new St.BoxLayout({
@@ -129,7 +117,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             this.externalDevicesBox.add_child(this._placesSections[id]);
         }
 
-        this._settings.connectObject('changed::windows-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::windows-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();
@@ -152,9 +140,9 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
         const isContainedInCategory = false;
 
-        const extraButtons = this._settings.get_value('windows-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('windows-layout-extra-shortcuts').deep_unpack();
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.HORIZONTAL);
@@ -221,9 +209,9 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
     _loadPlaces(directoryShortcutsList) {
         this.directoryShortcuts = [];
         for (let i = 0; i < directoryShortcutsList.length; i++) {
-            const directory = directoryShortcutsList[i];
+            const directoryData = directoryShortcutsList[i];
             const isContainedInCategory = false;
-            const placeMenuItem = this.createMenuItem(directory, Constants.DisplayType.LIST, isContainedInCategory);
+            const placeMenuItem = this.createMenuItem(directoryData, Constants.DisplayType.LIST, isContainedInCategory);
             this.directoryShortcuts.push(placeMenuItem);
         }
     }
@@ -279,7 +267,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         computerBox.add_child(this.externalDevicesBox);
 
         const height = this._settings.get_int('menu-height');
-        this.extrasMenu.actor.style = `height: ${height}px;`;
+        extrasMenuPopupBox.style = `height: ${height}px;`;
 
         this.subMenuManager.addMenu(this.extrasMenu);
         this.extrasMenu.actor.hide();
@@ -390,9 +378,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
     displayPinnedApps() {
         super._clearActorsFromBox(this.pinnedAppsBox);
-        this.pinnedAppsGrid.remove_all_children();
 
-        const pinnedApps = this._settings.get_strv('pinned-app-list');
+        const pinnedApps = this._settings.get_value('pinned-apps').deepUnpack();
 
         if (pinnedApps.length < 1) {
             if (this.contains(this.pinnedAppsScrollBox)) {
@@ -411,12 +398,13 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         const label = this.createLabelRow(_('Pinned'));
         this.pinnedAppsBox.add_child(label);
 
-        this.display_type = Constants.DisplayType.GRID;
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.HOME_SCREEN, this.pinnedAppsGrid);
-        this.display_type = Constants.DisplayType.LIST;
+        const iconWidth = this.getIconWidthFromSetting();
+        const columns = this.getBestFitColumnsForGrid(iconWidth, this._pinnedAppsGrid);
 
-        if (!this.pinnedAppsBox.contains(this.pinnedAppsGrid))
-            this.pinnedAppsBox.add_child(this.pinnedAppsGrid);
+        this._pinnedAppsGrid.setColumns(columns);
+
+        if (!this.pinnedAppsBox.contains(this._pinnedAppsGrid))
+            this.pinnedAppsBox.add_child(this._pinnedAppsGrid);
 
         if (this.activeMenuItemSet)
             this.activeMenuItem = this._frequentActiveItem;

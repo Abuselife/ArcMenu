@@ -28,10 +28,6 @@
         <value value='1' nick='TopCentered'/>
         <value value='2' nick='BottomCentered'/>
     </enum>
-    <enum id='org.gnome.shell.extensions.arcmenu.menu-hotkey-type'>
-        <value value='0' nick='Super_L'/>
-        <value value='1' nick='Custom'/>
-    </enum>
     <enum id='org.gnome.shell.extensions.arcmenu.menu-position'>
         <value value="0" nick="Left"/>
         <value value="1" nick="Center"/>
@@ -115,6 +111,13 @@
         <value value="0" nick="Full_Color"/>
         <value value="1" nick="Symbolic"/>
     </enum>
+  <schema id="org.gnome.shell.extensions.arcmenu.pinned-apps-folders">
+    <key name="pinned-apps" type="aa{ss}">
+      <default>[]</default>
+      <summary>Pinned Apps in the folder</summary>
+      <description>Pinned Apps in the folder</description>
+    </key>
+  </schema>
   <schema path="/org/gnome/shell/extensions/arcmenu/" id="org.gnome.shell.extensions.arcmenu">
     <key type="i" name="menu-position-alignment">
       <default>50</default>
@@ -251,7 +254,6 @@
       <summary>List of color-themes</summary>
       <description> List of color themes.</description>
     </key>
-
     <key name="force-menu-location" enum="org.gnome.shell.extensions.arcmenu.forcemenulocation">
       <default>'Off'</default>
       <summary>Force the menu to a specific location</summary>
@@ -537,35 +539,15 @@
       <summary>Show/Hide Activities Button in panel</summary>
       <description>Show/Hide Activities Button in panel.</description>
     </key>
-      <key type="b" name="enable-menu-hotkey">
-      <default>true</default>
-      <summary>Enable a hotkey to open ArcMenu.</summary>
-      <description>Enable a hotkey to open ArcMenu.</description>
+    <key name="arcmenu-hotkey" type="as">
+      <default>['Super_L']</default>
+      <summary>Keybind to open ArcMenu</summary>
+      <description>Keybind to open ArcMenu.</description>
     </key>
-    <key name="menu-hotkey-type" enum="org.gnome.shell.extensions.arcmenu.menu-hotkey-type">
-      <default>'Super_L'</default>
-      <summary>Set a hotkey to open ArcMenu</summary>
-      <description>Set a hotkey to open ArcMenu.</description>
-    </key>
-    <key name="arcmenu-custom-hotkey" type="as">
-      <default>["&lt;Super&gt;x"]</default>
-      <summary>Custom keybind to open ArcMenu</summary>
-      <description>Custom keybind to open ArcMenu.</description>
-    </key>
-    <key type="b" name="enable-standlone-runner-menu">
-      <default>false</default>
-      <summary>Enable a standalone Runner menu.</summary>
-      <description>Enable a standalone Runner menu.</description>
-    </key>
-    <key name="runner-menu-hotkey-type" enum="org.gnome.shell.extensions.arcmenu.menu-hotkey-type">
-      <default>'Custom'</default>
-      <summary>Set a hotkey to open the standalone Runner menu.</summary>
-      <description>Set a hotkey to open the standalone Runner menu.</description>
-    </key>
-    <key name="runner-menu-custom-hotkey" type="as">
-      <default>["&lt;Alt&gt;1"]</default>
-      <summary>Keybinding to open the standalone runner menu</summary>
-      <description>Keybinding to open the standalone runner menu.</description>
+    <key name="runner-hotkey" type="as">
+      <default>[]</default>
+      <summary>Keybind to open standalone runner menu. Setting a keybind enables the standalone runner menu.</summary>
+      <description>Keybind to open standalone runner menu. Setting a keybind enables the standalone runner menu.</description>
     </key>
     <key name="position-in-panel" enum="org.gnome.shell.extensions.arcmenu.menu-position">
       <default>'Left'</default>
@@ -697,82 +679,207 @@
       <summary>List of recently installed apps</summary>
       <description>List of recently installed apps</description>
     </key>
-    <key name="pinned-app-list" type="as">
-      <default> [ "", "", "firefox.desktop",
-                  "", "", "org.gnome.Nautilus.desktop",
-                  "", "", "org.gnome.Terminal.desktop",
-                  "ArcMenu Settings", "ArcMenu_ArcMenuIcon", "gnome-extensions prefs arcmenu@arcmenu.com"
-                ]
+    <child name='pinned-apps-folders' schema='org.gnome.shell.extensions.arcmenu.pinned-apps-folders'/>
+    <key name="pinned-apps" type="aa{ss}">
+      <default> 
+        [
+          {'id': 'firefox.desktop'}, 
+          {'id': 'org.gnome.Nautilus.desktop'}, 
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'gnome-extensions prefs arcmenu@arcmenu.com', 'name': 'ArcMenu Settings', 'icon': 'ArcMenu_ArcMenuIcon'},
+          {'id': 'default-folder', 'name': 'My Apps', 'isFolder': 'true'}
+        ] 
       </default>
+      <summary>Pinned Apps</summary>
+      <description>Pinned Apps</description>
+    </key>
+    <key name="directory-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'ArcMenu_Home', 'name': 'Home', 'icon': 'ArcMenu_Home'},
+          {'id': 'ArcMenu_Documents', 'name': 'Documents', 'icon': 'ArcMenu_Documents'},
+          {'id': 'ArcMenu_Downloads', 'name': 'Downloads', 'icon': 'ArcMenu_Downloads'},
+          {'id': 'ArcMenu_Music', 'name': 'Music', 'icon': 'ArcMenu_Music'},
+          {'id': 'ArcMenu_Pictures', 'name': 'Pictures', 'icon': 'ArcMenu_Pictures'},
+          {'id': 'ArcMenu_Videos', 'name': 'Videos', 'icon': 'ArcMenu_Videos'}
+        ]
+      </default>
+      <summary>Array of directory shortcuts data.</summary>
+      <description>Array of directory shortcuts data.</description>
+    </key>
+    <key name="application-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'ArcMenu_Software', 'name': 'Software'},
+          {'id': 'org.gnome.Settings.desktop'},
+          {'id': 'org.gnome.tweaks.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'ArcMenu_ActivitiesOverview', 'name': 'Activities Overview', 'icon': 'view-fullscreen-symbolic'}
+        ]
+      </default>
+      <summary>Array of application shortcuts data.</summary>
+      <description>Array of application shortcuts data.</description>
+    </key>
+    <key name="az-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'org.gnome.Settings.desktop'}
+        ]
+      </default>
+      <summary>'AZ' layout extra shortcuts</summary>
+      <description>'AZ' layout extra shortcuts</description>
+    </key>
+    <key name="brisk-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [ 
+          {'id': 'ArcMenu_Software', 'name': 'Software'},
+          {'id': 'org.gnome.Settings.desktop'}
+        ]
+      </default>
+      <summary>'Brisk' layout extra shortcuts</summary>
+      <description>'Brisk' layout extra shortcuts</description>
+    </key>
+    <key name="eleven-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'org.gnome.Settings.desktop'}
+        ]
+      </default>
+      <summary>'11' layout extra shortcuts</summary>
+      <description>'11' layout extra shortcuts</description>
+    </key>
+    <key name="insider-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'org.gnome.Settings.desktop'}
+        ]
+      </default>
+      <summary>'Insider' layout extra shortcuts</summary>
+      <description>'Insider' layout extra shortcuts</description>
+    </key>
+    <key name="mint-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [ 
+          {'id': 'firefox.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'org.gnome.Settings.desktop'},
+          {'id': 'ArcMenu_Software', 'name': 'Software'},
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'ArcMenu_Separator', 'name': 'Separator', 'icon': 'list-remove-symbolic'},
+          {'id': 'ArcMenu_LogOut', 'name': 'Log Out...', 'icon': 'system-log-out-symbolic'},
+          {'id': 'ArcMenu_Lock', 'name': 'Lock', 'icon': 'changes-prevent-symbolic'},
+          {'id': 'ArcMenu_PowerOff', 'name': 'Power Off...', 'icon': 'system-shutdown-symbolic'}
+        ]
+      </default>
+      <summary>'Mint' layout extra shortcuts</summary>
+      <description>'Mint' layout extra shortcuts</description>
+    </key>
+    <key name="unity-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'ArcMenu_Home', 'name': 'Home', 'icon': 'ArcMenu_Home'},
+          {'id': 'ArcMenu_Documents', 'name': 'Documents', 'icon': 'ArcMenu_Documents'},
+          {'id': 'ArcMenu_Downloads', 'name': 'Downloads', 'icon': 'ArcMenu_Downloads'},
+          {'id': 'ArcMenu_Software', 'name': 'Software'},
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'ArcMenu_Separator', 'name': 'Separator', 'icon': 'list-remove-symbolic'},
+          {'id': 'ArcMenu_LogOut', 'name': 'Log Out...', 'icon': 'system-log-out-symbolic'},
+          {'id': 'ArcMenu_Lock', 'name': 'Lock', 'icon': 'changes-prevent-symbolic'},
+          {'id': 'ArcMenu_PowerOff', 'name': 'Power Off...', 'icon': 'system-shutdown-symbolic'}
+        ]
+      </default>
+      <summary>'Unity' layout extra shortcuts</summary>
+      <description>'Unity' layout extra shortcuts</description>
+    </key>
+    <key name="windows-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'org.gnome.Nautilus.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'},
+          {'id': 'org.gnome.Settings.desktop'}
+        ]
+      </default>
+      <summary>'Windows' layout extra shortcuts</summary>
+      <description>'Windows' layout extra shortcuts</description>
+    </key>
+    <key name="context-menu-items" type="aa{ss}">
+      <default>
+        [
+          {'id': 'org.gnome.Extensions.desktop'},
+          {'id': 'ArcMenu_Settings', 'name': 'ArcMenu Settings', 'icon': 'ArcMenu_ArcMenuIcon'},
+          {'id': 'ArcMenu_PanelExtensionSettings', 'name': 'Panel Extension Settings', 'icon': 'application-x-addon-symbolic'},
+          {'id': 'ArcMenu_Separator', 'name': 'Separator', 'icon': 'list-remove-symbolic'},
+          {'id': 'ArcMenu_PowerOptions', 'name': 'Power Options', 'icon': 'system-shutdown-symbolic'},
+          {'id': 'ArcMenu_ActivitiesOverview', 'name': 'Activities Overview', 'icon': 'view-fullscreen-symbolic'},
+          {'id': 'ArcMenu_ShowDesktop', 'name': 'Show Desktop', 'icon': 'computer-symbolic'}
+        ]
+      </default>
+      <summary>Context menu shortcut items</summary>
+      <description>Context menu shortcut items</description>
+    </key>
+    <!--OLD _________________________________________________________________________________________________________________________________-->
+    <key name="pinned-app-list" type="as">
+      <default>[]</default>
       <summary>List of Apps Pinned to Menu</summary>
       <description>List of Apps Pinned to Menu</description>
     </key>
-    <key type="b" name="enable-custom-shortcuts">
-      <default>false</default>
-      <summary>Toggle for enabling custom shortcuts.</summary>
-      <description>Toggle for enabling custom shortcuts.</description>
-    </key>
     <key name="directory-shortcuts-list" type="aas">
-      <default>[["Home","ArcMenu_Home", "ArcMenu_Home"], ["Documents","ArcMenu_Documents", "ArcMenu_Documents"],["Downloads","ArcMenu_Downloads", "ArcMenu_Downloads"],
-          ["Music","ArcMenu_Music", "ArcMenu_Music"],["Pictures","ArcMenu_Pictures", "ArcMenu_Pictures"],["Videos","ArcMenu_Videos", "ArcMenu_Videos"]]</default>
+      <default>[]</default>
       <summary>List of default directory paths used for links on the right side of ArcMenu</summary>
       <description>List of default directory paths used for links on the right side of ArcMenu.</description>
     </key>
     <key name="application-shortcuts-list" type="aas">
-      <default>[["Software", "", "ArcMenu_Software"], ["","", "org.gnome.Settings.desktop"],
-          ["", "", "org.gnome.tweaks.desktop"],["", "", "org.gnome.Terminal.desktop"],
-          ["Activities Overview", "view-fullscreen-symbolic", "ArcMenu_ActivitiesOverview"]]</default>
+      <default>[]</default>
       <summary>List of default directory paths used for links on the right side of ArcMenu</summary>
       <description>List of default directory paths used for links on the right side of ArcMenu.</description>
     </key>
-    <key name="context-menu-shortcuts" type="aas">
-      <default>[["", "", "org.gnome.Extensions.desktop"], ["ArcMenu Settings", "ArcMenu_ArcMenuIcon", "ArcMenu_Settings"],
-          ["Panel Extension Settings", "application-x-addon-symbolic", "ArcMenu_PanelExtensionSettings"], ["Separator", "list-remove-symbolic", "ArcMenu_Separator"],
-          ["Power Options", "system-shutdown-symbolic", "ArcMenu_PowerOptions"], ["Activities Overview", "view-fullscreen-symbolic", "ArcMenu_ActivitiesOverview"],
-          ["Show Desktop", "computer-symbolic", "ArcMenu_ShowDesktop"]]</default>
-      <summary>List of shortcuts on ArcMenu button context menu</summary>
-      <description>List of shortcuts on ArcMenu button context menu.</description>
-    </key>
     <key name="az-extra-buttons" type="aas">
-      <default>[["", "", "org.gnome.Nautilus.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"]]</default>
+      <default>[]</default>
       <summary>List of AZ Layout extra buttons</summary>
       <description>List of AZ Layout extra buttons</description>
     </key>
-    <key name="brisk-extra-shortcuts" type="aas">
-      <default>[["Software", "", "ArcMenu_Software"], ["", "", "org.gnome.Settings.desktop"]]</default>
-      <summary>List of Brisk Layout extra shortcuts</summary>
-      <description>List of Brisk Layout extra shortcuts</description>
-    </key>
     <key name="eleven-extra-buttons" type="aas">
-      <default>[["", "", "org.gnome.Nautilus.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"]]</default>
+      <default>[]</default>
       <summary>List of Eleven Layout extra buttons</summary>
       <description>List of Eleven Layout extra buttons</description>
     </key>
     <key name="insider-extra-buttons" type="aas">
-      <default>[["", "", "org.gnome.Nautilus.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"]]</default>
+      <default>[]</default>
       <summary>List of Insider Layout extra buttons</summary>
       <description>List of Insider Layout extra buttons</description>
     </key>
-    <key name="mint-extra-buttons" type="aas">
-      <default>[["", "", "firefox.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"], ["Software", "", "ArcMenu_Software"],
-          ["", "", "org.gnome.Nautilus.desktop"], ["Separator", "list-remove-symbolic", "ArcMenu_Separator"], ["Log Out...", "system-log-out-symbolic", "ArcMenu_LogOut"],
-          ["Lock", "changes-prevent-symbolic", "ArcMenu_Lock"], ["Power Off...", "system-shutdown-symbolic", "ArcMenu_PowerOff"]]</default>
-      <summary>List of Mint Layout extra buttons</summary>
-      <description>List of Mint Layout extra buttonss</description>
-    </key>
-    <key name="unity-extra-buttons" type="aas">
-      <default>[["Home", "ArcMenu_Home", "ArcMenu_Home"], ["Documents", "ArcMenu_Documents", "ArcMenu_Documents"], ["Downloads", "ArcMenu_Downloads", "ArcMenu_Downloads"],
-          ["Software", "", "ArcMenu_Software"], ["", "", "org.gnome.Nautilus.desktop"], ["Separator", "list-remove-symbolic", "ArcMenu_Separator"],
-          ["Log Out...", "system-log-out-symbolic", "ArcMenu_LogOut"], ["Lock", "changes-prevent-symbolic", "ArcMenu_Lock"],
-          ["Power Off...", "system-shutdown-symbolic", "ArcMenu_PowerOff"]]</default>
-      <summary>List of Unity Layout extra buttons</summary>
-      <description>List of Uniity Layout extra buttons</description>
-    </key>
     <key name="windows-extra-buttons" type="aas">
-      <default>[["", "", "org.gnome.Nautilus.desktop"], ["", "", "org.gnome.Terminal.desktop"], ["", "", "org.gnome.Settings.desktop"]]</default>
+      <default>[]</default>
       <summary>List of Windows Layout extra buttons</summary>
       <description>List of Windows Layout extra buttons</description>
     </key>
+    <key name="unity-extra-buttons" type="aas">
+      <default>[]</default>
+      <summary>List of Unity Layout extra buttons</summary>
+      <description>List of Uniity Layout extra buttons</description>
+    </key>
+    <key name="brisk-extra-shortcuts" type="aas">
+      <default>[]</default>
+      <summary>List of Brisk Layout extra shortcuts</summary>
+      <description>List of Brisk Layout extra shortcuts</description>
+    </key>
+    <key name="mint-extra-buttons" type="aas">
+      <default>[]</default>
+      <summary>List of Mint Layout extra buttons</summary>
+      <description>List of Mint Layout extra buttonss</description>
+    </key>
+    <key name="context-menu-shortcuts" type="aas">
+      <default>[]</default>
+      <summary>List of shortcuts on ArcMenu button context menu</summary>
+      <description>List of shortcuts on ArcMenu button context menu.</description>
+    </key>
+    <!-- END OLD _________________________________________________________________________________________________________________________________-->
     <key name="pop-folders-data" type="a{ss}">
       <default>{}</default>
       <summary>List of org.gnome.desktop.app-folders id:name</summary>

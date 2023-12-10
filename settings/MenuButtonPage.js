@@ -378,38 +378,51 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         this.set_default_size(475, 475);
         this.search_enabled = false;
 
-        this.page.title = _('ArcMenu Icons');
+        this.page.title = _('Icons');
         this.page.icon_name = 'icon-arcmenu-logo-symbolic';
 
-        const arcMenuIconsFlowBox = new PW.IconGrid(2);
-        arcMenuIconsFlowBox.connect('child-activated', (_self, child) => {
-            distroIconsFlowBox.unselect_all();
-            customIconFlowBox.unselect_all();
+        this._arcMenuIconsFlowBox = new PW.IconGrid(2);
+        this._arcMenuIconsFlowBox.connect('child-activated', (_self, child) => {
+            this._distroIconsFlowBox.unselect_all();
+            this._customIconFlowBox.unselect_all();
 
             const selectedChildIndex = child.get_index();
             this._settings.set_enum('menu-button-icon', Constants.MenuIconType.MENU_ICON);
             this._settings.set_int('arc-menu-icon', selectedChildIndex);
         });
-        this.pageGroup.add(arcMenuIconsFlowBox);
+        this.pageGroup.add(this._arcMenuIconsFlowBox);
 
         Constants.MenuIcons.forEach(icon => {
             const iconTile = new PW.MenuButtonIconTile(icon.PATH);
-            arcMenuIconsFlowBox.add(iconTile);
+            this._arcMenuIconsFlowBox.add(iconTile);
         });
 
         this.distroIconsPage = new Adw.PreferencesPage({
-            title: _('Distro Icons'),
+            title: _('Distros'),
             icon_name: 'distro-gnome-symbolic',
         });
         this.add(this.distroIconsPage);
 
+        const distroInfoButton = new Gtk.Button({
+            label: _('Legal Disclaimer'),
+            css_classes: ['flat', 'accent'],
+            margin_bottom: 8,
+            halign: Gtk.Align.CENTER,
+        });
+        distroInfoButton.connect('clicked', () => {
+            const dialog = new DistroIconsDisclaimerWindow(this._settings, this);
+            dialog.connect('response', () => dialog.destroy());
+            dialog.show();
+        });
+
         const distroIconsGroup = new Adw.PreferencesGroup();
+        distroIconsGroup.add(distroInfoButton);
         this.distroIconsPage.add(distroIconsGroup);
 
-        const distroIconsFlowBox = new PW.IconGrid(2);
-        distroIconsFlowBox.connect('child-activated', (_self, child) => {
-            arcMenuIconsFlowBox.unselect_all();
-            customIconFlowBox.unselect_all();
+        this._distroIconsFlowBox = new PW.IconGrid(2);
+        this._distroIconsFlowBox.connect('child-activated', (_self, child) => {
+            this._arcMenuIconsFlowBox.unselect_all();
+            this._customIconFlowBox.unselect_all();
 
             const selectedChildIndex = child.get_index();
             this._settings.set_enum('menu-button-icon', Constants.MenuIconType.DISTRO_ICON);
@@ -418,12 +431,12 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
 
         Constants.DistroIcons.forEach(icon => {
             const iconTile = new PW.MenuButtonIconTile(icon.PATH, icon.NAME);
-            distroIconsFlowBox.add(iconTile);
+            this._distroIconsFlowBox.add(iconTile);
         });
-        distroIconsGroup.add(distroIconsFlowBox);
+        distroIconsGroup.add(this._distroIconsFlowBox);
 
         this.customIconPage = new Adw.PreferencesPage({
-            title: _('Custom Icon'),
+            title: _('Custom'),
             icon_name: 'settings-customicon-symbolic',
         });
         this.add(this.customIconPage);
@@ -431,16 +444,16 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         const customIconGroup = new Adw.PreferencesGroup();
         this.customIconPage.add(customIconGroup);
 
-        const customIconFlowBox = new PW.IconGrid(2);
-        customIconFlowBox.set({
+        this._customIconFlowBox = new PW.IconGrid(2);
+        this._customIconFlowBox.set({
             vexpand: false,
             homogeneous: false,
         });
-        customIconGroup.add(customIconFlowBox);
+        customIconGroup.add(this._customIconFlowBox);
 
-        customIconFlowBox.connect('child-activated', () => {
-            arcMenuIconsFlowBox.unselect_all();
-            distroIconsFlowBox.unselect_all();
+        this._customIconFlowBox.connect('child-activated', () => {
+            this._arcMenuIconsFlowBox.unselect_all();
+            this._distroIconsFlowBox.unselect_all();
 
             const customIconPath = this._settings.get_string('custom-menu-button-icon');
             this._settings.set_string('custom-menu-button-icon', customIconPath);
@@ -448,7 +461,7 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         });
 
         const customIconTile = new PW.MenuButtonIconTile(this._settings.get_string('custom-menu-button-icon'));
-        customIconFlowBox.add(customIconTile);
+        this._customIconFlowBox.add(customIconTile);
 
         const fileChooserFrame = new Adw.PreferencesGroup();
         this.customIconPage.add(fileChooserFrame);
@@ -474,13 +487,13 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
 
             dialog.connect('response', (_self, response) => {
                 if (response === Gtk.ResponseType.ACCEPT) {
-                    arcMenuIconsFlowBox.unselect_all();
-                    distroIconsFlowBox.unselect_all();
+                    this._arcMenuIconsFlowBox.unselect_all();
+                    this._distroIconsFlowBox.unselect_all();
 
                     customIconTile.setIcon(dialog.get_file().get_path());
                     this._settings.set_string('custom-menu-button-icon', dialog.get_file().get_path());
                     this._settings.set_enum('menu-button-icon', Constants.MenuIconType.CUSTOM);
-                    customIconFlowBox.select_child(customIconFlowBox.get_child_at_index(0));
+                    this._customIconFlowBox.select_child(this._customIconFlowBox.get_child_at_index(0));
                 }
 
                 dialog.destroy();
@@ -493,45 +506,32 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         fileChooserRow.add_suffix(fileChooserButton);
         fileChooserFrame.add(fileChooserRow);
 
-        arcMenuIconsFlowBox.unselect_all();
-        distroIconsFlowBox.unselect_all();
-        customIconFlowBox.unselect_all();
+        this.setVisiblePage();
 
+        this.connect('notify::visible-page', () => this._selectActiveIcon());
+        this._selectActiveIcon();
+    }
+
+    _selectActiveIcon() {
+        this._arcMenuIconsFlowBox.unselect_all();
+        this._distroIconsFlowBox.unselect_all();
+        this._customIconFlowBox.unselect_all();
         const menuButtonIconType = this._settings.get_enum('menu-button-icon');
         if (menuButtonIconType === Constants.MenuIconType.MENU_ICON) {
             const index = this._settings.get_int('arc-menu-icon');
-            const selectedChild = arcMenuIconsFlowBox.get_child_at_index(index);
-            arcMenuIconsFlowBox.select_child(selectedChild);
-            arcMenuIconsFlowBox._lastSelectedChild = selectedChild;
+            const selectedChild = this._arcMenuIconsFlowBox.get_child_at_index(index);
+            this._arcMenuIconsFlowBox.select_child(selectedChild);
         } else if (menuButtonIconType === Constants.MenuIconType.DISTRO_ICON) {
             const index = this._settings.get_int('distro-icon');
-            const selectedChild = distroIconsFlowBox.get_child_at_index(index);
-            distroIconsFlowBox.select_child(selectedChild);
-            distroIconsFlowBox._lastSelectedChild = selectedChild;
+            const selectedChild = this._distroIconsFlowBox.get_child_at_index(index);
+            this._distroIconsFlowBox.select_child(selectedChild);
         } else if (menuButtonIconType === Constants.MenuIconType.CUSTOM) {
-            customIconFlowBox.select_child(customIconFlowBox.get_child_at_index(0));
+            const selectedChild = this._customIconFlowBox.get_child_at_index(0);
+            this._customIconFlowBox.select_child(selectedChild);
         }
-
-        const distroInfoButtonGroup = new Adw.PreferencesGroup({
-            valign: Gtk.Align.END,
-            vexpand: true,
-        });
-        const distroInfoButton = new Gtk.Button({
-            icon_name: 'help-about-symbolic',
-            halign: Gtk.Align.END,
-        });
-        distroInfoButton.connect('clicked', () => {
-            const dialog = new DistroIconsDisclaimerWindow(this._settings, this);
-            dialog.connect('response', () => dialog.destroy());
-            dialog.show();
-        });
-        distroInfoButtonGroup.add(distroInfoButton);
-        this.distroIconsPage.add(distroInfoButtonGroup);
-
-        this.setVisibleChild();
     }
 
-    setVisibleChild() {
+    setVisiblePage() {
         if (this._settings.get_enum('menu-button-icon') === Constants.MenuIconType.MENU_ICON)
             this.set_visible_page(this.page);
         else if (this._settings.get_enum('menu-button-icon') === Constants.MenuIconType.DISTRO_ICON)
@@ -546,42 +546,29 @@ class ArcMenuDistroIconsDisclaimerWindow extends Gtk.MessageDialog {
     _init(settings, parent) {
         this._settings = settings;
         super._init({
-            text: `<b>${_('Legal disclaimer for Distro Icons')}</b>`,
+            text: `<b>${_('Legal Disclaimer for Distro Icons')}</b>`,
             use_markup: true,
             message_type: Gtk.MessageType.OTHER,
             transient_for: parent.get_root(),
             modal: true,
             buttons: Gtk.ButtonsType.OK,
         });
+        this.set_size_request(515, 470);
 
-        const vbox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 20,
-            homogeneous: false,
-            margin_top: 5,
-            margin_bottom: 5,
-            margin_start: 5,
-            margin_end: 5,
-        });
-        this.get_content_area().append(vbox);
-        this._createLayout(vbox);
-    }
-
-    _createLayout(vbox) {
-        const scrollWindow = new Gtk.ScrolledWindow({
-            min_content_width: 500,
-            max_content_width: 500,
-            min_content_height: 400,
-            max_content_height: 400,
-            hexpand: false,
-            halign: Gtk.Align.START,
-        });
+        const scrollWindow = new Gtk.ScrolledWindow();
         scrollWindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-        const frame = new Gtk.Box({
+        this.get_content_area().append(scrollWindow);
+
+        const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
-            hexpand: false,
-            halign: Gtk.Align.START,
+            vexpand: true,
+            valign: Gtk.Align.FILL,
+            margin_top: 8,
+            margin_bottom: 8,
+            margin_start: 16,
+            margin_end: 16,
         });
+        scrollWindow.set_child(box);
 
         const bodyLabel = new Gtk.Label({
             label: Constants.DistroIconsDisclaimer,
@@ -590,10 +577,6 @@ class ArcMenuDistroIconsDisclaimerWindow extends Gtk.MessageDialog {
             halign: Gtk.Align.START,
             wrap: true,
         });
-        bodyLabel.set_size_request(500, -1);
-
-        frame.append(bodyLabel);
-        scrollWindow.set_child(frame);
-        vbox.append(scrollWindow);
+        box.append(bodyLabel);
     }
 });

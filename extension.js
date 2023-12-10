@@ -8,6 +8,8 @@ import {MenuSettingsController} from './controller.js';
 import {SearchProviderEmitter} from './searchProviders/searchProviderEmitter.js';
 import * as Theming from './theming.js';
 
+import * as Utils from './utils.js';
+
 export default class ArcMenu extends Extension {
     constructor(metaData) {
         super(metaData);
@@ -17,6 +19,8 @@ export default class ArcMenu extends Extension {
     enable() {
         this._arcmenuManager = new ArcMenuManager(this);
         this.settings = this.getSettings();
+
+        this._convertOldSettings(this.settings);
         this.searchProviderEmitter = new SearchProviderEmitter();
 
         const hideOverviewOnStartup = this.settings.get_boolean('hide-overview-on-startup');
@@ -78,12 +82,28 @@ export default class ArcMenu extends Extension {
         this.settings = null;
     }
 
+    // Following settings changed in v52.
+    // Keep this for a few releases to convert old settings to new format
+    _convertOldSettings(settings) {
+        Utils.convertOldSetting(settings, 'pinned-app-list', 'pinned-apps');
+        Utils.convertOldSetting(settings, 'directory-shortcuts-list', 'directory-shortcuts');
+        Utils.convertOldSetting(settings, 'application-shortcuts-list', 'application-shortcuts');
+        Utils.convertOldSetting(settings, 'az-extra-buttons', 'az-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'eleven-extra-buttons', 'eleven-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'insider-extra-buttons', 'insider-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'windows-extra-buttons', 'windows-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'unity-extra-buttons', 'unity-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'brisk-extra-shortcuts', 'brisk-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'mint-extra-buttons', 'mint-layout-extra-shortcuts');
+        Utils.convertOldSetting(settings, 'context-menu-shortcuts', 'context-menu-items');
+    }
+
     _connectExtensionSignals() {
         const dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
         if (dtp?.state === ExtensionState.ENABLED && global.dashToPanel)
             global.dashToPanel._panelsCreatedId = global.dashToPanel.connect('panels-created', () => this._reload());
 
-        const azTaskbar = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
+        const azTaskbar = Main.extensionManager.lookup(Constants.AZTASKBAR_UUID);
         if (azTaskbar?.state === ExtensionState.ENABLED && global.azTaskbar)
             global.azTaskbar._panelsCreatedId = global.azTaskbar.connect('panels-created', () => this._reload());
     }
@@ -111,11 +131,10 @@ export default class ArcMenu extends Extension {
         let panels;
 
         if (global.dashToPanel && global.dashToPanel.panels) {
-            panels = global.dashToPanel.panels.map(pw => pw);
+            panels = global.dashToPanel.panels;
             panelExtensionEnabled = true;
         } else if (global.azTaskbar && global.azTaskbar.panels) {
-            panels = global.azTaskbar.panels.map(pw => pw);
-            panels.unshift(Main.panel);
+            panels = global.azTaskbar.panels;
             panelExtensionEnabled = true;
         } else {
             panels = [Main.panel];

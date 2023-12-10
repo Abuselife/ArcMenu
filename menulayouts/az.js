@@ -2,8 +2,6 @@ import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
 import * as MW from '../menuWidgets.js';
@@ -97,7 +95,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
 
         this.bottomBox = new St.BoxLayout({
             x_expand: true,
-            y_expand: true,
+            y_expand: false,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.END,
             vertical: false,
@@ -122,7 +120,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
             this.bottomBox.add_child(this.searchEntry);
         }
 
-        this._settings.connectObject('changed::az-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::az-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateStyle();
@@ -139,10 +137,10 @@ export const Layout = class AzLayout extends BaseMenuLayout {
         this.actionsBox.add_child(userMenuItem);
 
         const isContainedInCategory = false;
-        const extraButtons = this._settings.get_value('az-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('az-layout-extra-shortcuts').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
@@ -180,15 +178,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
 
     displayAllApps() {
         this.setGridLayout(Constants.DisplayType.LIST, 3);
-        const appList = [];
-        this.applicationsMap.forEach((value, key, _map) => {
-            appList.push(key);
-        });
-        appList.sort((a, b) => {
-            return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-        });
-        this._clearActorsFromBox();
-        this._displayAppList(appList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
+        super.displayAllApps();
         this.setGridLayout(Constants.DisplayType.GRID, 4, false);
     }
 
@@ -207,8 +197,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
     updateStyle() {
         const themeNode = this.arcMenu.box.get_theme_node();
         let borderRadius = themeNode.get_length('border-radius');
-        const monitorIndex = Main.layoutManager.findIndexForActor(this.menuButton);
-        const scaleFactor = Main.layoutManager.monitors[monitorIndex].geometry_scale;
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         borderRadius /= scaleFactor;
 
         const roundBottomBorder = `border-radius: 0px 0px ${borderRadius}px ${borderRadius}px;`;
@@ -224,7 +213,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
                 this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'small-vfade';
             else
                 this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'vfade';
-            this.applicationsGrid.x_align = displayType === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
+            this.applicationsGrid.halign = displayType === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
                 : Clutter.ActorAlign.CENTER;
         }
 
@@ -242,8 +231,10 @@ export const Layout = class AzLayout extends BaseMenuLayout {
     }
 
     displayPinnedApps() {
-        this._clearActorsFromBox();
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
+        super.displayPinnedApps();
+        this._hideNavigationRow();
+
+        this.allAppsButton.visible = true;
     }
 
     _displayAppList(apps, category, grid) {
@@ -268,10 +259,10 @@ export const Layout = class AzLayout extends BaseMenuLayout {
         super._onSearchEntryChanged(searchEntry, searchString);
     }
 
-    destroy() {
+    _onDestroy() {
         this.arcMenu.box.style = null;
         this.backButton.destroy();
         this.allAppsButton.destroy();
-        super.destroy();
+        super._onDestroy();
     }
 };

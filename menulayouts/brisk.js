@@ -112,7 +112,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
             this.add_child(this.searchEntry);
         }
 
-        this._settings.connectObject('changed::brisk-extra-shortcuts', () => this._createExtraShortcuts(), this);
+        this._settings.connectObject('changed::brisk-layout-extra-shortcuts', () => this._createExtraShortcuts(), this);
         this._createExtraShortcuts();
 
         this.updateWidth();
@@ -124,7 +124,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
 
     _createExtraShortcuts() {
         this.actionsBox.destroy_all_children();
-        const extraShortcuts = this._settings.get_value('brisk-extra-shortcuts').deep_unpack();
+        const extraShortcuts = this._settings.get_value('brisk-layout-extra-shortcuts').deep_unpack();
 
         if (extraShortcuts.length === 0)
             return;
@@ -174,8 +174,7 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);

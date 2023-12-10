@@ -123,7 +123,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
             this.rightPanelParentBox.add_child(this.searchEntry);
         }
 
-        this._settings.connectObject('changed::mint-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::mint-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();
@@ -134,7 +134,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
 
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
-        const extraButtons = this._settings.get_value('mint-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('mint-layout-extra-shortcuts').deep_unpack();
 
         if (extraButtons.length === 0)
             return;
@@ -142,7 +142,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         const isContainedInCategory = false;
 
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL);
@@ -177,8 +177,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);
