@@ -65,7 +65,7 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
             title: _('ArcMenu Version'),
         });
         projectVersionRow.add_suffix(new Gtk.Label({
-            label: metadata.version.toString(),
+            label: metadata['version-name'] ? metadata['version-name'] : metadata.version.toString(),
             css_classes: ['dim-label'],
         }));
         infoGroup.add(projectVersionRow);
@@ -218,7 +218,6 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
                             'resulting in an entirely new and unique codebase.';
 
         const historyRow = new Adw.ActionRow({
-            activatable: true,
             subtitle: historyText,
         });
         historyGroup.add(historyRow);

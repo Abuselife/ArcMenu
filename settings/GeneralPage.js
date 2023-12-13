@@ -108,7 +108,6 @@ class ArcMenuGeneralPage extends Adw.PreferencesPage {
             const multiMonitor = widget.get_active();
             this._settings.set_boolean('multi-monitor', multiMonitor);
             this.menuHotkeyRow.setMultiMonitor(multiMonitor);
-            this.standaloneRunnerRow.setMultiMonitor(multiMonitor);
         });
 
         const multiMonitorRow = new Adw.ActionRow({
@@ -206,7 +205,7 @@ class ArcMenuGeneralPage extends Adw.PreferencesPage {
             icon_name: 'emblem-system-symbolic',
             css_classes: ['flat'],
             valign: Gtk.Align.CENTER,
-            visible: this._settings.get_boolean('multi-monitor'),
+            visible: isMenuHotkey ? this._settings.get_boolean('multi-monitor') : true,
         });
         customHotkeyRow.add_suffix(customizeButton);
 

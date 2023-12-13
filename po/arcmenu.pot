@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ArcMenu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-10 11:17-0500\n"
+"POT-Creation-Date: 2023-12-13 18:34-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,7 +96,7 @@ msgstr ""
 msgid "Switch User"
 msgstr ""
 
-#: constants.js:387 settings/AboutPage.js:41 settings/GeneralPage.js:520
+#: constants.js:387 settings/AboutPage.js:41 settings/GeneralPage.js:519
 msgid "ArcMenu"
 msgstr ""
 
@@ -370,11 +370,11 @@ msgstr ""
 msgid "Rename %s folder"
 msgstr ""
 
-#: menulayouts/pop.js:862 settings/GeneralPage.js:318
+#: menulayouts/pop.js:862 settings/GeneralPage.js:317
 msgid "Cancel"
 msgstr ""
 
-#: menulayouts/pop.js:870 settings/GeneralPage.js:306
+#: menulayouts/pop.js:870 settings/GeneralPage.js:305
 #: settings/Menu/ListPinnedPage.js:574 settings/Menu/VisualSettings.js:365
 msgid "Apply"
 msgstr ""
@@ -541,36 +541,36 @@ msgstr ""
 msgid "History"
 msgstr ""
 
-#: settings/AboutPage.js:227
+#: settings/AboutPage.js:226
 msgid "Contributions by"
 msgstr ""
 
-#: settings/AboutPage.js:230
+#: settings/AboutPage.js:229
 msgid "Contributors"
 msgstr ""
 
-#: settings/AboutPage.js:232
+#: settings/AboutPage.js:231
 msgid "Translators"
 msgstr ""
 
-#: settings/AboutPage.js:236
+#: settings/AboutPage.js:235
 msgid "Artwork by"
 msgstr ""
 
-#: settings/AboutPage.js:244 settings/AboutPage.js:245
+#: settings/AboutPage.js:243 settings/AboutPage.js:244
 msgid "Legal"
 msgstr ""
 
-#: settings/AboutPage.js:251
+#: settings/AboutPage.js:250
 msgid "This program comes with absolutely no warranty."
 msgstr ""
 
-#: settings/AboutPage.js:253
+#: settings/AboutPage.js:252
 msgid "GNU General Public License, version 2 or later"
 msgstr ""
 
 #. TRANSLATORS: this is the program license url; the string contains the name of the license as link text.
-#: settings/AboutPage.js:253
+#: settings/AboutPage.js:252
 #, javascript-format
 msgid "See the <a href=\"%s\">%s</a> for details."
 msgstr ""
@@ -613,74 +613,74 @@ msgstr ""
 msgid "Menu Alignment"
 msgstr ""
 
-#: settings/GeneralPage.js:115
+#: settings/GeneralPage.js:114
 msgid "Display ArcMenu on all Panels"
 msgstr ""
 
-#: settings/GeneralPage.js:116
+#: settings/GeneralPage.js:115
 msgid "Dash to Panel or App Icons Taskbar extension required"
 msgstr ""
 
-#: settings/GeneralPage.js:132
+#: settings/GeneralPage.js:131
 msgid "Always Prefer Top Panel"
 msgstr ""
 
-#: settings/GeneralPage.js:133
+#: settings/GeneralPage.js:132
 msgid "Useful with Dash to Panel setting 'Keep original gnome-shell top panel'"
 msgstr ""
 
-#: settings/GeneralPage.js:147
+#: settings/GeneralPage.js:146
 msgid "General Settings"
 msgstr ""
 
-#: settings/GeneralPage.js:151 settings/GeneralPage.js:338
+#: settings/GeneralPage.js:150 settings/GeneralPage.js:337
 msgid "ArcMenu Hotkey"
 msgstr ""
 
-#: settings/GeneralPage.js:152
+#: settings/GeneralPage.js:151
 msgid "Standalone Runner Menu"
 msgstr ""
 
-#: settings/GeneralPage.js:165
+#: settings/GeneralPage.js:164
 msgid "Hide Overview on Startup"
 msgstr ""
 
-#: settings/GeneralPage.js:214
+#: settings/GeneralPage.js:213
 msgid "Hotkey Options"
 msgstr ""
 
-#: settings/GeneralPage.js:227 settings/GeneralPage.js:363
+#: settings/GeneralPage.js:226 settings/GeneralPage.js:362
 msgid "Disabled"
 msgstr ""
 
-#: settings/GeneralPage.js:252
+#: settings/GeneralPage.js:251
 msgid "Open on Primary Monitor"
 msgstr ""
 
-#: settings/GeneralPage.js:270
+#: settings/GeneralPage.js:269
 msgid "Modify Hotkey"
 msgstr ""
 
 #. TRANSLATORS: %s is replaced with a description of the keyboard shortcut, don't translate/transliterate <b>%s</b>
-#: settings/GeneralPage.js:338
+#: settings/GeneralPage.js:337
 #, javascript-format
 msgid "Enter a new shortcut to change <b>%s</b>"
 msgstr ""
 
-#: settings/GeneralPage.js:338
+#: settings/GeneralPage.js:337
 msgid "Standalone Runner Hotkey"
 msgstr ""
 
-#: settings/GeneralPage.js:368
+#: settings/GeneralPage.js:367
 msgid "Press Esc to cancel or Backspace to disable the keyboard shortcut."
 msgstr ""
 
-#: settings/GeneralPage.js:419
+#: settings/GeneralPage.js:418
 #, javascript-format
 msgid "Conflict with <b>%s</b> hotkey"
 msgstr ""
 
-#: settings/GeneralPage.js:521
+#: settings/GeneralPage.js:520
 msgid "Standlone Runner"
 msgstr ""
 
@@ -708,43 +708,43 @@ msgstr ""
 msgid "Show Hidden Recent Files"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:121
-msgid "Enable/Disable multi-lined labels on large application icon layouts."
-msgstr ""
-
-#: settings/Menu/FineTunePage.js:121 settings/Menu/FineTunePage.js:134
+#: settings/Menu/FineTunePage.js:116
 msgid "Multi-Lined Labels"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:145
+#: settings/Menu/FineTunePage.js:117
+msgid "Allow application labels to span multiple lines on grid style layouts"
+msgstr ""
+
+#: settings/Menu/FineTunePage.js:127
 msgid "Full Color"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:146
+#: settings/Menu/FineTunePage.js:128
 msgid "Symbolic"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:148
+#: settings/Menu/FineTunePage.js:130
 msgid "Category Icon Type"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:149 settings/Menu/FineTunePage.js:160
+#: settings/Menu/FineTunePage.js:131 settings/Menu/FineTunePage.js:142
 msgid "Some icon themes may not include selected icon type"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:159
+#: settings/Menu/FineTunePage.js:141
 msgid "Shortcuts Icon Type"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:183
+#: settings/Menu/FineTunePage.js:165
 msgid "Disable New Apps Tracker"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:192
+#: settings/Menu/FineTunePage.js:174
 msgid "Clear All"
 msgstr ""
 
-#: settings/Menu/FineTunePage.js:201
+#: settings/Menu/FineTunePage.js:183
 msgid "Clear Apps Marked 'New'"
 msgstr ""
 
