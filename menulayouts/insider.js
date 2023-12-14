@@ -127,6 +127,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
                     isContainedInCategory);
                 if (button.shouldShow)
                     this.actionsBox.add_child(button);
+                else
+                    button.destroy();
             }
         }
 

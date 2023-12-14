@@ -131,6 +131,8 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.BUTTON, false);
             if (shortcutMenuItem.shouldShow)
                 this.shortcutsBox.add_child(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         let leaveButton;

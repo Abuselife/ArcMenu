@@ -166,6 +166,8 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
                 this.shortcutsBox.add_child(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         let powerOptionsDisplay;

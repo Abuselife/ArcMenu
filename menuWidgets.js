@@ -1161,10 +1161,10 @@ export class ShortcutMenuItem extends BaseMenuItem {
         this._displayType = displayType;
         this.isContainedInCategory = isContainedInCategory;
 
-        let {name} = itemData;
+        let name = itemData.name ?? '';
         const {icon, id} = itemData;
         this._command = id;
-        this.iconName = icon;
+        this.iconName = icon ?? '';
 
         const shortcutIconType = this._settings.get_enum('shortcut-icon-type');
         if (shortcutIconType === Constants.CategoryIconType.FULL_COLOR)

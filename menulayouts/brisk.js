@@ -141,6 +141,8 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
                 const item = this.createMenuItem(extraShortcuts[i], Constants.DisplayType.LIST, isContainedInCategory);
                 if (item.shouldShow)
                     this.actionsBox.add_child(item);
+                else
+                    item.destroy();
             }
         }
 

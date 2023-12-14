@@ -52,6 +52,8 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
             Constants.DisplayType.BUTTON, false);
         if (settingsButton.shouldShow)
             this.actionsBox.add_child(settingsButton);
+        else
+            settingsButton.destroy();
 
         let powerOptionsBox;
         const powerDisplayStyle = this._settings.get_enum('power-display-style');

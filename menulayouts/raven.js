@@ -144,6 +144,8 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.GRID, false);
             if (shortcutMenuItem.shouldShow)
                 this.appShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         this._updateWidgets();

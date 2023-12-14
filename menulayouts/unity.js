@@ -136,6 +136,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.GRID, false);
             if (shortcutMenuItem.shouldShow)
                 this.appShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         this._settings.connectObject('changed::unity-layout-extra-shortcuts', () => this._createExtraButtons(), this);
@@ -193,6 +195,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
                 const item = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON, isContainedInCategory);
                 if (item.shouldShow)
                     this.actionsBox.add_child(item);
+                else
+                    item.destroy();
             }
         }
     }

@@ -151,6 +151,8 @@ export const Layout = class AzLayout extends BaseMenuLayout {
                     isContainedInCategory);
                 if (button.shouldShow)
                     this.actionsBox.add_child(button);
+                else
+                    button.destroy();
             }
         }
 

@@ -96,6 +96,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
                 Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
                 this.applicationShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         const directoryShortcutsList = this._settings.get_value('directory-shortcuts').deep_unpack();
@@ -152,6 +154,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
                     isContainedInCategory);
                 if (button.shouldShow)
                     this.actionsBox.add_child(button);
+                else
+                    button.destroy();
             }
         }
 

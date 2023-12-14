@@ -151,6 +151,8 @@ export const Layout = class MintLayout extends BaseMenuLayout {
                 const item = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON, isContainedInCategory);
                 if (item.shouldShow)
                     this.actionsBox.add_child(item);
+                else
+                    item.destroy();
             }
         }
     }

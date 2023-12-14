@@ -186,6 +186,8 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
                 Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
                 this.applicationShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         const directoryShortcutsList = this._settings.get_value('directory-shortcuts').deep_unpack();
