@@ -1191,10 +1191,10 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     createLabelRow(title) {
         const labelRow = new St.BoxLayout({
-            style: 'padding: 9px 12px;',
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
-            style_class: 'popup-menu-item',
+            style: 'padding-top: 9px; padding-bottom: 9px;',
+            style_class: 'popup-menu-item arcmenu-menu-item',
             reactive: true,
             track_hover: false,
             can_focus: false,

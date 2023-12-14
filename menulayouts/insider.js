@@ -91,6 +91,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         this._pinnedAppsGrid.layout_manager.set({
             column_spacing: 0,
             row_spacing: 0,
+            halign: Clutter.ActorAlign.FILL,
         });
 
         this._settings.connectObject('changed::insider-layout-extra-shortcuts', () => this._createExtraButtons(), this);
@@ -188,9 +189,6 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         this.pinnedAppsBox = new St.BoxLayout({vertical: true});
         this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
 
-        const height = this._settings.get_int('menu-height');
-        pinnedAppsPopupBox.style = `height: ${height}px;`;
-
         this.displayPinnedApps();
         this.subMenuManager.addMenu(this.pinnedAppsMenu);
         this.pinnedAppsMenu.actor.hide();
@@ -220,6 +218,10 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             x += rise;
 
         Main.layoutManager.setDummyCursorGeometry(x, y, 0, 0);
+
+        const height = this._settings.get_int('menu-height');
+        this.pinnedAppsMenu.box.style = `height: ${height}px;`;
+
         this.pinnedAppsMenu.toggle();
         if (this.pinnedAppsMenu.isOpen) {
             this.activeMenuItem = this.backButton;

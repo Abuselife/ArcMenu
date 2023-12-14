@@ -1870,12 +1870,17 @@ export class PinnedAppsFolderMenuItem extends DraggableMenuItem {
         this._entry.clutter_text.connect('activate', () => {
             this._showFolderLabel();
         });
+        this._entry.clutter_text.connect('key-focus-out', () => {
+            const hasKeyFocus = this._entry.clutter_text.has_key_focus();
+            if (!hasKeyFocus && this._editButton.checked)
+                this._showFolderLabel();
+        });
 
         stack.add_child(this._entry);
 
         // Edit button
         this._editButton = new St.Button({
-            style_class: 'edit-folder-button',
+            style_class: 'icon-button',
             button_mask: St.ButtonMask.ONE,
             toggle_mode: true,
             reactive: true,
@@ -1898,6 +1903,11 @@ export class PinnedAppsFolderMenuItem extends DraggableMenuItem {
             source: this._editButton,
             coordinate: Clutter.BindCoordinate.SIZE,
         }));
+
+        this._subMenuPopup.connect('open-state-changed', (menu, isOpen) => {
+            if (!isOpen)
+                this._showFolderLabel();
+        });
     }
 
     _switchActor(from, to) {
@@ -1942,8 +1952,7 @@ export class PinnedAppsFolderMenuItem extends DraggableMenuItem {
 
         const pinnedAppsList = this._settings.get_value('pinned-apps').deepUnpack();
         const parent = this.get_parent();
-        const layoutManager = parent.layout_manager;
-        let index = layoutManager.getChildIndex(this);
+        let index = parent.getItemPosition(this);
         pinnedAppsList[index].name = newFolderName;
         this._settings.set_value('pinned-apps', new GLib.Variant('aa{ss}', pinnedAppsList));
     }
@@ -2531,7 +2540,7 @@ export class FolderDialog extends PopupMenu.PopupMenu {
         this._arcMenu = this._menuLayout.arcMenu;
 
         this.actor.add_style_class_name('popup-menu arcmenu-menu');
-        this.box.add_style_class_name('app-folder-dialog');
+        this.box.add_style_class_name('arcmenu-folder-dialog');
         this.connect('open-state-changed', this._subMenuOpenStateChanged.bind(this));
         this._menuLayout.subMenuManager.addMenu(this);
         Main.uiGroup.add_child(this.actor);

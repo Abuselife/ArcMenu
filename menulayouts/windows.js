@@ -36,6 +36,12 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             pinned_apps_icon_size: Constants.LARGE_ICON_SIZE,
         });
 
+        this._pinnedAppsGrid.layout_manager.set({
+            column_spacing: 10,
+            row_spacing: 10,
+            halign: Clutter.ActorAlign.CENTER,
+        });
+
         this.activeCategoryType = Constants.CategoryType.HOME_SCREEN;
 
         this.actionsBox = new St.BoxLayout({
@@ -70,6 +76,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.pinnedAppsBox = new St.BoxLayout({
             vertical: true,
             x_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
         });
         this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
 
@@ -79,7 +86,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.applicationsBox = new St.BoxLayout({vertical: true});
         this.applicationsScrollBox = this._createScrollBox({
             x_expand: false,
-            y_expand: false,
+            y_expand: true,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
@@ -177,7 +184,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         let menuWidth = this.default_menu_width + widthAdjustment;
         // Set a 300px minimum limit for the menu width
         menuWidth = Math.max(300, menuWidth);
-        this.pinnedAppsScrollBox.style = `width: ${menuWidth}px; margin-left: 6px;`;
+        this.pinnedAppsScrollBox.style = `width: ${menuWidth}px;`;
         this.menu_width = menuWidth;
 
         if (setDefaultMenuView)
@@ -270,9 +277,6 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
         computerBox.add_child(this.externalDevicesBox);
 
-        const height = this._settings.get_int('menu-height');
-        extrasMenuPopupBox.style = `height: ${height}px;`;
-
         this.subMenuManager.addMenu(this.extrasMenu);
         this.extrasMenu.actor.hide();
         Main.uiGroup.add_child(this.extrasMenu.actor);
@@ -300,6 +304,10 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             x += rise;
 
         Main.layoutManager.setDummyCursorGeometry(x, y, 0, 0);
+
+        const height = this._settings.get_int('menu-height');
+        this.extrasMenu.box.style = `height: ${height}px;`;
+
         this.extrasMenu.toggle();
         if (this.extrasMenu.isOpen) {
             this.activeMenuItem = this.backButton;

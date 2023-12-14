@@ -314,11 +314,6 @@ export const IconGridLayout = GObject.registerClass({
     }
 
     getDropTarget(x, y) {
-        const [childWidth, childHeight] = this._getChildrenMaxSize();
-        const leftDividerLeeway = Math.round(childWidth / 5);
-        const rightDividerLeeway = Math.round(childWidth / 5);
-        const topDividerLeeway = Math.round(childHeight / 5);
-        const bottomDividerLeeway = Math.round(childHeight / 5);
         const emptySpace = 5;
 
         const isRtl = Clutter.get_default_text_direction() === Clutter.TextDirection.RTL;
@@ -373,8 +368,12 @@ export const IconGridLayout = GObject.registerClass({
                     continue;
             }
 
-            let dragLocation;
+            const leftDividerLeeway = Math.round(item.get_preferred_width(-1)[1] / 5);
+            const rightDividerLeeway = Math.round(item.get_preferred_width(-1)[1] / 5);
+            const topDividerLeeway = Math.round(item.get_preferred_height(-1)[1] / 5);
+            const bottomDividerLeeway = Math.round(item.get_preferred_height(-1)[1] / 5);
 
+            let dragLocation;
             if (!singleColumnGrid && x < childBox.x1 + leftDividerLeeway)
                 dragLocation = DragLocation.START_EDGE;
             else if (!singleColumnGrid && x > childBox.x2 - rightDividerLeeway)
