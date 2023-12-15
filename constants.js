@@ -206,6 +206,7 @@ export const MenuSettingsListType = {
     EXTRA_CATEGORIES: 5,
     QUICK_LINKS: 6,
     CONTEXT_MENU: 7,
+    FOLDER_PINNED_APPS: 8,
 };
 
 export const MenuButtonAppearance = {

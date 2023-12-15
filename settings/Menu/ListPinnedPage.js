@@ -11,6 +11,41 @@ import {SubPage} from './SubPage.js';
 
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+/**
+ *
+ * @param {string} schema
+ * @param {string} path
+ */
+function getSettings(schema, path) {
+    const extension = ExtensionPreferences.lookupByURL(import.meta.url);
+    const schemaDir = extension.dir.get_child('schemas');
+    let schemaSource;
+    if (schemaDir.query_exists(null)) {
+        schemaSource = Gio.SettingsSchemaSource.new_from_directory(
+            schemaDir.get_path(),
+            Gio.SettingsSchemaSource.get_default(),
+            false
+        );
+    } else {
+        schemaSource = Gio.SettingsSchemaSource.get_default();
+    }
+
+    const schemaObj = schemaSource.lookup(schema, true);
+    if (!schemaObj) {
+        log(
+            `Schema ${schema} could not be found for extension ${
+                extension.metadata.uuid}. Please check your installation.`
+        );
+        return null;
+    }
+
+    const args = {settings_schema: schemaObj};
+    if (path)
+        args.path = path;
+
+    return new Gio.Settings(args);
+}
+
 export const ListPinnedPage = GObject.registerClass(
 class ArcMenuListPinnedPage extends SubPage {
     _init(settings, params) {
@@ -39,6 +74,13 @@ class ArcMenuListPinnedPage extends SubPage {
         } else if (this.list_type === Constants.MenuSettingsListType.EXTRA_SHORTCUTS) {
             this.settingString = this.setting_string;
             addMoreTitle = _('Add More Shortcuts');
+        } else if (this.list_type === Constants.MenuSettingsListType.FOLDER_PINNED_APPS) {
+            addMoreTitle = _('Add More Apps');
+            const folderSchema = `${this._settings.schema_id}.pinned-apps-folders`;
+            const folderPath = `${this._settings.path}pinned-apps-folders/${this.setting_string}/`;
+            this.settingString = 'pinned-apps';
+            this._settings = getSettings(folderSchema, folderPath);
+            this.restoreDefaultsButton.visible = false;
         }
 
         const shortcutsArray = this._settings.get_value(this.settingString).deep_unpack();
@@ -199,7 +241,6 @@ class ArcMenuListPinnedPage extends SubPage {
             allow_modify: true,
             allow_remove: true,
         });
-        row.activatable_widget = editEntryButton;
 
         this._setRowData(row, shortcutData);
 
@@ -236,7 +277,28 @@ class ArcMenuListPinnedPage extends SubPage {
             this.saveSettings();
         });
 
-        row.add_suffix(editEntryButton);
+
+        if (shortcutData.isFolder) {
+            row.activatable = true;
+            editEntryButton.css_classes = ['flat'];
+            row.add_suffix(editEntryButton);
+            const goNextImage = new Gtk.Image({
+                gicon: Gio.icon_new_for_string('go-next-symbolic'),
+                valign: Gtk.Align.CENTER,
+            });
+            row.add_suffix(goNextImage);
+            row.connect('activated', () => {
+                const folderSubpage = new ListPinnedPage(this._settings, {
+                    title: shortcutData.name,
+                    setting_string: shortcutData.id,
+                    list_type: Constants.MenuSettingsListType.FOLDER_PINNED_APPS,
+                });
+                this.get_root().push_subpage(folderSubpage);
+            });
+        } else {
+            row.add_suffix(editEntryButton);
+            row.activatable_widget = editEntryButton;
+        }
         this.frameRows.push(row);
         this.frame.add(row);
     }
@@ -255,7 +317,8 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
         this._dialogType = dialogType;
         this.settingString = settingString;
 
-        if (this._dialogType === Constants.MenuSettingsListType.PINNED_APPS)
+        if (this._dialogType === Constants.MenuSettingsListType.PINNED_APPS ||
+            this._dialogType === Constants.MenuSettingsListType.FOLDER_PINNED_APPS)
             super._init(_('Add to your Pinned Apps'), parent);
         else if (this._dialogType === Constants.MenuSettingsListType.EXTRA_SHORTCUTS)
             super._init(_('Add to your Extra Shortcuts'), parent);
@@ -270,7 +333,8 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
 
         const extension = ExtensionPreferences.lookupByURL(import.meta.url);
 
-        if (this._dialogType === Constants.MenuSettingsListType.PINNED_APPS) {
+        if (this._dialogType === Constants.MenuSettingsListType.PINNED_APPS  ||
+            this._dialogType === Constants.MenuSettingsListType.FOLDER_PINNED_APPS) {
             const extraItem = [[_('ArcMenu Settings'), `${extension.path}/${Constants.ArcMenuLogoSymbolic}`,
                 Constants.ShortcutCommands.ARCMENU_SETTINGS]];
             this._loadExtraCategories(extraItem);
@@ -416,7 +480,6 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
                 });
 
                 frameRow.shortcutData = {
-                    name: allApps[i].get_display_name(),
                     id: allApps[i].get_id(),
                 };
 
@@ -484,12 +547,18 @@ class ArcMenuAddCustomLinkDialogWindow extends PW.DialogWindow {
     _init(settings, parent, dialogType, shortcutData = null) {
         let title = _('Add a Custom Shortcut');
 
-        const isPinnedApp = dialogType === Constants.MenuSettingsListType.PINNED_APPS;
+        const isPinnedApp = dialogType === Constants.MenuSettingsListType.PINNED_APPS ||
+                            dialogType === Constants.MenuSettingsListType.FOLDER_PINNED_APPS;
+
+        let onlyNameChanges = false;
         if (shortcutData !== null) {
-            if (isPinnedApp)
+            if (isPinnedApp) {
+                if (shortcutData.isFolder)
+                    onlyNameChanges = true;
                 title = _('Edit Pinned App');
-            else
+            } else {
                 title = _('Edit Shortcut');
+            }
         }
 
         super._init(_(title), parent);
@@ -513,6 +582,7 @@ class ArcMenuAddCustomLinkDialogWindow extends PW.DialogWindow {
 
         const iconFrameRow = new Adw.ActionRow({
             title: _('Icon'),
+            visible: !onlyNameChanges,
         });
         const iconEntry = new Gtk.Entry({
             valign: Gtk.Align.CENTER,
@@ -560,6 +630,7 @@ class ArcMenuAddCustomLinkDialogWindow extends PW.DialogWindow {
 
         const cmdFrameRow = new Adw.ActionRow({
             title: this._dialogType === Constants.MenuSettingsListType.DIRECTORIES ? _('Directory') : _('Command'),
+            visible: !onlyNameChanges,
         });
 
         const cmdEntry = new Gtk.Entry({
@@ -580,6 +651,8 @@ class ArcMenuAddCustomLinkDialogWindow extends PW.DialogWindow {
             nameEntry.text = this.shortcutData.name ?? '';
             iconEntry.text = this.shortcutData.icon ?? '';
             cmdEntry.text = this.shortcutData.id ?? '';
+        } else {
+            this.shortcutData = {};
         }
 
         addButton.connect('clicked', () => {
