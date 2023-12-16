@@ -54,7 +54,9 @@ ArcMenu is provided free of charge. If you enjoy using ArcMenu and wish to help 
 
 ### History
 
-ArcMenu initially started as a fork of the Zorin OS menu extension. The original ArcMenu project can be found [here](https://gitlab.com/LinxGem33/Arc-Menu). Over time, ArcMenu has undergone significant modifications and enhancements, resulting in an entirely new and unique codebase.
+ArcMenu was first released in 2017 by [AndyC](https://gitlab.com/LinxGem33). The original ArcMenu project can be found [here](https://gitlab.com/LinxGem33/Arc-Menu).
+
+In 2017, ArcMenu _started_ as a fork of the Zorin menu extension by Zorin OS. As it's own separate project, ArcMenu rapidly began developing innovative features and quickly diverged away from Zorin menu thanks to the works of [AndyC](https://gitlab.com/LinxGem33) (2017 - 2020), [AndrewZaech](https://gitlab.com/AndrewZaech) (2019 - current), [Alexander Rüedlinger](https://github.com/lexruee) (2017), and other contributors. ArcMenu has been rewritten from the ground up since it's inception and has it's own separate, original, and unique code base, unrelated to that of Zorin menu.
 
 -----
 
