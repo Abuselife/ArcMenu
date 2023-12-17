@@ -97,7 +97,8 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this.actionsContainerBox = new St.BoxLayout({

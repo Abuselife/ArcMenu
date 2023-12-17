@@ -85,7 +85,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this._pinnedAppsGrid.layout_manager.set({
@@ -187,7 +188,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         pinnedAppsPopupBox.add_child(this.pinnedAppsScrollBox);
 
         this.pinnedAppsBox = new St.BoxLayout({vertical: true});
-        this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.pinnedAppsScrollBox.add_actor ? this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox) : this.pinnedAppsScrollBox.set_child(this.pinnedAppsBox);
 
         this.displayPinnedApps();
         this.subMenuManager.addMenu(this.pinnedAppsMenu);

@@ -760,7 +760,8 @@ export class PowerOptionsBox extends St.ScrollView {
             vertical,
             style: 'spacing: 6px;',
         });
-        this.add_actor(box);
+        // eslint-disable-next-line no-unused-expressions
+        this.add_actor ? this.add_actor(box) : this.set_child(box);
 
         const powerOptions = this._settings.get_value('power-options').deep_unpack();
         for (let i = 0; i < powerOptions.length; i++) {
@@ -1792,6 +1793,9 @@ export class PinnedAppsFolderMenuItem extends DraggableMenuItem {
         this._folderAppList = folderAppList;
         this.folderSettings = folderSettings;
 
+        this._name = pinnedAppData.name;
+        this._command = pinnedAppData.id;
+
         this.appList = [];
 
         this._subMenuPopup = new FolderDialog(this, this._menuLayout);
@@ -2000,6 +2004,11 @@ export class PinnedAppsFolderMenuItem extends DraggableMenuItem {
             const pinnedAppsMenuItem = new PinnedAppsMenuItem(this._menuLayout, pinnedApp,
                 Constants.DisplayType.GRID, this.isContainedInCategory);
 
+            if (!pinnedAppsMenuItem.shouldShow) {
+                pinnedAppsMenuItem.destroy();
+                continue;
+            }
+
             pinnedAppsMenuItem.folderSettings = this.folderSettings;
             pinnedAppsMenuItem.disableAcceptDrop = true;
             pinnedAppsMenuItem.folderId = this._command;
@@ -2182,6 +2191,7 @@ export class PinnedAppsMenuItem extends DraggableMenuItem {
         } else {
             this.add_child(this.label);
         }
+        this.setShouldShow();
     }
 
     updateData(pinnedAppData) {
@@ -2210,6 +2220,7 @@ export class PinnedAppsMenuItem extends DraggableMenuItem {
 
         this.label.text = _(this._name);
         this._updateIcon();
+        this.setShouldShow();
     }
 
     createIcon() {
@@ -2572,7 +2583,8 @@ export class FolderDialog extends PopupMenu.PopupMenu {
             y_align: Clutter.ActorAlign.START,
         });
         this._box.add_child(this._grid);
-        this._scrollView.add_actor(this._box);
+        // eslint-disable-next-line no-unused-expressions
+        this._scrollView.add_actor ? this._scrollView.add_actor(this._box) : this._scrollView.set_child(this._box);
 
         this.box.add_child(this._scrollView);
         this.box.set({

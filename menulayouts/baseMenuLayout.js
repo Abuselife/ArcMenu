@@ -141,6 +141,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 : Clutter.ActorAlign.CENTER,
             column_spacing: this.column_spacing,
             row_spacing: this.row_spacing,
+            accept_drop: true,
         });
 
         this.connect('destroy', () => this._onDestroy());
@@ -266,6 +267,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this._createExtraButtons();
         if (this._createExtraShortcuts)
             this._createExtraShortcuts();
+
+        this.loadPinnedApps();
 
         this.setDefaultMenuView();
     }
@@ -701,10 +704,11 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 item.updateData(pinnedAppData);
             } else {
                 item = this._createPinnedAppItem(pinnedAppData);
-                this.pinnedAppsMap.set(id, item);
+                if (item.shouldShow)
+                    this.pinnedAppsMap.set(id, item);
             }
-
-            this.pinnedAppsArray.push(item);
+            if (item.shouldShow)
+                this.pinnedAppsArray.push(item);
         });
         return this.pinnedAppsArray;
     }

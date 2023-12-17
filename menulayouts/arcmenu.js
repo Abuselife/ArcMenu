@@ -71,7 +71,8 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.navigateBox = new St.BoxLayout({
             vertical: true,
@@ -122,7 +123,8 @@ export const Layout = class ArcMenuLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        this.shortcutsScrollBox.add_actor(this.shortcutsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.shortcutsScrollBox.add_actor ? this.shortcutsScrollBox.add_actor(this.shortcutsBox) : this.shortcutsScrollBox.set_child(this.shortcutsBox);
         this.rightBox.add_child(this.shortcutsScrollBox);
 
         // Add place shortcuts to menu (Home,Documents,Downloads,Music,Pictures,Videos)

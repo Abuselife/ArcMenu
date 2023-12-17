@@ -213,12 +213,15 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         });
         creditsPage.add(historyGroup);
 
-        const historyText = 'ArcMenu initially started as a fork of the Zorin OS menu extension. ' +
-                            'Over time, ArcMenu has undergone significant modifications and enhancements, ' +
-                            'resulting in an entirely new and unique codebase.';
+        const historyText = '<span size="small">ArcMenu was first released in 2017 by Andy C. The original ArcMenu project can be found <a href="https://gitlab.com/LinxGem33/Arc-Menu">here</a>.\n\n' +
+                            'In 2017, ArcMenu started as a fork of the Zorin menu extension by Zorin OS. ' +
+                            "As it's own separate project, ArcMenu rapidly began developing innovative features and quickly diverged " +
+                            'away from Zorin menu thanks to the works of Andy C (2017 - 2020), Andrew Zaech (2019 - current), Alexander Rüedlinger (2017), and other contributors. ' +
+                            "ArcMenu has been rewritten from the ground up since it's inception and has it's own separate, original, and unique code base, unrelated to that of Zorin menu.</span>";
 
         const historyRow = new Adw.ActionRow({
-            subtitle: historyText,
+            title: historyText,
+            use_markup: true,
         });
         historyGroup.add(historyRow);
 

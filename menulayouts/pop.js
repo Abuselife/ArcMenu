@@ -93,7 +93,8 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.foldersContainer = new St.BoxLayout({
             vertical: true,

@@ -179,6 +179,10 @@ class ArcMenuListPinnedPage extends SubPage {
         });
 
         this._settings.set_value(this.settingString, new GLib.Variant('aa{ss}', array));
+
+        // If in folder pinned app subpage, pop the subpage when no pinned apps left
+        if (this.list_type === Constants.MenuSettingsListType.FOLDER_PINNED_APPS && array.length === 0)
+            this.get_root().pop_subpage();
     }
 
     _setRowData(row, shortcutData) {
@@ -276,7 +280,6 @@ class ArcMenuListPinnedPage extends SubPage {
 
             this.saveSettings();
         });
-
 
         if (shortcutData.isFolder) {
             row.activatable = true;

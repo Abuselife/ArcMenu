@@ -49,7 +49,8 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
             vscrollbar_policy: St.PolicyType.AUTOMATIC,
         });
         this._boxPointer.bin.set_child(this._scrollBox);
-        this._scrollBox.add_actor(this.box);
+        // eslint-disable-next-line no-unused-expressions
+        this._scrollBox.add_actor ? this._scrollBox.add_actor(this.box) : this._scrollBox.set_child(this.box);
 
         Main.uiGroup.add_child(this.actor);
         this._menuLayout.contextMenuManager.addMenu(this);

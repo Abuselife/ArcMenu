@@ -89,7 +89,8 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsBox = new St.BoxLayout({vertical: true});
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.navigateBoxContainer = new St.BoxLayout({
             x_expand: true,

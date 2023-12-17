@@ -104,7 +104,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.set({
             x_expand: false,
-            y_expand: false,
         });
 
         this.add_style_class_name('arcmenu-panel-menu');

@@ -78,7 +78,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
         });
-        this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.pinnedAppsScrollBox.add_actor ? this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox) : this.pinnedAppsScrollBox.set_child(this.pinnedAppsBox);
 
         this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
@@ -91,7 +92,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this.subMainBox.add_child(this.applicationsScrollBox);
 
         this.subMainBox.add_child(this.searchEntry);
@@ -265,7 +267,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         extrasMenuPopupBox.add_child(this.computerScrollBox);
 
         const computerBox = new St.BoxLayout({vertical: true});
-        this.computerScrollBox.add_actor(computerBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.computerScrollBox.add_actor ? this.computerScrollBox.add_actor(computerBox) : this.computerScrollBox.set_child(computerBox);
 
         computerBox.add_child(this.createLabelRow(_('Application Shortcuts')));
         for (let i = 0; i < this.applicationShortcuts.length; i++)
@@ -347,7 +350,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             const item = frequentAppsList[i];
             if (item.get_parent())
                 item.get_parent().remove_child(item);
-            this.applicationsBox.add_actor(item);
+            this.applicationsBox.add_child(item);
             if (!activeMenuItemSet) {
                 activeMenuItemSet = true;
                 this.activeMenuItem = item;

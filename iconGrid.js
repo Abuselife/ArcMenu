@@ -3,6 +3,10 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 
+import {ArcMenuManager} from './arcmenuManager.js';
+import * as MW from './menuWidgets.js';
+
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Params from 'resource:///org/gnome/shell/misc/params.js';
 
 export const DragLocation = {
@@ -418,6 +422,9 @@ export const IconGridLayout = GObject.registerClass({
 export const IconGrid = GObject.registerClass(
 class IconGrid extends St.Widget {
     _init(layoutParams = {}) {
+        const acceptDrop = layoutParams.accept_drop;
+        delete layoutParams.accept_drop;
+
         layoutParams = Params.parse(layoutParams, {
             columns: 1,
             column_spacing: 0,
@@ -434,6 +441,71 @@ class IconGrid extends St.Widget {
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
         });
+
+        this._settings = ArcMenuManager.settings;
+
+        // only need acceptDrop for the main pinned-apps grid
+        if (acceptDrop) {
+            // DND requires this to be set
+            this._delegate = this;
+        }
+    }
+
+    _canAccept(source) {
+        if (!(source instanceof MW.DraggableMenuItem))
+            return false;
+
+        if (this.contains(source))
+            return false;
+
+        if (!source.folderId)
+            return false;
+
+        const pinnedAppsList = this._settings.get_value('pinned-apps').deepUnpack();
+        for (let i = 0; i < pinnedAppsList.length; i++) {
+            if (pinnedAppsList[i].id === source.pinnedAppData.id)
+                return false;
+        }
+
+        return true;
+    }
+
+    handleDragOver(source, _actor, _x, _y) {
+        if (!this._canAccept(source))
+            return DND.DragMotionResult.CONTINUE;
+
+        return DND.DragMotionResult.MOVE_DROP;
+    }
+
+    acceptDrop(source, _actor, _x, _y) {
+        if (!this._canAccept(source))
+            return false;
+
+        const sourceData = source.pinnedAppData;
+
+        source.cancelActions();
+
+        // remove app from folder pinned app list
+        const parent = source.get_parent();
+        const layoutManager = parent.layout_manager;
+        let index = layoutManager.getItemPosition(source);
+
+        const folderSettings = source.folderSettings;
+
+        const sourceParentChildren = layoutManager.getChildren();
+        const folderPinnedApps = [];
+        for (let i = 0; i < sourceParentChildren.length; i++)
+            folderPinnedApps.push(sourceParentChildren[i].pinnedAppData);
+
+        folderPinnedApps.splice(index, 1);
+        folderSettings.set_value('pinned-apps', new GLib.Variant('aa{ss}', folderPinnedApps));
+
+        // add app to main pinned apps
+        const pinnedAppsList = this._settings.get_value('pinned-apps').deepUnpack();
+        pinnedAppsList.push(sourceData);
+        this._settings.set_value('pinned-apps', new GLib.Variant('aa{ss}', pinnedAppsList));
+
+        return true;
     }
 
     /**
