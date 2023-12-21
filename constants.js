@@ -355,7 +355,6 @@ export const DistroIcons = [
     {PATH: 'distro-nobara-symbolic', NAME: 'Nobara'},
     {PATH: 'distro-pardus-symbolic', NAME: 'Pardus'},
     {PATH: 'distro-cachyos-symbolic', NAME: 'CachyOS'},
-    {PATH: 'distro-oreon-symbolic', NAME: 'Oreon'},
 ];
 
 export const MenuLayout = {
