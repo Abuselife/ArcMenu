@@ -30,7 +30,7 @@ export const DBusService = class {
             try {
                 this._dbusExportedObject.export(connection, '/com/Extensions/ArcMenu');
             } catch (error) {
-                global.log(`ArcMenu Error - onBusAcquired export failed: ${error}`);
+                console.log(`ArcMenu Error - onBusAcquired export failed: ${error}`);
             }
         };
 
@@ -47,6 +47,48 @@ export const DBusService = class {
         Gio.bus_unown_name(this._ownerId);
     }
 };
+
+export function convertOldSetting(settings, oldSetting, newSetting) {
+    const data = settings.get_value(oldSetting).deepUnpack();
+
+    if (!data.length)
+        return;
+
+    const newDataArray = [];
+
+    if (oldSetting === 'pinned-app-list') {
+        settings.set_strv(oldSetting, []);
+
+        for (let i = 0; i < data.length; i += 3) {
+            const newData = {};
+            if (data[i])
+                newData.name = data[i];
+            if (data[i + 1])
+                newData.icon = data[i + 1];
+            if (data[i + 2])
+                newData.id = data[i + 2];
+
+            newDataArray.push(newData);
+        }
+    } else {
+        settings.set_value(oldSetting, new GLib.Variant('aas', []));
+
+        data.forEach(entry => {
+            const newData = {};
+            if (entry[0])
+                newData.name = entry[0];
+            if (entry[1])
+                newData.icon = entry[1];
+            if (entry[2])
+                newData.id = entry[2];
+
+            newDataArray.push(newData);
+        });
+    }
+
+    settings.set_value(newSetting, new GLib.Variant('aa{ss}', newDataArray));
+    console.log(`Converted ${oldSetting} to ${newSetting}`);
+}
 
 export function activateHibernateOrSleep(powerType) {
     const loginManager = getLoginManager();
@@ -148,6 +190,7 @@ export function convertToGridLayout(item) {
     item.add_style_class_name('ArcMenuIconGrid');
     item.set({
         vertical: true,
+        x_align: Clutter.ActorAlign.CENTER,
         tooltipLocation: Constants.TooltipLocation.BOTTOM_CENTERED,
         style: `width: ${width}px; height: ${height}px;`,
     });
@@ -256,6 +299,20 @@ export function getCategoryDetails(currentCategory) {
 
         gicon = categoryIcon;
 
+        const categoryIconType = ArcMenuManager.settings.get_enum('category-icon-type');
+        if (categoryIconType === Constants.CategoryIconType.SYMBOLIC) {
+            const iconTheme = new St.IconTheme();
+            const icon = iconTheme.lookup_icon(symbolicName, 26, St.IconLookupFlags.FORCE_SYMBOLIC);
+            if (icon) {
+                gicon = Gio.icon_new_for_string(symbolicName);
+            } else {
+                const filePath = `${fallbackIconDirectory}${symbolicIconFile}`;
+                const file = Gio.File.new_for_path(filePath);
+                if (file.query_exists(null))
+                    gicon = Gio.icon_new_for_string(`${fallbackIconDirectory}${symbolicIconFile}`);
+            }
+        }
+
         fallbackIcon = Gio.icon_new_for_string(`${fallbackIconDirectory}${symbolicIconFile}`);
         return [name, gicon, fallbackIcon];
     }
@@ -328,8 +385,8 @@ export function areaOfTriangle(p1, p2, p3) {
 }
 
 // modified from GNOME shell's ensureActorVisibleInScrollView()
-export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation.VERTICAL) {
-    let box = actor.get_allocation_box();
+export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation.VERTICAL, dummyBox = null) {
+    let box = dummyBox ? dummyBox : actor.get_allocation_box();
     let {y1} = box, {y2} = box;
     let {x1} = box, {x2} = box;
 
@@ -371,102 +428,43 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
     });
 }
 
-/**
- *
- * @param {*} parent the parent box
- * @returns {Array} the ordered list of children in the grid layout
- */
-export function getOrderedGridChildren(parent) {
-    const layoutManager = parent.layout_manager;
-
-    let x = 0, y = 0;
-    const columns = layoutManager.gridColumns;
-    const orderedList = [];
-    const children = parent.get_children();
-    for (let i = 0; i < children.length; i++) {
-        const child = layoutManager.get_child_at(x, y);
-        orderedList.push(child);
-        [x, y] = getNextGridPosition(x, y, columns);
-    }
-
-    return orderedList;
+export function getCategories(info) {
+    const categoriesStr = info.get_categories();
+    if (!categoriesStr)
+        return [];
+    return categoriesStr.split(';');
 }
 
-/**
- *
- * @param {int} x x coordination
- * @param {int} y y coordination
- * @param {int} columns amount of columns in the grid
- * @returns {[x, y]} [x, y] coordinates for the next menu item in the grid.
- */
-export function getNextGridPosition(x, y, columns) {
-    x++;
-    if (x === columns) {
-        y++;
-        x = 0;
-    }
-    return [x, y];
-}
+export function findBestFolderName(apps) {
+    const appInfos = apps.map(app => app.get_app_info());
 
-/**
- *
- * @param {*} item the menu item currently being dragged
- * @param {[x, y]} destLoc the destination location for the menu item being dragged
- */
-export function reorderMenuItems(item, destLoc) {
-    const parent = item.get_parent();
-    const layoutManager = parent.layout_manager;
-    const columns = layoutManager.gridColumns;
+    const categoryCounter = {};
+    const commonCategories = [];
 
-    let [x, y] = item.gridLocation;
-    const [destX, destY] = destLoc;
-    let child = true;
+    appInfos.reduce((categories, appInfo) => {
+        for (const category of getCategories(appInfo)) {
+            if (!(category in categoryCounter))
+                categoryCounter[category] = 0;
 
-    let direction;
-    if (destY > y || (destY === y && destX > x))
-        direction = Constants.Direction.GO_PREVIOUS;
-    else if (destY < y || (destY === y && destX < x))
-        direction = Constants.Direction.GO_NEXT;
+            categoryCounter[category] += 1;
 
-    const endOfColumn = direction === Constants.Direction.GO_NEXT ? -1 : columns;
-    const childrenToMove = [];
-    while (child) {
-        if (x === destX && y === destY)
-            break;
-
-        const [newX, newY] = [x, y];
-
-        if (direction === Constants.Direction.GO_PREVIOUS)
-            x++;
-        else
-            x--;
-
-        if (x === endOfColumn) {
-            if (direction === Constants.Direction.GO_PREVIOUS) {
-                y++;
-                x = 0;
-            } else {
-                y--;
-                x = columns - 1;
-            }
+            // If a category is present in all apps, its counter will
+            // reach appInfos.length
+            if (category.length > 0 &&
+                categoryCounter[category] === appInfos.length)
+                categories.push(category);
         }
+        return categories;
+    }, commonCategories);
 
-        child = layoutManager.get_child_at(x, y);
-        if (child) {
-            child.gridLocation = [newX, newY];
-            childrenToMove.push(child);
-        }
+    for (const category of commonCategories) {
+        const directory = `${category}.directory`;
+        const translated = Shell.util_get_translated_folder_name(directory);
+        if (translated !== null)
+            return translated;
     }
 
-    for (let i = 0; i < childrenToMove.length; i++) {
-        const childToMove = childrenToMove[i];
-        const [newX, newY] = childToMove.gridLocation;
-        parent.remove_child(childToMove);
-        layoutManager.attach(childToMove, newX, newY, 1, 1);
-    }
-    parent.remove_child(item);
-    layoutManager.attach(item, destX, destY, 1, 1);
-    item.gridLocation = [destX, destY];
+    return null;
 }
 
 export function openPrefs(uuid) {

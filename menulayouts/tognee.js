@@ -58,7 +58,8 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
         });
         this.appBox.add_child(this.applicationsScrollBox);
         this.applicationsBox = new St.BoxLayout({vertical: true});
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.navigateBox = new St.BoxLayout({
             vertical: true,
@@ -113,24 +114,27 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.shortcutsScrollBox.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
-        this.shortcutsScrollBox.add_actor(this.shortcutsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.shortcutsScrollBox.add_actor ? this.shortcutsScrollBox.add_actor(this.shortcutsBox) : this.shortcutsScrollBox.set_child(this.shortcutsBox);
         this.quickBox.add_child(this.shortcutsScrollBox);
 
         this._displayPlaces();
 
-        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
-        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
+        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack().length > 0;
+        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack().length > 0;
         if (haveDirectoryShortcuts && haveApplicationShortcuts) {
             const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                 Constants.SeparatorAlignment.HORIZONTAL);
             this.shortcutsBox.add_child(separator);
         }
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.BUTTON, false);
             if (shortcutMenuItem.shouldShow)
                 this.shortcutsBox.add_child(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         let leaveButton;
@@ -163,11 +167,11 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
     }
 
     _displayPlaces() {
-        const directoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack();
+        const directoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack();
         for (let i = 0; i < directoryShortcuts.length; i++) {
-            const directory = directoryShortcuts[i];
+            const directoryData = directoryShortcuts[i];
             const isContainedInCategory = false;
-            const placeMenuItem = this.createMenuItem(directory, Constants.DisplayType.BUTTON, isContainedInCategory);
+            const placeMenuItem = this.createMenuItem(directoryData, Constants.DisplayType.BUTTON, isContainedInCategory);
             this.shortcutsBox.add_child(placeMenuItem);
         }
     }
@@ -178,8 +182,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
 
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);

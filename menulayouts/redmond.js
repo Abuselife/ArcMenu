@@ -97,7 +97,8 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         mainBox.add_child(this.applicationsScrollBox);
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
@@ -123,14 +124,15 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        this.shortcutsScrollBox.add_actor(this.shortcutsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.shortcutsScrollBox.add_actor ? this.shortcutsScrollBox.add_actor(this.shortcutsBox) : this.shortcutsScrollBox.set_child(this.shortcutsBox);
         this.rightBox.add_child(this.shortcutsScrollBox);
 
         // Add place shortcuts to menu (Home,Documents,Downloads,Music,Pictures,Videos)
         this._displayPlaces();
 
-        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack().length > 0;
-        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack().length > 0;
+        const haveDirectoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack().length > 0;
+        const haveApplicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack().length > 0;
 
         // check to see if should draw separator
         const needsSeparator = haveDirectoryShortcuts &&
@@ -161,11 +163,13 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             externalDevicesBox.add_child(this._placesSections[id]);
         }
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
                 this.shortcutsBox.add_child(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         let powerOptionsDisplay;

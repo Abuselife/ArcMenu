@@ -5,6 +5,7 @@
   "name": "ArcMenu",
   "description": "Application Menu Extension for GNOME",
   "version": 52,
+  "version-name": "53.rc",
   "shell-version": [ "45" ],
   "url": "https://gitlab.com/arcmenu/ArcMenu",
   "donations": {

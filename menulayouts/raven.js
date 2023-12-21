@@ -6,6 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
+import {IconGrid} from '../iconGrid.js';
 import * as MW from '../menuWidgets.js';
 
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -109,7 +110,8 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this._widgetBox = new St.BoxLayout({
@@ -131,25 +133,20 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+        this.shortcutsGrid = new IconGrid({
+            halign: Clutter.ActorAlign.CENTER,
             column_spacing: this.column_spacing,
             row_spacing: this.row_spacing,
         });
-        this.shortcutsGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            layout_manager: layout,
-        });
-        layout.hookup_style(this.shortcutsGrid);
-
         this.shortcutsBox.add_child(this.shortcutsGrid);
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.GRID, false);
             if (shortcutMenuItem.shouldShow)
                 this.appShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
         this._updateWidgets();
@@ -220,7 +217,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             : monitorWorkArea.y;
 
         Main.layoutManager.setDummyCursorGeometry(positionX, positionY, 0, 0);
-        const scaleFactor = Main.layoutManager.monitors[monitorIndex].geometry_scale;
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         const screenHeight = monitorWorkArea.height;
 
         const height = Math.round(screenHeight / scaleFactor);
@@ -256,9 +253,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
 
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
-
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (categoryEnum === Constants.CategoryType.PINNED_APPS || !shouldShow)
                 continue;
 
@@ -276,13 +271,12 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
     }
 
     displayPinnedApps() {
-        if (this.activeCategoryType === Constants.CategoryType.HOME_SCREEN)
-            this._clearActorsFromBox(this.applicationsBox);
-        else
-            this._clearActorsFromBox();
-
         this.activeCategoryName = _('Pinned');
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
+
+        super.displayPinnedApps();
+        const label = this._createLabelWithSeparator(this.activeCategoryName);
+        this.applicationsBox.insert_child_at_index(label, 0);
+
         this.activeCategoryName = _('Shortcuts');
         this._displayAppList(this.appShortcuts, Constants.CategoryType.HOME_SCREEN, this.shortcutsGrid);
 
@@ -329,7 +323,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         }
     }
 
-    destroy() {
+    _onDestroy() {
         if (this._clocksItem)
             this._clocksItem.destroy();
         if (this._weatherItem)
@@ -343,6 +337,6 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         this.arcMenu.close();
         this.arcMenu._boxPointer.hide();
 
-        super.destroy();
+        super._onDestroy();
     }
 };

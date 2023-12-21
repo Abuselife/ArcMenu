@@ -16,6 +16,8 @@ import {RecentFilesManager} from '../recentFilesManager.js';
 import {SearchResults} from '../search.js';
 import * as Utils from '../utils.js';
 
+import {IconGrid} from '../iconGrid.js';
+
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const MAX_RECENT_FILES = 25;
@@ -126,18 +128,21 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this.searchEntry.connectObject('entry-key-press', this._onSearchEntryKeyPress.bind(this), this);
         }
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+        this.applicationsGrid = new IconGrid({
+            halign: this.display_type === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
+                : Clutter.ActorAlign.CENTER,
             column_spacing: this.column_spacing,
             row_spacing: this.row_spacing,
         });
-        this.applicationsGrid = new St.Widget({
-            x_expand: true,
-            x_align: this.display_type === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
+
+        this._pinnedAppsGrid = new IconGrid({
+            columns: 4,
+            halign: this.display_type === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
                 : Clutter.ActorAlign.CENTER,
-            layout_manager: layout,
+            column_spacing: this.column_spacing,
+            row_spacing: this.row_spacing,
+            accept_drop: true,
         });
-        layout.hookup_style(this.applicationsGrid);
 
         this.connect('destroy', () => this._onDestroy());
     }
@@ -199,6 +204,17 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         return width + gridIconPadding;
     }
 
+    _setGridColumns(grid) {
+        let columns = 1;
+        if (grid.layout_manager.forceColumns) {
+            columns = grid.layout_manager.forceColumns;
+        } else if (this.display_type === Constants.DisplayType.GRID) {
+            const iconWidth = this.getIconWidthFromSetting();
+            columns = this.getBestFitColumnsForGrid(iconWidth, grid);
+        }
+        grid.setColumns(columns);
+    }
+
     resetScrollBarPosition() {
         this.applicationsScrollBox?.vscroll.adjustment.set_value(0);
         this.categoriesScrollBox?.vscroll.adjustment.set_value(0);
@@ -251,6 +267,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this._createExtraButtons();
         if (this._createExtraShortcuts)
             this._createExtraShortcuts();
+
+        this.loadPinnedApps();
 
         this.setDefaultMenuView();
     }
@@ -481,7 +499,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 const icon = Gio.content_type_get_symbolic_icon(mimeType)?.to_string();
                 const isContainedInCategory = true;
 
-                const placeMenuItem = this.createMenuItem([name, icon, filePath],
+                const placeMenuItem = this.createMenuItem({name, icon, 'id': filePath},
                     Constants.DisplayType.LIST, isContainedInCategory);
                 placeMenuItem.setAsRecentFile(recentFile, () => {
                     try {
@@ -506,34 +524,34 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     _displayPlaces() {
-        const directoryShortcuts = this._settings.get_value('directory-shortcuts-list').deep_unpack();
+        const directoryShortcuts = this._settings.get_value('directory-shortcuts').deep_unpack();
         for (let i = 0; i < directoryShortcuts.length; i++) {
-            const directory = directoryShortcuts[i];
+            const directoryData = directoryShortcuts[i];
             const isContainedInCategory = false;
-            const placeMenuItem = this.createMenuItem(directory, Constants.DisplayType.LIST, isContainedInCategory);
+            const placeMenuItem = this.createMenuItem(directoryData, Constants.DisplayType.LIST, isContainedInCategory);
             if (placeMenuItem)
                 this.shortcutsBox.add_child(placeMenuItem);
         }
     }
 
-    createMenuItem(menuItemArray, displayType, isContainedInCategory) {
-        let [,, shortcutCommand] = menuItemArray;
-        const [shortcutName, shortcutIcon] = menuItemArray;
-        let app = Shell.AppSystem.get_default().lookup_app(shortcutCommand);
+    createMenuItem(itemData, displayType, isContainedInCategory) {
+        let {id} = itemData;
+        const {name, icon} = itemData;
+        let app = Shell.AppSystem.get_default().lookup_app(id);
 
         // Ubunutu 22.04 uses old version of GNOME settings
-        if (shortcutCommand === 'org.gnome.Settings.desktop' && !app) {
-            shortcutCommand = 'gnome-control-center.desktop';
-            app = Shell.AppSystem.get_default().lookup_app(shortcutCommand);
+        if (id === 'org.gnome.Settings.desktop' && !app) {
+            id = 'gnome-control-center.desktop';
+            app = Shell.AppSystem.get_default().lookup_app(id);
         }
 
         if (app)
-            return new MW.ShortcutMenuItem(this, menuItemArray, displayType, isContainedInCategory);
+            return new MW.ShortcutMenuItem(this, itemData, displayType, isContainedInCategory);
 
-        switch (shortcutCommand) {
+        switch (id) {
         case Constants.ShortcutCommands.SOFTWARE: {
-            const software = Utils.findSoftwareManager();
-            return new MW.ShortcutMenuItem(this, [shortcutName, shortcutIcon, software],
+            const softwareId = Utils.findSoftwareManager();
+            return new MW.ShortcutMenuItem(this, {id: softwareId, name, icon},
                 displayType, isContainedInCategory);
         }
         case Constants.ShortcutCommands.SUSPEND:
@@ -544,8 +562,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         case Constants.ShortcutCommands.HYBRID_SLEEP:
         case Constants.ShortcutCommands.HIBERNATE:
         case Constants.ShortcutCommands.SWITCH_USER: {
-            const item = new MW.ShortcutMenuItem(this, menuItemArray, displayType, isContainedInCategory);
-            item.powerType = Utils.getPowerTypeFromShortcutCommand(shortcutCommand);
+            const item = new MW.ShortcutMenuItem(this, itemData, displayType, isContainedInCategory);
+            item.powerType = Utils.getPowerTypeFromShortcutCommand(id);
             MW.bindPowerItemVisibility(item);
             return item;
         }
@@ -553,13 +571,13 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         case Constants.ShortcutCommands.OVERVIEW:
         case Constants.ShortcutCommands.SHOW_APPS:
         case Constants.ShortcutCommands.RUN_COMMAND:
-            return new MW.ShortcutMenuItem(this, menuItemArray, displayType, isContainedInCategory);
+            return new MW.ShortcutMenuItem(this, itemData, displayType, isContainedInCategory);
         default: {
-            const placeInfo = this._getPlaceInfo(shortcutCommand, shortcutName);
+            const placeInfo = this._getPlaceInfo(id, name);
             if (placeInfo)
                 return new MW.PlaceMenuItem(this, placeInfo, displayType, isContainedInCategory);
             else
-                return new MW.ShortcutMenuItem(this, menuItemArray, displayType, isContainedInCategory);
+                return new MW.ShortcutMenuItem(this, itemData, displayType, isContainedInCategory);
         }
         }
     }
@@ -608,42 +626,138 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         return new PlaceDisplay.PlaceInfo('special', Gio.File.new_for_path(path));
     }
 
-    loadPinnedApps() {
-        const pinnedApps = this._settings.get_strv('pinned-app-list');
+    getSettings(schema, path) {
+        const schemaDir = this.extension.dir.get_child('schemas');
+        let schemaSource;
+        if (schemaDir.query_exists(null)) {
+            schemaSource = Gio.SettingsSchemaSource.new_from_directory(
+                schemaDir.get_path(),
+                Gio.SettingsSchemaSource.get_default(),
+                false
+            );
+        } else {
+            schemaSource = Gio.SettingsSchemaSource.get_default();
+        }
 
-        this.pinnedAppsArray = null;
-        this.pinnedAppsArray = [];
+        const schemaObj = schemaSource.lookup(schema, true);
+        if (!schemaObj) {
+            log(
+                `Schema ${schema} could not be found for extension ${
+                    this.extension.metadata.uuid}. Please check your installation.`
+            );
+            return null;
+        }
 
+        const args = {settings_schema: schemaObj};
+        if (path)
+            args.path = path;
+
+        return new Gio.Settings(args);
+    }
+
+    _createPinnedAppItem(pinnedAppData) {
         const categoryMenuItem = this.categoryDirectories
             ? this.categoryDirectories.get(Constants.CategoryType.PINNED_APPS) : null;
         const isContainedInCategory = !!categoryMenuItem;
 
-        for (let i = 0; i < pinnedApps.length; i += 3) {
-            const pinnedAppData = [pinnedApps[i], pinnedApps[i + 1], pinnedApps[i + 2]];
-            const pinnedAppsMenuItem = new MW.PinnedAppsMenuItem(this, pinnedAppData,
+        let pinnedAppsMenuItem;
+        if (pinnedAppData.isFolder) {
+            const folderSchema = `${this._settings.schema_id}.pinned-apps-folders`;
+            const folderPath = `${this._settings.path}pinned-apps-folders/${pinnedAppData.id}/`;
+            try {
+                const folderSettings = this.getSettings(folderSchema, folderPath);
+
+                const folderAppList = folderSettings.get_value('pinned-apps').deepUnpack();
+                pinnedAppsMenuItem = new MW.PinnedAppsFolderMenuItem(this, pinnedAppData, folderSettings, folderAppList,
+                    this.display_type, isContainedInCategory);
+            } catch (e) {
+                log(`Error creating new pinned apps folder: ${e}`);
+                return null;
+            }
+        } else {
+            pinnedAppsMenuItem = new MW.PinnedAppsMenuItem(this, pinnedAppData,
                 this.display_type, isContainedInCategory);
-            pinnedAppsMenuItem.connectObject('pinned-apps-changed', () => {
-                const array = [];
-                for (let j = 0; j < this.pinnedAppsArray.length; j++) {
-                    array.push(this.pinnedAppsArray[j]._name);
-                    array.push(this.pinnedAppsArray[j]._icon);
-                    array.push(this.pinnedAppsArray[j]._command);
-                }
-                this._settings.set_strv('pinned-app-list', array);
-            }, this);
-            this.pinnedAppsArray.push(pinnedAppsMenuItem);
         }
 
-        if (categoryMenuItem) {
-            categoryMenuItem.appList = null;
-            categoryMenuItem.appList = [];
-            categoryMenuItem.appList = categoryMenuItem.appList.concat(this.pinnedAppsArray);
+        pinnedAppsMenuItem.connectObject('pinned-apps-changed', (_self, newPinnedAppsList) => {
+            this.pinnedAppsArray = newPinnedAppsList;
+            const array = [];
+            for (let j = 0; j < newPinnedAppsList.length; j++)
+                array.push(newPinnedAppsList[j].pinnedAppData);
+
+            this._settings.set_value('pinned-apps', new GLib.Variant('aa{ss}', array));
+        }, this);
+
+        return pinnedAppsMenuItem;
+    }
+
+    _loadPinnedApps() {
+        this.pinnedAppsArray = [];
+
+        const pinnedAppsList = this._settings.get_value('pinned-apps').deepUnpack();
+
+        pinnedAppsList.forEach(pinnedAppData => {
+            const id = pinnedAppData.id;
+
+            let item = this.pinnedAppsMap.get(id);
+            if (item) {
+                item.updateData(pinnedAppData);
+            } else {
+                item = this._createPinnedAppItem(pinnedAppData);
+                if (item.shouldShow)
+                    this.pinnedAppsMap.set(id, item);
+            }
+            if (item.shouldShow)
+                this.pinnedAppsArray.push(item);
+        });
+        return this.pinnedAppsArray;
+    }
+
+    _removePinnedApp(item) {
+        this.pinnedAppsMap.delete(item.pinnedAppData.id);
+        this._pinnedAppsGrid.removeItem(item);
+    }
+
+    loadPinnedApps() {
+        if (!this.pinnedAppsMap) {
+            this.pinnedAppsMap = new Map();
+            this.pinnedAppsArray = [];
+            this.activeCategoryType = Constants.CategoryType.PINNED_APPS;
         }
+
+        let oldPinnedApps = this.pinnedAppsArray;
+        let oldPinnedAppIds = this.pinnedAppsArray.map(item => item.pinnedAppData.id);
+
+        let newPinnedApps = this._loadPinnedApps();
+        let newPinnedAppIds = newPinnedApps.map(item => item.pinnedAppData.id);
+
+        let addedPinnedApps = newPinnedApps.filter(item => !oldPinnedAppIds.includes(item.pinnedAppData.id));
+        let removedPinnedApps = oldPinnedApps.filter(item => !newPinnedAppIds.includes(item.pinnedAppData.id));
+
+        // Remove old app icons
+        removedPinnedApps.forEach(item => {
+            this._removePinnedApp(item);
+            item.disconnectObject(this);
+            item.destroy();
+        });
+
+        // Add new app icons, or move existing ones
+        newPinnedApps.forEach(item => {
+            const index = this.pinnedAppsArray.indexOf(item);
+            const position = this._pinnedAppsGrid.getItemPosition(item);
+            if (addedPinnedApps.includes(item))
+                this._pinnedAppsGrid.addItem(item, index);
+            else if (position !== index)
+                this._pinnedAppsGrid.moveItem(item, index);
+        });
     }
 
     displayPinnedApps() {
-        this._clearActorsFromBox();
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
+        this.activeCategoryType = Constants.CategoryType.PINNED_APPS;
+        this._clearActorsFromBox(this.applicationsBox);
+
+        this.applicationsBox.add_child(this._pinnedAppsGrid);
+        this._setGridColumns(this._pinnedAppsGrid);
     }
 
     _redisplayPlaces(id) {
@@ -654,7 +768,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     _createPlaces(id) {
         const places = this.placesManager.get(id);
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         const haveApplicationShortcuts = applicationShortcuts.length > 0;
         const haveNetworkDevices = this.placesManager.get('network').length > 0;
         const haveExternalDevices = this.placesManager.get('devices').length > 0;
@@ -739,34 +853,26 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     _displayAppList(apps, category, grid) {
         this.activeCategoryType = category;
-        grid.remove_all_children();
-        let count = 0;
-        let top = -1;
-        let left = 0;
+        if (grid.removeAllItems)
+            grid.removeAllItems();
+        else
+            grid.remove_all_children();
+
         this._futureActiveItem = false;
         let currentCharacter;
         const alphabetizeAllPrograms = this._settings.get_boolean('alphabetize-all-programs') &&
             this.display_type === Constants.DisplayType.LIST;
-        const rtl = this.get_text_direction() === Clutter.TextDirection.RTL;
 
-        let columns = 1;
-        if (grid.layout_manager.forceGridColumns) {
-            columns = grid.layout_manager.forceGridColumns;
-        } else if (this.display_type === Constants.DisplayType.GRID) {
-            const iconWidth = this.getIconWidthFromSetting();
-            columns = this.getBestFitColumnsForGrid(iconWidth, grid);
-        }
-        grid.layout_manager.gridColumns = columns;
+        this._setGridColumns(grid);
 
         for (let i = 0; i < apps.length; i++) {
             const app = apps[i];
             let item;
-            let shouldShow = true;
 
             if (category === Constants.CategoryType.PINNED_APPS || category === Constants.CategoryType.HOME_SCREEN) {
                 item = app;
                 if (!item.shouldShow)
-                    shouldShow = false;
+                    continue;
             } else {
                 item = this.applicationsMap.get(app);
                 if (!item) {
@@ -779,39 +885,22 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             if (parent)
                 parent.remove_child(item);
 
-            if (shouldShow) {
-                if (!rtl && (count % columns === 0)) {
-                    top++;
-                    left = 0;
-                } else if (rtl && (left === 0)) {
-                    top++;
-                    left = columns;
+            if (alphabetizeAllPrograms && category === Constants.CategoryType.ALL_PROGRAMS) {
+                const appNameFirstChar = app.get_name().charAt(0).toLowerCase();
+                if (currentCharacter !== appNameFirstChar) {
+                    currentCharacter = appNameFirstChar;
+
+                    const label = this._createLabelWithSeparator(currentCharacter.toUpperCase());
+                    grid.appendItem(label);
                 }
-
-                if (alphabetizeAllPrograms && category === Constants.CategoryType.ALL_PROGRAMS) {
-                    const appNameFirstChar = app.get_name().charAt(0).toLowerCase();
-                    if (currentCharacter !== appNameFirstChar) {
-                        currentCharacter = appNameFirstChar;
-
-                        const label = this._createLabelWithSeparator(currentCharacter.toUpperCase());
-                        grid.layout_manager.attach(label, left, top, 1, 1);
-                        top++;
-                    }
-                }
-
-                grid.layout_manager.attach(item, left, top, 1, 1);
-                item.gridLocation = [left, top];
-
-                if (!rtl)
-                    left++;
-                else if (rtl)
-                    left--;
-                count++;
-
-                if (!this._futureActiveItem && grid === this.applicationsGrid)
-                    this._futureActiveItem = item;
             }
+
+            grid.appendItem(item);
+
+            if (!this._futureActiveItem && grid === this.applicationsGrid)
+                this._futureActiveItem = item;
         }
+
         if (this.applicationsBox && grid === this.applicationsGrid && !this.applicationsBox.contains(this.applicationsGrid))
             this.applicationsBox.add_child(this.applicationsGrid);
         if (this._futureActiveItem)
@@ -1075,6 +1164,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             overlay_scrollbars: true,
         });
 
+        scrollBox.vscroll.z_position = 1;
+
         const panAction = new Clutter.PanAction({interpolate: true});
         panAction.connect('pan', action => this._onPan(action, scrollBox));
         this.add_action(panAction);
@@ -1104,10 +1195,10 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     createLabelRow(title) {
         const labelRow = new St.BoxLayout({
-            style: 'padding: 9px 12px;',
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
-            style_class: 'popup-menu-item',
+            style: 'padding-top: 9px; padding-bottom: 9px;',
+            style_class: 'popup-menu-item arcmenu-menu-item',
             reactive: true,
             track_hover: false,
             can_focus: false,

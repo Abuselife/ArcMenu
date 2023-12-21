@@ -89,7 +89,8 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsBox = new St.BoxLayout({vertical: true});
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.navigateBoxContainer = new St.BoxLayout({
             x_expand: true,
@@ -179,16 +180,18 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
             this.add_child(this.navigateBoxContainer);
         }
 
-        const applicationShortcutsList = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcutsList = this._settings.get_value('application-shortcuts').deep_unpack();
         this.applicationShortcuts = [];
         for (let i = 0; i < applicationShortcutsList.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcutsList[i],
                 Constants.DisplayType.LIST, false);
             if (shortcutMenuItem.shouldShow)
                 this.applicationShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
-        const directoryShortcutsList = this._settings.get_value('directory-shortcuts-list').deep_unpack();
+        const directoryShortcutsList = this._settings.get_value('directory-shortcuts').deep_unpack();
         this._loadPlaces(directoryShortcutsList);
 
         this.externalDevicesBox = new St.BoxLayout({
@@ -251,9 +254,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
-
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (categoryEnum === Constants.CategoryType.PINNED_APPS || !shouldShow)
                 continue;
 
@@ -309,8 +310,8 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         this.directoryShortcuts = [];
         for (let i = 0; i < directoryShortcutsList.length; i++) {
             const isContainedInCategory = false;
-            const directory = directoryShortcutsList[i];
-            const placeMenuItem = this.createMenuItem(directory, Constants.DisplayType.LIST, isContainedInCategory);
+            const directoryData = directoryShortcutsList[i];
+            const placeMenuItem = this.createMenuItem(directoryData, Constants.DisplayType.LIST, isContainedInCategory);
             this.directoryShortcuts.push(placeMenuItem);
         }
     }
@@ -425,7 +426,7 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
         }
     }
 
-    destroy() {
+    _onDestroy() {
         for (const obj of this._destroyableObjects)
             obj.destroy();
 
@@ -434,11 +435,11 @@ export const Layout = class PlasmaLayout extends BaseMenuLayout {
             item.destroy();
 
 
-        super.destroy();
+        super._onDestroy();
     }
 };
 
-class PlasmaMenuItem extends MW.ArcMenuPopupBaseMenuItem {
+class PlasmaMenuItem extends MW.BaseMenuItem {
     static {
         GObject.registerClass(this);
     }
@@ -547,7 +548,7 @@ class PlasmaCategoryHeader extends St.BoxLayout {
         });
         this._menuLayout = menuLayout;
 
-        this.backButton = new MW.ArcMenuPopupBaseMenuItem(this._menuLayout);
+        this.backButton = new MW.BaseMenuItem(this._menuLayout);
         this.backButton.set({
             x_expand: false,
             x_align: Clutter.ActorAlign.CENTER,

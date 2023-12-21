@@ -46,7 +46,8 @@ export const Layout = class MintLayout extends BaseMenuLayout {
             vertical: true,
             style: 'spacing: 10px;',
         });
-        this.actionsScrollBox.add_actor(this.actionsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.actionsScrollBox.add_actor ? this.actionsScrollBox.add_actor(this.actionsBox) : this.actionsScrollBox.set_child(this.actionsBox);
         this.add_child(this.actionsScrollBox);
 
         // contains searchbar, rightBox, leftBox
@@ -78,7 +79,8 @@ export const Layout = class MintLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
 
         this.leftBox = new St.BoxLayout({
@@ -103,7 +105,8 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         });
         this.leftBox.add_child(this.categoriesScrollBox);
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesScrollBox.add_actor(this.categoriesBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.categoriesScrollBox.add_actor ? this.categoriesScrollBox.add_actor(this.categoriesBox) : this.categoriesScrollBox.set_child(this.categoriesBox);
 
         this.searchEntry.style = 'margin: 0px;';
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');
@@ -123,7 +126,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
             this.rightPanelParentBox.add_child(this.searchEntry);
         }
 
-        this._settings.connectObject('changed::mint-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::mint-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();
@@ -134,7 +137,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
 
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
-        const extraButtons = this._settings.get_value('mint-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('mint-layout-extra-shortcuts').deep_unpack();
 
         if (extraButtons.length === 0)
             return;
@@ -142,7 +145,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         const isContainedInCategory = false;
 
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL);
@@ -151,6 +154,8 @@ export const Layout = class MintLayout extends BaseMenuLayout {
                 const item = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON, isContainedInCategory);
                 if (item.shouldShow)
                     this.actionsBox.add_child(item);
+                else
+                    item.destroy();
             }
         }
     }
@@ -177,8 +182,7 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);

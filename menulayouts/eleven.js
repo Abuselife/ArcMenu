@@ -3,10 +3,9 @@ import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
+import {IconGrid} from '../iconGrid.js';
 import * as MW from '../menuWidgets.js';
 
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -98,7 +97,8 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this.actionsContainerBox = new St.BoxLayout({
@@ -129,22 +129,22 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
             style: 'padding: 0px 25px;',
         });
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+        this.shortcutsGrid = new IconGrid({
+            halign: Clutter.ActorAlign.FILL,
             column_spacing: 10,
             row_spacing: 5,
-            column_homogeneous: true,
+            force_columns: 2,
         });
-        this.shortcutsGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.FILL,
-            layout_manager: layout,
-        });
-        layout.hookup_style(this.shortcutsGrid);
-        layout.forceGridColumns = 2;
         this.shortcutsBox.add_child(this.shortcutsGrid);
 
-        this._settings.connectObject('changed::eleven-extra-buttons', () => this._createExtraButtons(), this);
+        this.applicationsGrid.layout_manager.set({
+            force_columns: 1,
+            column_spacing: 5,
+            row_spacing: 5,
+        });
+        this.applicationsGrid.halign = Clutter.ActorAlign.FILL;
+
+        this._settings.connectObject('changed::eleven-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._settings.connectObject('changed::eleven-disable-frequent-apps', () => this.setDefaultMenuView(), this);
 
         this._createExtraButtons();
@@ -162,10 +162,10 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
         this.actionsBox.add_child(userMenuItem);
 
         const isContainedInCategory = false;
-        const extraButtons = this._settings.get_value('eleven-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('eleven-layout-extra-shortcuts').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
@@ -176,6 +176,8 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
                     isContainedInCategory);
                 if (button.shouldShow)
                     this.actionsBox.add_child(button);
+                else
+                    button.destroy();
             }
         }
 
@@ -205,14 +207,15 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
         if (mostUsed.length < 1)
             return;
 
-        const pinnedApps = this._settings.get_strv('pinned-app-list');
+        const pinnedApps = this._settings.get_value('pinned-apps').deepUnpack();
+        const pinnedAppsIds = pinnedApps.map(item => item.id);
 
         for (let i = 0; i < mostUsed.length; i++) {
             if (!mostUsed[i])
                 continue;
 
             const appInfo = mostUsed[i].get_app_info();
-            if (appInfo.should_show() && !pinnedApps.includes(appInfo.get_id())) {
+            if (appInfo.should_show() && !pinnedAppsIds.includes(appInfo.get_id())) {
                 const item = new MW.ApplicationMenuItem(this, mostUsed[i], Constants.DisplayType.LIST);
                 this.frequentAppsList.push(item);
             }
@@ -235,23 +238,15 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
 
     displayAllApps() {
         this.setGridLayout(Constants.DisplayType.LIST, 5);
-        const appList = [];
-        this.applicationsMap.forEach((value, key, _map) => {
-            appList.push(key);
-        });
-        appList.sort((a, b) => {
-            return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-        });
-        this._clearActorsFromBox();
-        this._displayAppList(appList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
+        super.displayAllApps();
         this.setGridLayout(Constants.DisplayType.GRID, 0, false);
     }
 
     updateStyle() {
         const themeNode = this.arcMenu.box.get_theme_node();
         let borderRadius = themeNode.get_length('border-radius');
-        const monitorIndex = Main.layoutManager.findIndexForActor(this.menuButton);
-        const scaleFactor = Main.layoutManager.monitors[monitorIndex].geometry_scale;
+
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         borderRadius /= scaleFactor;
 
         const borderRadiusStyle = `border-radius: 0px 0px ${borderRadius}px ${borderRadius}px;`;
@@ -264,7 +259,11 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
 
     setGridLayout(displayType, spacing, setStyle = true) {
         if (setStyle) {
-            this.applicationsGrid.x_align = displayType === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
+            if (displayType === Constants.DisplayType.LIST)
+                this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'small-vfade';
+            else
+                this.applicationsScrollBox.style_class = this._disableFadeEffect ? '' : 'vfade';
+            this.applicationsGrid.halign = displayType === Constants.DisplayType.LIST ? Clutter.ActorAlign.FILL
                 : Clutter.ActorAlign.CENTER;
         }
 
@@ -283,13 +282,10 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
 
     displayPinnedApps() {
         this.loadFrequentApps();
-        this._clearActorsFromBox(this.applicationsBox);
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
+        super.displayPinnedApps();
 
         if (this.frequentAppsList.length > 0 && !this._settings.get_boolean('eleven-disable-frequent-apps')) {
-            this.setGridLayout(Constants.DisplayType.GRID, 0);
             this._displayAppList(this.frequentAppsList, Constants.CategoryType.HOME_SCREEN, this.shortcutsGrid);
-            this.setGridLayout(Constants.DisplayType.GRID, 0);
             if (!this.applicationsBox.contains(this.shortcutsBox))
                 this.applicationsBox.add_child(this.shortcutsBox);
         } else if (this.applicationsBox.contains(this.shortcutsBox)) {
@@ -322,11 +318,11 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
         super._onSearchEntryChanged(searchEntry, searchString);
     }
 
-    destroy() {
+    _onDestroy() {
         this.arcMenu.box.style = null;
         this.backButton.destroy();
         this.allAppsButton.destroy();
 
-        super.destroy();
+        super._onDestroy();
     }
 };

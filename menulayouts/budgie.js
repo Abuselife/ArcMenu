@@ -51,7 +51,8 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.applicationsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.EXTERNAL);
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
 
         this.leftBox = new St.BoxLayout({
@@ -77,7 +78,8 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
         this.leftBox.add_child(this.categoriesScrollBox);
 
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesScrollBox.add_actor(this.categoriesBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.categoriesScrollBox.add_actor ? this.categoriesScrollBox.add_actor(this.categoriesBox) : this.categoriesScrollBox.set_child(this.categoriesBox);
 
         if (this._settings.get_boolean('enable-activities-shortcut')) {
             this.activitiesBox = new St.BoxLayout({
@@ -142,8 +144,7 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
 
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (shouldShow) {
                 const categoryMenuItem = new MW.CategoryMenuItem(this, categoryEnum, Constants.DisplayType.LIST);
                 this.categoryDirectories.set(categoryEnum, categoryMenuItem);

@@ -168,11 +168,6 @@ export const MISC_ICON_SIZE = 24;
 
 export const SUPER_L = 'Super_L';
 
-export const HotkeyType = {
-    SUPER_L: 0,
-    CUSTOM: 1,
-};
-
 export const SECTIONS = [
     'devices',
     'network',
@@ -211,6 +206,7 @@ export const MenuSettingsListType = {
     EXTRA_CATEGORIES: 5,
     QUICK_LINKS: 6,
     CONTEXT_MENU: 7,
+    FOLDER_PINNED_APPS: 8,
 };
 
 export const MenuButtonAppearance = {
@@ -601,18 +597,3 @@ export const DistroIconsDisclaimer = '<i>All brand icons are trademarks of their
     '\n\n•   <b>Pardus</b> - name and logo are copyright © 2003-2023 by TUBITAK ULAKBIM' +
     '\n\n•   <b>ZORIN OS</b> - The "Z" logomark is a registered trademark of Zorin Technology Group Ltd. ' +
                 'Copyright © 2019 - 2021 Zorin Technology Group Ltd';
-
-export const DEVELOPERS = '<b><a href="https://gitlab.com/AndrewZaech">AndrewZaech</a></b> - Current ArcMenu Maintainer and Developer' +
-                '\n\n<b><a href="https://gitlab.com/LinxGem33">AndyC</a></b> - ArcMenu Founder, Former Maintainer, Digital Art Designer';
-export const CONTRIBUTORS = '<b>Thank you to all contributors and translators</b>\n\n' +
-                    '<b><a href="https://gitlab.com/arcmenu/ArcMenu#contributors">Contributors</a></b> - ' +
-                    '<b><a href="https://gitlab.com/arcmenu/ArcMenu#translators">Translators</a></b>';
-export const ARTWORK = '<b>Digital Artwork</b>\n\n' +
-                '<b><a href="https://gitlab.com/LinxGem33">AndyC</a></b> - Custom icons and other ArcMenu Assets' +
-                '\n\n<b><a href="https://gitlab.com/AndrewZaech">AndrewZaech</a></b> - Modification of some custom icons';
-
-export const GNU_SOFTWARE = '<span size="small">' +
-    'This program comes with absolutely no warranty.\n' +
-    'See the <a href="https://gnu.org/licenses/old-licenses/gpl-2.0.html">' +
-    'GNU General Public License, version 2 or later</a> for details.' +
-    '</span>';

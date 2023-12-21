@@ -85,10 +85,17 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
-        this._settings.connectObject('changed::insider-extra-buttons', () => this._createExtraButtons(), this);
+        this._pinnedAppsGrid.layout_manager.set({
+            column_spacing: 0,
+            row_spacing: 0,
+            halign: Clutter.ActorAlign.FILL,
+        });
+
+        this._settings.connectObject('changed::insider-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._createExtraButtons();
 
         this.updateWidth();
@@ -109,10 +116,10 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         this.actionsBox.add_child(this.pinnedAppsButton);
 
         const isContainedInCategory = false;
-        const extraButtons = this._settings.get_value('insider-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('insider-layout-extra-shortcuts').deep_unpack();
 
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.HORIZONTAL);
@@ -122,6 +129,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
                     isContainedInCategory);
                 if (button.shouldShow)
                     this.actionsBox.add_child(button);
+                else
+                    button.destroy();
             }
         }
 
@@ -179,23 +188,8 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
         pinnedAppsPopupBox.add_child(this.pinnedAppsScrollBox);
 
         this.pinnedAppsBox = new St.BoxLayout({vertical: true});
-        this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox);
-
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
-            column_spacing: 0,
-            row_spacing: 0,
-        });
-        this.pinnedAppsGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.FILL,
-            layout_manager: layout,
-        });
-        layout.forceGridColumns = 1;
-        layout.hookup_style(this.pinnedAppsGrid);
-
-        const height = this._settings.get_int('menu-height');
-        this.pinnedAppsMenu.actor.style = `height: ${height}px;`;
+        // eslint-disable-next-line no-unused-expressions
+        this.pinnedAppsScrollBox.add_actor ? this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox) : this.pinnedAppsScrollBox.set_child(this.pinnedAppsBox);
 
         this.displayPinnedApps();
         this.subMenuManager.addMenu(this.pinnedAppsMenu);
@@ -226,6 +220,10 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             x += rise;
 
         Main.layoutManager.setDummyCursorGeometry(x, y, 0, 0);
+
+        const height = this._settings.get_int('menu-height');
+        this.pinnedAppsMenu.box.style = `height: ${height}px;`;
+
         this.pinnedAppsMenu.toggle();
         if (this.pinnedAppsMenu.isOpen) {
             this.activeMenuItem = this.backButton;
@@ -236,7 +234,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
     setDefaultMenuView() {
         super.setDefaultMenuView();
         this.displayAllApps();
-        this.activeMenuItem = this.applicationsGrid.layout_manager.get_child_at(0, 0);
+        this.activeMenuItem = this.applicationsGrid.getItemAt(0);
 
         if (!this.applicationsBox.contains(this.applicationsGrid))
             this.applicationsBox.add_child(this.applicationsGrid);
@@ -261,9 +259,12 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
 
     displayPinnedApps() {
         this._clearActorsFromBox(this.pinnedAppsBox);
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.pinnedAppsGrid);
-        if (!this.pinnedAppsBox.contains(this.pinnedAppsGrid))
-            this.pinnedAppsBox.add_child(this.pinnedAppsGrid);
+        this.activeCategoryType = Constants.CategoryType.PINNED_APPS;
+
+        if (!this.pinnedAppsBox.contains(this._pinnedAppsGrid))
+            this.pinnedAppsBox.add_child(this._pinnedAppsGrid);
+
+        this._pinnedAppsGrid.setColumns(1);
     }
 };
 

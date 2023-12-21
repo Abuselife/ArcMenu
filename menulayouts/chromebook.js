@@ -40,7 +40,8 @@ export const Layout = class ChromebookLayout extends BaseMenuLayout {
             x_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this.add_child(this.applicationsScrollBox);
 
         const searchBarLocation = this._settings.get_enum('searchbar-default-top-location');

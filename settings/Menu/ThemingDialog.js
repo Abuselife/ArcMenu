@@ -104,12 +104,12 @@ class ArcMenuManageThemesDialog extends PW.DialogWindow {
 
                         const dialog = new SaveLoadThemesPage(this._settings, this,
                             importedMenuThemes, SaveLoadType.LOAD);
-                        this.present_subpage(dialog);
+                        this.push_subpage(dialog);
                         dialog.connect('response', (_w, response) => {
                             let menuThemes = this._settings.get_value('menu-themes').deep_unpack();
                             const selectedThemesArray = dialog.selecetedThemesArray;
                             menuThemes = menuThemes.concat(selectedThemesArray);
-                            this.close_subpage();
+                            this.pop_subpage();
 
                             if (response === Gtk.ResponseType.ACCEPT) {
                                 this._settings.set_value('menu-themes', new GLib.Variant('aas', menuThemes));
@@ -132,10 +132,10 @@ class ArcMenuManageThemesDialog extends PW.DialogWindow {
         saveButton.connect('clicked', () => {
             const menuThemes = this._settings.get_value('menu-themes').deep_unpack();
             const dialog = new SaveLoadThemesPage(this._settings, this, menuThemes, SaveLoadType.SAVE);
-            this.present_subpage(dialog);
+            this.push_subpage(dialog);
             dialog.connect('response', (_w, response) => {
                 const selectedThemesArray = dialog.selecetedThemesArray;
-                this.close_subpage();
+                this.pop_subpage();
 
                 if (response === Gtk.ResponseType.ACCEPT) {
                     this._showFileChooser(
@@ -300,11 +300,9 @@ var SaveLoadThemesPage = GObject.registerClass({
     Signals: {
         'response': {param_types: [GObject.TYPE_INT]},
     },
-}, class ArcMenuSaveLoadThemesPage extends Gtk.Box {
+}, class ArcMenuSaveLoadThemesPage extends Adw.NavigationPage {
     _init(settings, parent, themesArray, saveLoadType) {
-        super._init({
-            orientation: Gtk.Orientation.VERTICAL,
-        });
+        super._init();
 
         this._parent = parent;
         this._settings = settings;
@@ -312,39 +310,22 @@ var SaveLoadThemesPage = GObject.registerClass({
         this._themesArray = themesArray;
         this.selecetedThemesArray = [];
 
+        this.headerBar = new Adw.HeaderBar();
+
+        const sidebarToolBarView = new Adw.ToolbarView();
+        this.set_child(sidebarToolBarView);
+        sidebarToolBarView.add_top_bar(this.headerBar);
+
+        this.page = new Adw.PreferencesPage();
+        sidebarToolBarView.set_content(this.page);
+
         if (this._saveLoadType === SaveLoadType.SAVE)
             this.title = _('Save Themes');
         else if (this._saveLoadType === SaveLoadType.LOAD)
             this.title = _('Load Themes');
 
-        this.headerLabel = new Adw.WindowTitle({
-            title: _(this.title),
-        });
-
-        this.headerBar = new Adw.HeaderBar({
-            title_widget: this.headerLabel,
-            decoration_layout: '',
-        });
-
-        this.append(this.headerBar);
-        this.page = new Adw.PreferencesPage();
-        this.append(this.page);
-
         this.pageGroup = new Adw.PreferencesGroup();
         this.page.add(this.pageGroup);
-
-        const backButton = new Gtk.Button({
-            icon_name: 'go-previous-symbolic',
-            tooltip_text: _('Back'),
-            css_classes: ['flat'],
-        });
-
-        backButton.connect('clicked', () => {
-            const window = this.get_root();
-            window.close_subpage();
-        });
-
-        this.headerBar.pack_start(backButton);
 
         this._loadThemeRows();
 

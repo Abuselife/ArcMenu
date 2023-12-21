@@ -82,8 +82,7 @@ class ArcMenuListOtherPage extends SubPage {
 
     _addRowsToFrame(extraCategories) {
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const isActive = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
 
             let name, iconString;
             if (this.list_type === Constants.MenuSettingsListType.POWER_OPTIONS) {
@@ -97,7 +96,7 @@ class ArcMenuListOtherPage extends SubPage {
             const row = new PW.DragRow({
                 gicon: Gio.icon_new_for_string(iconString),
                 switch_enabled: true,
-                switch_active: isActive,
+                switch_active: shouldShow,
             });
             row.activatable_widget = row.switch;
             row.setting_type = categoryEnum;

@@ -8,6 +8,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {BaseMenuLayout} from './baseMenuLayout.js';
 import * as Constants from '../constants.js';
+import {IconGrid} from '../iconGrid.js';
 import * as MW from '../menuWidgets.js';
 
 import {gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -79,7 +80,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this._widgetBox = new St.BoxLayout({
@@ -103,17 +105,12 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        const layout = new Clutter.GridLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+        this.shortcutsGrid = new IconGrid({
+            halign: Clutter.ActorAlign.CENTER,
             column_spacing: this.column_spacing,
             row_spacing: this.row_spacing,
         });
-        this.shortcutsGrid = new St.Widget({
-            x_expand: true,
-            x_align: Clutter.ActorAlign.CENTER,
-            layout_manager: layout,
-        });
-        layout.hookup_style(this.shortcutsGrid);
+        this.shortcutsBox.add_child(this.shortcutsGrid);
         this.shortcutsBox.add_child(this.shortcutsGrid);
 
         this.actionsContainerBox = new St.BoxLayout({
@@ -135,14 +132,16 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         });
         this.actionsContainerBox.add_child(this.actionsBox);
 
-        const applicationShortcuts = this._settings.get_value('application-shortcuts-list').deep_unpack();
+        const applicationShortcuts = this._settings.get_value('application-shortcuts').deep_unpack();
         for (let i = 0; i < applicationShortcuts.length; i++) {
             const shortcutMenuItem = this.createMenuItem(applicationShortcuts[i], Constants.DisplayType.GRID, false);
             if (shortcutMenuItem.shouldShow)
                 this.appShortcuts.push(shortcutMenuItem);
+            else
+                shortcutMenuItem.destroy();
         }
 
-        this._settings.connectObject('changed::unity-extra-buttons', () => this._createExtraButtons(), this);
+        this._settings.connectObject('changed::unity-layout-extra-shortcuts', () => this._createExtraButtons(), this);
         this._settings.connectObject('changed::enable-clock-widget-unity', () => this._updateWidgets(), this);
         this._settings.connectObject('changed::enable-weather-widget-unity', () => this._updateWidgets(), this);
 
@@ -181,14 +180,14 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
 
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
-        const extraButtons = this._settings.get_value('unity-extra-buttons').deep_unpack();
+        const extraButtons = this._settings.get_value('unity-layout-extra-shortcuts').deep_unpack();
 
         if (extraButtons.length === 0)
             return;
 
         const isContainedInCategory = false;
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i][2];
+            const command = extraButtons[i].id;
             if (command === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
@@ -197,6 +196,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
                 const item = this.createMenuItem(extraButtons[i], Constants.DisplayType.BUTTON, isContainedInCategory);
                 if (item.shouldShow)
                     this.actionsBox.add_child(item);
+                else
+                    item.destroy();
             }
         }
     }
@@ -251,10 +252,10 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         categoriesPopupBox.add_child(this.categoriesScrollBox);
 
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesScrollBox.add_actor(this.categoriesBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.categoriesScrollBox.add_actor ? this.categoriesScrollBox.add_actor(this.categoriesBox) : this.categoriesScrollBox.set_child(this.categoriesBox);
 
-        const themeContext = St.ThemeContext.get_for_stage(global.stage);
-        const scaleFactor = themeContext.scale_factor;
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         const height =  Math.round(350 / scaleFactor);
 
         categoriesPopupBox.style = `max-height: ${height}px`;
@@ -289,8 +290,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
     updateStyle() {
         const themeNode = this.arcMenu.box.get_theme_node();
         let borderRadius = themeNode.get_length('border-radius');
-        const monitorIndex = Main.layoutManager.findIndexForActor(this.menuButton);
-        const scaleFactor = Main.layoutManager.monitors[monitorIndex].geometry_scale;
+
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         borderRadius /= scaleFactor;
 
         const borderRadiusStyle = `border-radius: 0px 0px ${borderRadius}px ${borderRadius}px;`;
@@ -311,8 +312,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
 
         const extraCategories = this._settings.get_value('extra-categories').deep_unpack();
         for (let i = 0; i < extraCategories.length; i++) {
-            const categoryEnum = extraCategories[i][0];
-            const shouldShow = extraCategories[i][1];
+            const [categoryEnum, shouldShow] = extraCategories[i];
             if (categoryEnum === Constants.CategoryType.PINNED_APPS || !shouldShow)
                 continue;
 
@@ -341,18 +341,16 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
                 separatorAdded = true;
             }
 
-            this.categoriesBox.add_actor(categoryMenuItem);
+            this.categoriesBox.add_child(categoryMenuItem);
         }
     }
 
     displayPinnedApps() {
-        if (this.activeCategoryType === Constants.CategoryType.HOME_SCREEN)
-            this._clearActorsFromBox(this.applicationsBox);
-        else
-            this._clearActorsFromBox();
-
         this.activeCategoryName = _('Pinned');
-        this._displayAppList(this.pinnedAppsArray, Constants.CategoryType.PINNED_APPS, this.applicationsGrid);
+        super.displayPinnedApps();
+        const label = this._createLabelWithSeparator(this.activeCategoryName);
+        this.applicationsBox.insert_child_at_index(label, 0);
+
         this.activeCategoryName = _('Shortcuts');
         this._displayAppList(this.appShortcuts, Constants.CategoryType.HOME_SCREEN, this.shortcutsGrid);
 
@@ -399,7 +397,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             this.applicationsBox.insert_child_at_index(label, 2);
     }
 
-    destroy() {
+    _onDestroy() {
         if (this._clocksItem)
             this._clocksItem.destroy();
         if (this._weatherItem)
@@ -407,7 +405,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
 
         this.arcMenu.box.style = null;
 
-        super.destroy();
+        super._onDestroy();
     }
 };
 

@@ -1,10 +1,29 @@
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 
 import * as Constants from '../constants.js';
+import * as PW from '../prefsWidgets.js';
 
 import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+const forbiddenKeyvals = [
+    Gdk.KEY_Home,
+    Gdk.KEY_Left,
+    Gdk.KEY_Up,
+    Gdk.KEY_Right,
+    Gdk.KEY_Down,
+    Gdk.KEY_Page_Up,
+    Gdk.KEY_Page_Down,
+    Gdk.KEY_End,
+    Gdk.KEY_Tab,
+    Gdk.KEY_KP_Enter,
+    Gdk.KEY_Return,
+    Gdk.KEY_Mode_switch,
+];
 
 export const GeneralPage = GObject.registerClass(
 class ArcMenuGeneralPage extends Adw.PreferencesPage {
@@ -86,9 +105,9 @@ class ArcMenuGeneralPage extends Adw.PreferencesPage {
             active: this._settings.get_boolean('multi-monitor'),
         });
         multiMonitorSwitch.connect('notify::active', widget => {
-            this._settings.set_boolean('multi-monitor', widget.get_active());
-            this.menuHotkeyRow.displayRows();
-            this.standaloneRunnerRow.displayRows();
+            const multiMonitor = widget.get_active();
+            this._settings.set_boolean('multi-monitor', multiMonitor);
+            this.menuHotkeyRow.setMultiMonitor(multiMonitor);
         });
 
         const multiMonitorRow = new Adw.ActionRow({
@@ -147,75 +166,86 @@ class ArcMenuGeneralPage extends Adw.PreferencesPage {
         });
         hideOverviewRow.add_suffix(hideOverviewSwitch);
         generalGroup.add(hideOverviewRow);
-        this._setConflictError();
-    }
-
-    _checkHotkeyConflict() {
-        const superKey = 0;
-        const menuHotkeyType = this._settings.get_enum('menu-hotkey-type');
-        const runnerHotkeyType = this._settings.get_enum('runner-menu-hotkey-type');
-        const menuHotkey = this._settings.get_strv('arcmenu-custom-hotkey').toString();
-        const runnerHotkey = this._settings.get_strv('runner-menu-custom-hotkey').toString();
-
-        if (menuHotkeyType === runnerHotkeyType && menuHotkeyType === superKey)
-            return true;
-
-        if (menuHotkeyType === runnerHotkeyType)
-            return menuHotkey === runnerHotkey;
-
-        return false;
-    }
-
-    _setConflictError() {
-        const hasError = this._checkHotkeyConflict();
-        if (hasError) {
-            if (this.get_root()) {
-                const dialog = new Gtk.MessageDialog({
-                    text: `<b>${_('Hotkey Conflict')}</b>`,
-                    secondary_text: _('ArcMenu and Standalone Runner are assigned the same hotkey'),
-                    use_markup: true,
-                    buttons: Gtk.ButtonsType.OK,
-                    message_type: Gtk.MessageType.WARNING,
-                    transient_for: this.get_root(),
-                    modal: true,
-                });
-                dialog.connect('response', () => dialog.destroy());
-                dialog.show();
-            }
-
-            this.menuHotkeyRow._errorBox.visible = true;
-            this.standaloneRunnerRow._errorBox.visible = true;
-        } else {
-            this.menuHotkeyRow._errorBox.visible = false;
-            this.standaloneRunnerRow._errorBox.visible = false;
-        }
     }
 
     _createExpanderRow(title, isMenuHotkey) {
-        const hotkeySetting = isMenuHotkey ? 'menu-hotkey-type' : 'runner-menu-hotkey-type';
-        const customHotkeySetting = isMenuHotkey ? 'arcmenu-custom-hotkey' : 'runner-menu-custom-hotkey';
+        const hotkeySetting = isMenuHotkey ? 'arcmenu-hotkey' : 'runner-hotkey';
         const primaryMonitorSetting = isMenuHotkey ? 'hotkey-open-primary-monitor'
             : 'runner-hotkey-open-primary-monitor';
-        const enabledSetting = isMenuHotkey ? 'enable-menu-hotkey' : 'enable-standlone-runner-menu';
-
-        const enabled = this._settings.get_boolean(enabledSetting);
-
-        const expanderRow = new Adw.ExpanderRow({
+        const accelerator = this._settings.get_strv(hotkeySetting).toString();
+        const hotkeyString = this.acceleratorToLabel(accelerator);
+        const hotkeyLabel = new Gtk.Label({
+            label: hotkeyString,
+            css_classes: ['dim-label'],
+        });
+        const customHotkeyRow = new Adw.ActionRow({
             title: _(title),
-            show_enable_switch: true,
-            enable_expansion: enabled,
+            activatable: true,
+        });
+        customHotkeyRow.add_suffix(hotkeyLabel);
+
+        customHotkeyRow.connect('activated', () => {
+            const dialog = new HotkeyDialog(isMenuHotkey, this._settings, this);
+            dialog.show();
+            dialog.inhibitSystemShortcuts();
+            dialog.connect('response', (_w, response) => {
+                if (response === Gtk.ResponseType.APPLY) {
+                    if (dialog.resultsText)
+                        this._settings.set_strv(hotkeySetting, [dialog.resultsText]);
+                    else
+                        this._settings.set_strv(hotkeySetting, []);
+                    hotkeyLabel.label = this.acceleratorToLabel(dialog.resultsText);
+                }
+                dialog.restoreSystemShortcuts();
+                dialog.destroy();
+            });
         });
 
-        expanderRow.connect('notify::enable-expansion', widget => {
-            this._settings.set_boolean(enabledSetting, widget.enable_expansion);
+        const customizeButton = new Gtk.Button({
+            icon_name: 'emblem-system-symbolic',
+            css_classes: ['flat'],
+            valign: Gtk.Align.CENTER,
+            visible: isMenuHotkey ? this._settings.get_boolean('multi-monitor') : true,
         });
+        customHotkeyRow.add_suffix(customizeButton);
+
+        customizeButton.connect('clicked', () => {
+            const windowPreviewOptions = new HotkeyOptionsDialog(this._settings, _('Hotkey Options'), this.get_root(), primaryMonitorSetting);
+            windowPreviewOptions.show();
+        });
+
+        customHotkeyRow.setMultiMonitor = bool => {
+            customizeButton.visible = bool;
+        };
+
+        return customHotkeyRow;
+    }
+
+    acceleratorToLabel(accelerator) {
+        if (!accelerator)
+            return _('Disabled');
+        const [ok, key, mods] = Gtk.accelerator_parse(accelerator);
+        if (!ok)
+            return '';
+
+        return Gtk.accelerator_get_label(key, mods);
+    }
+});
+
+var HotkeyOptionsDialog = GObject.registerClass(
+class ArcMenuHotkeyOptionsDialog extends PW.DialogWindow {
+    _init(settings, title, parent, primaryMonitorSetting) {
+        super._init(title, parent);
+        this.set_default_size(460, 150);
+        this.search_enabled = false;
+        this.resizable = false;
 
         const primaryMonitorSwitch = new Gtk.Switch({
             valign: Gtk.Align.CENTER,
-            active: this._settings.get_boolean(primaryMonitorSetting),
+            active: settings.get_boolean(primaryMonitorSetting),
         });
         primaryMonitorSwitch.connect('notify::active', widget => {
-            this._settings.set_boolean(primaryMonitorSetting, widget.get_active());
+            settings.set_boolean(primaryMonitorSetting, widget.get_active());
         });
         const primaryMonitorRow = new Adw.ActionRow({
             title: _('Open on Primary Monitor'),
@@ -223,87 +253,7 @@ class ArcMenuGeneralPage extends Adw.PreferencesPage {
         });
         primaryMonitorRow.add_suffix(primaryMonitorSwitch);
 
-        const hotKeyOptions = new Gtk.StringList();
-        hotKeyOptions.append(_('Left Super Key'));
-        hotKeyOptions.append(_('Custom Hotkey'));
-        const hotkeyRow = new Adw.ComboRow({
-            title: _('Hotkey'),
-            model: hotKeyOptions,
-            selected: this._settings.get_enum(hotkeySetting),
-        });
-
-        const shortcutCell = new Gtk.ShortcutsShortcut({
-            halign: Gtk.Align.START,
-            valign: Gtk.Align.CENTER,
-            hexpand: true,
-        });
-        shortcutCell.accelerator = this._settings.get_strv(customHotkeySetting).toString();
-
-        const modifyHotkeyButton = new Gtk.Button({
-            label: _('Modify Hotkey'),
-            valign: Gtk.Align.CENTER,
-        });
-
-        const customHotkeyRow = new Adw.ActionRow({
-            title: _('Current Hotkey'),
-            activatable_widget: modifyHotkeyButton,
-        });
-        customHotkeyRow.add_suffix(shortcutCell);
-        customHotkeyRow.add_suffix(modifyHotkeyButton);
-        modifyHotkeyButton.connect('clicked', () => {
-            const dialog = new HotkeyDialog(this._settings, this);
-            dialog.show();
-            dialog.connect('response', (_w, response) => {
-                if (response === Gtk.ResponseType.APPLY) {
-                    this._settings.set_strv(customHotkeySetting, [dialog.resultsText]);
-                    shortcutCell.accelerator = dialog.resultsText;
-                    this._setConflictError();
-                }
-                dialog.destroy();
-            });
-        });
-
-        expanderRow.add_row(hotkeyRow);
-        expanderRow.add_row(customHotkeyRow);
-        expanderRow.add_row(primaryMonitorRow);
-
-        expanderRow.displayRows = () => {
-            customHotkeyRow.hide();
-            primaryMonitorRow.hide();
-
-            if (hotkeyRow.selected === Constants.HotkeyType.CUSTOM)
-                customHotkeyRow.show();
-
-            if (this._settings.get_boolean('multi-monitor'))
-                primaryMonitorRow.show();
-        };
-
-        hotkeyRow.connect('notify::selected', widget => {
-            expanderRow.displayRows();
-            this._settings.set_enum(hotkeySetting, widget.selected);
-            this._setConflictError();
-        });
-        expanderRow.displayRows();
-        const errorBox = new Gtk.Box({
-            orientation: Gtk.Orientation.HORIZONTAL,
-            spacing: 6,
-            margin_end: 6,
-        });
-        const errorLabel = new Gtk.Label({
-            label: _('Hotkey Conflict'),
-            css_classes: ['error'],
-        });
-        const errorIcon = new Gtk.Image({
-            icon_name: 'dialog-error',
-            css_classes: ['error'],
-        });
-        errorBox.append(errorIcon);
-        errorBox.append(errorLabel);
-
-        expanderRow._errorBox = errorBox;
-        expanderRow.add_suffix(errorBox);
-
-        return expanderRow;
+        this.pageGroup.add(primaryMonitorRow);
     }
 });
 
@@ -312,180 +262,288 @@ var HotkeyDialog = GObject.registerClass({
         'response': {param_types: [GObject.TYPE_INT]},
     },
 },
-class ArcMenuHotkeyDialog extends Gtk.Window {
-    _init(settings, parent) {
-        this._settings = settings;
-        this.keyEventController = new Gtk.EventControllerKey();
-
+class ArcMenuHotkeyDialog extends Adw.Window {
+    _init(isMenuHotkey, settings, parent) {
         super._init({
             modal: true,
-            title: _('Set Custom Hotkey'),
+            title: _('Modify Hotkey'),
             transient_for: parent.get_root(),
+            resizable: false,
         });
-        const vbox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 20,
-            homogeneous: false,
-            margin_top: 5,
-            margin_bottom: 5,
-            margin_start: 5,
-            margin_end: 5,
-            hexpand: true,
-            halign: Gtk.Align.FILL,
+        this._settings = settings;
+        this._parentWindow = parent.get_root();
+
+        this.set_default_size(460, 275);
+
+        const eventControllerKey = new Gtk.EventControllerKey();
+        this.add_controller(eventControllerKey);
+
+        const shortcutController = new Gtk.ShortcutController();
+        this.add_controller(shortcutController);
+        const escapeShortcut = new Gtk.Shortcut({
+            trigger: Gtk.ShortcutTrigger.parse_string('Escape'),
+            action: Gtk.ShortcutAction.parse_string('action(window.close)'),
         });
-        this.set_child(vbox);
-        this._createLayout(vbox);
-        this.add_controller(this.keyEventController);
-        this.set_size_request(500, 250);
-    }
+        shortcutController.add_shortcut(escapeShortcut);
 
-    _createLayout(vbox) {
-        let hotkeyKey = '';
-
-        const modFrame = new Adw.PreferencesGroup();
-        const modRow = new Adw.ActionRow({
-            title: _('Choose Modifiers'),
+        this.connect('destroy', () => {
+            this.restoreSystemShortcuts();
         });
 
-        const buttonBox = new Gtk.Box({
-            hexpand: true,
-            halign: Gtk.Align.END,
-            spacing: 5,
+        const sidebarToolBarView = new Adw.ToolbarView({
+            top_bar_style: Adw.ToolbarStyle.RAISED,
         });
-        modRow.add_suffix(buttonBox);
-        const ctrlButton = new Gtk.ToggleButton({
-            label: _('Ctrl'),
-            valign: Gtk.Align.CENTER,
-        });
-        const superButton = new Gtk.ToggleButton({
-            label: _('Super'),
-            valign: Gtk.Align.CENTER,
-        });
-        const shiftButton = new Gtk.ToggleButton({
-            label: _('Shift'),
-            valign: Gtk.Align.CENTER,
-        });
-        const altButton = new Gtk.ToggleButton({
-            label: _('Alt'),
-            valign: Gtk.Align.CENTER,
-        });
-        ctrlButton.connect('toggled', () => {
-            this.resultsText = '';
-            if (ctrlButton.get_active())
-                this.resultsText += '<Ctrl>';
-            if (superButton.get_active())
-                this.resultsText += '<Super>';
-            if (shiftButton.get_active())
-                this.resultsText += '<Shift>';
-            if (altButton.get_active())
-                this.resultsText += '<Alt>';
-            this.resultsText += hotkeyKey;
-            resultsWidget.accelerator =  this.resultsText;
-            applyButton.set_sensitive(true);
-        });
-        superButton.connect('toggled', () => {
-            this.resultsText = '';
-            if (ctrlButton.get_active())
-                this.resultsText += '<Ctrl>';
-            if (superButton.get_active())
-                this.resultsText += '<Super>';
-            if (shiftButton.get_active())
-                this.resultsText += '<Shift>';
-            if (altButton.get_active())
-                this.resultsText += '<Alt>';
-            this.resultsText += hotkeyKey;
-            resultsWidget.accelerator =  this.resultsText;
-            applyButton.set_sensitive(true);
-        });
-        shiftButton.connect('toggled', () => {
-            this.resultsText = '';
-            if (ctrlButton.get_active())
-                this.resultsText += '<Ctrl>';
-            if (superButton.get_active())
-                this.resultsText += '<Super>';
-            if (shiftButton.get_active())
-                this.resultsText += '<Shift>';
-            if (altButton.get_active())
-                this.resultsText += '<Alt>';
-            this.resultsText += hotkeyKey;
-            resultsWidget.accelerator =  this.resultsText;
-            applyButton.set_sensitive(true);
-        });
-        altButton.connect('toggled', () => {
-            this.resultsText = '';
-            if (ctrlButton.get_active())
-                this.resultsText += '<Ctrl>';
-            if (superButton.get_active())
-                this.resultsText += '<Super>';
-            if (shiftButton.get_active())
-                this.resultsText += '<Shift>';
-            if (altButton.get_active())
-                this.resultsText += '<Alt>';
-            this.resultsText += hotkeyKey;
-            resultsWidget.accelerator =  this.resultsText;
-            applyButton.set_sensitive(true);
-        });
-        buttonBox.append(ctrlButton);
-        buttonBox.append(superButton);
-        buttonBox.append(shiftButton);
-        buttonBox.append(altButton);
-        modFrame.add(modRow);
-        vbox.append(modFrame);
+        this.set_content(sidebarToolBarView);
 
-        const keyFrame = new Adw.PreferencesGroup();
-        const keyLabel = new Gtk.Label({
-            label: _('Press any key'),
-            use_markup: true,
-            xalign: .5,
-            hexpand: true,
-            halign: Gtk.Align.CENTER,
+        const headerBar = new Adw.HeaderBar({
+            show_end_title_buttons: false,
+            show_start_title_buttons: false,
         });
-        vbox.append(keyLabel);
-
-        const keyboardImage = new Gtk.Image({
-            icon_name: 'settings-keyboard',
-            pixel_size: 256,
-        });
-        vbox.append(keyboardImage);
-
-        const resultsRow = new Adw.ActionRow({
-            title: _('New Hotkey'),
-        });
-        const resultsWidget = new Gtk.ShortcutsShortcut({
-            hexpand: true,
-            halign: Gtk.Align.END,
-        });
-        resultsRow.add_suffix(resultsWidget);
-        keyFrame.add(resultsRow);
+        sidebarToolBarView.add_top_bar(headerBar);
 
         const applyButton = new Gtk.Button({
             label: _('Apply'),
             halign: Gtk.Align.END,
+            hexpand: false,
             css_classes: ['suggested-action'],
+            visible: false,
         });
         applyButton.connect('clicked', () => {
             this.emit('response', Gtk.ResponseType.APPLY);
         });
-        applyButton.set_sensitive(false);
+        headerBar.pack_end(applyButton);
 
-        this.keyEventController.connect('key-released', (controller, keyval) =>  {
-            this.resultsText = '';
-            const key = keyval;
-            hotkeyKey = Gtk.accelerator_name(key, 0);
-            if (ctrlButton.get_active())
-                this.resultsText += '<Ctrl>';
-            if (superButton.get_active())
-                this.resultsText += '<Super>';
-            if (shiftButton.get_active())
-                this.resultsText += '<Shift>';
-            if (altButton.get_active())
-                this.resultsText += '<Alt>';
-            this.resultsText += Gtk.accelerator_name(key, 0);
-            resultsWidget.accelerator =  this.resultsText;
-            applyButton.set_sensitive(true);
+        const cancelButton = new Gtk.Button({
+            label: _('Cancel'),
+            halign: Gtk.Align.START,
+            hexpand: false,
+            visible: false,
         });
+        cancelButton.connect('clicked', () => this.close());
+        headerBar.pack_start(cancelButton);
 
-        vbox.append(keyFrame);
-        vbox.append(applyButton);
+        const content = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 18,
+            margin_top: 12,
+            margin_bottom: 12,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        sidebarToolBarView.set_content(content);
+
+        const keyLabel = new Gtk.Label({
+            /* TRANSLATORS: %s is replaced with a description of the keyboard shortcut, don't translate/transliterate <b>%s</b>*/
+            label: _('Enter a new shortcut to change <b>%s</b>').format(isMenuHotkey ? _('ArcMenu Hotkey') : _('Standalone Runner Hotkey')),
+            use_markup: true,
+            xalign: .5,
+            wrap: true,
+        });
+        content.append(keyLabel);
+
+        const directory = GLib.path_get_dirname(import.meta.url);
+        const rootDirectory = GLib.path_get_dirname(directory);
+        const iconPath = '/icons/hicolor/16x16/actions/settings-keyboard.svg';
+
+        const keyboardImage = new Gtk.Picture({
+            file: Gio.File.new_for_uri(`${rootDirectory}${iconPath}`),
+            halign: Gtk.Align.CENTER,
+            valign: Gtk.Align.CENTER,
+            can_shrink: false,
+        });
+        content.append(keyboardImage);
+
+        const shortcutLabel = new Gtk.ShortcutLabel({
+            hexpand: true,
+            halign: Gtk.Align.CENTER,
+            valign: Gtk.Align.START,
+            vexpand: false,
+            visible: false,
+            disabled_text: _('Disabled'),
+        });
+        content.append(shortcutLabel);
+
+        const conflictLabel = new Gtk.Label({
+            label: _('Press Esc to cancel or Backspace to disable the keyboard shortcut.'),
+            use_markup: true,
+            wrap: true,
+        });
+        content.append(conflictLabel);
+
+        // Based on code from PaperWM prefsKeybinding.js https://github.com/paperwm/PaperWM
+        eventControllerKey.connect('key-pressed', (controller, keyval, keycode, state) => {
+            let modmask = state & Gtk.accelerator_get_default_mod_mask();
+            let keyvalLower = Gdk.keyval_to_lower(keyval);
+
+            // Normalize <Tab>
+            if (keyvalLower === Gdk.KEY_ISO_Left_Tab)
+                keyvalLower = Gdk.KEY_Tab;
+
+            // Put Shift back if it changed the case of the key
+            if (keyvalLower !== keyval)
+                modmask |= Gdk.ModifierType.SHIFT_MASK;
+
+            const event = controller.get_current_event();
+            const isModifier = event.is_modifier();
+
+            // Backspace deletes
+            if (!isModifier && modmask === 0 && keyvalLower === Gdk.KEY_BackSpace) {
+                shortcutLabel.accelerator = null;
+                shortcutLabel.visible = true;
+                cancelButton.visible = true;
+                keyboardImage.visible = false;
+                conflictLabel.visible = false;
+                applyButton.visible = true;
+                return Gdk.EVENT_STOP;
+            }
+
+            // Remove CapsLock
+            modmask &= ~Gdk.ModifierType.LOCK_MASK;
+
+            const combo = {mods: modmask, keycode, keyval: keyvalLower};
+            if (!this._isValidBinding(combo))
+                return Gdk.EVENT_STOP;
+
+            this.resultsText = Gtk.accelerator_name(keyval, modmask);
+            const conflicts = this.findConflicts(this.resultsText);
+
+            shortcutLabel.accelerator = this.resultsText;
+            shortcutLabel.visible = true;
+            cancelButton.visible = true;
+            keyboardImage.visible = false;
+            if (conflicts) {
+                applyButton.visible = false;
+                conflictLabel.css_classes = ['error'];
+                conflictLabel.visible = true;
+                conflictLabel.label = _('Conflict with <b>%s</b> hotkey').format(`${conflicts.conflict}`);
+            } else {
+                conflictLabel.visible = false;
+                applyButton.visible = true;
+            }
+
+            return Gdk.EVENT_STOP;
+        });
+    }
+
+    // Based on code from PaperWM prefsKeybinding.js https://github.com/paperwm/PaperWM
+    _isValidBinding(combo) {
+        if ((combo.mods === 0 || combo.mods === Gdk.ModifierType.SHIFT_MASK) && combo.keycode !== 0) {
+            const keyval = combo.keyval;
+            if ((keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z) ||
+                (keyval >= Gdk.KEY_A && keyval <= Gdk.KEY_Z) ||
+                (keyval >= Gdk.KEY_0 && keyval <= Gdk.KEY_9) ||
+                (keyval >= Gdk.KEY_kana_fullstop && keyval <= Gdk.KEY_semivoicedsound) ||
+                (keyval >= Gdk.KEY_Arabic_comma && keyval <= Gdk.KEY_Arabic_sukun) ||
+                (keyval >= Gdk.KEY_Serbian_dje && keyval <= Gdk.KEY_Cyrillic_HARDSIGN) ||
+                (keyval >= Gdk.KEY_Greek_ALPHAaccent && keyval <= Gdk.KEY_Greek_omega) ||
+                (keyval >= Gdk.KEY_hebrew_doublelowline && keyval <= Gdk.KEY_hebrew_taf) ||
+                (keyval >= Gdk.KEY_Thai_kokai && keyval <= Gdk.KEY_Thai_lekkao) ||
+                (keyval >= Gdk.KEY_Hangul_Kiyeog && keyval <= Gdk.KEY_Hangul_J_YeorinHieuh) ||
+                (keyval === Gdk.KEY_space && combo.mods === 0) ||
+                forbiddenKeyvals.includes(keyval))
+                return false;
+        }
+
+        // Empty binding
+        if (combo.keyval === 0 && combo.mods === 0 && combo.keycode === 0)
+            return false;
+
+        // Allow use of Super_L and Super_R hotkeys
+        if (combo.keyval === Gdk.KEY_Super_L || combo.keyval === Gdk.KEY_Super_R)
+            return true;
+
+        // Allow Tab in addition to accelerators allowed by GTK
+        if (!Gtk.accelerator_valid(combo.keyval, combo.mods) &&
+            (combo.keyval !== Gdk.KEY_Tab || combo.mods === 0))
+            return false;
+
+        return true;
+    }
+
+    getConflictSettings() {
+        if (!this._conflictSettings) {
+            this._conflictSettings = [
+                new Gio.Settings({schema_id: 'org.gnome.mutter.keybindings'}),
+                new Gio.Settings({schema_id: 'org.gnome.mutter.wayland.keybindings'}),
+                new Gio.Settings({schema_id: 'org.gnome.shell.keybindings'}),
+                new Gio.Settings({schema_id: 'org.gnome.desktop.wm.keybindings'}),
+            ];
+        }
+
+        return this._conflictSettings;
+    }
+
+    generateKeycomboMap(settings) {
+        let map = {};
+        for (let name of settings.list_keys()) {
+            let value = settings.get_value(name);
+            if (value.get_type_string() !== 'as')
+                continue;
+
+            for (let combo of value.deep_unpack()) {
+                if (combo === '0|0')
+                    continue;
+                if (map[combo])
+                    map[combo].push(name);
+                else
+                    map[combo] = [name];
+            }
+        }
+
+        return map;
+    }
+
+    findConflicts(newHotkey) {
+        const schemas = this.getConflictSettings();
+        let conflicts = null;
+
+        const newHotkeyMap = {};
+        newHotkeyMap[newHotkey] = ['New Hotkey'];
+
+        for (let settings of schemas) {
+            const against = this.generateKeycomboMap(settings);
+            for (let combo in newHotkeyMap) {
+                if (against[combo]) {
+                    conflicts = {
+                        conflict: against[combo],
+                        name: newHotkeyMap[combo],
+                    };
+                }
+            }
+        }
+
+        const arcMenuHotkeys = {};
+        const [runnerHotkey] = this._settings.get_strv('runner-hotkey');
+        const [menuHotkey] = this._settings.get_strv('arcmenu-hotkey');
+
+        arcMenuHotkeys[menuHotkey] = [_('ArcMenu')];
+        arcMenuHotkeys[runnerHotkey] = [_('Standlone Runner')];
+
+        for (let combo in newHotkeyMap) {
+            if (arcMenuHotkeys[combo]) {
+                conflicts = {
+                    conflict: arcMenuHotkeys[combo],
+                    name: newHotkeyMap[combo],
+                };
+            }
+        }
+
+        return conflicts;
+    }
+
+    inhibitSystemShortcuts() {
+        GLib.idle_add(0, () => {
+            this.grab_focus();
+            const surface = this._parentWindow.get_surface();
+
+            surface.inhibit_system_shortcuts(null);
+        });
+    }
+
+    restoreSystemShortcuts() {
+        const surface = this._parentWindow.get_surface();
+
+        if (surface)
+            surface.restore_system_shortcuts();
     }
 });

@@ -104,7 +104,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         this.set({
             x_expand: false,
-            y_expand: false,
         });
 
         this.add_style_class_name('arcmenu-panel-menu');
@@ -387,12 +386,12 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         const layout = this._settings.get_enum('menu-layout');
         if (layout === Constants.MenuLayout.RUNNER || layout === Constants.MenuLayout.RAVEN) {
-            this.arcMenu.actor.style = '';
+            this._menuLayout.style = '';
             return;
         }
 
         const height = this._settings.get_int('menu-height');
-        this.arcMenu.actor.style = `height: ${height}px;`;
+        this._menuLayout.style = `height: ${height}px;`;
     }
 
     updateWidth() {
@@ -635,7 +634,7 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
         Main.uiGroup.add_child(this.actor);
         this.actor.hide();
 
-        const menuItemsChangedId = this._settings.connect('changed::context-menu-shortcuts',
+        const menuItemsChangedId = this._settings.connect('changed::context-menu-items',
             () => this.populateMenuItems());
 
         this.populateMenuItems();
@@ -649,36 +648,36 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
         this.disconnectPowerOptions();
         this.removeAll();
 
-        const contextMenuShortcuts = this._settings.get_value('context-menu-shortcuts').deep_unpack();
+        const contextMenuShortcuts = this._settings.get_value('context-menu-items').deep_unpack();
 
         for (let i = 0; i < contextMenuShortcuts.length; i++) {
-            const [title, icon_, command] = contextMenuShortcuts[i];
+            const {name, id} = contextMenuShortcuts[i];
 
-            if (command.endsWith('.desktop')) {
-                this.addSettingsAction(title, command);
-            } else if (command === Constants.ShortcutCommands.SEPARATOR) {
+            if (id.endsWith('.desktop')) {
+                this.addSettingsAction(name, id);
+            } else if (id === Constants.ShortcutCommands.SEPARATOR) {
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            } else if (command === Constants.ShortcutCommands.SETTINGS) {
+            } else if (id === Constants.ShortcutCommands.SETTINGS) {
                 this.addAction(_('ArcMenu Settings'), () => this._extension.openPreferences());
-            } else if (command.includes(Constants.ShortcutCommands.SETTINGS)) {
-                const settingsPage = command.replace(Constants.ShortcutCommands.SETTINGS, '');
+            } else if (id.includes(Constants.ShortcutCommands.SETTINGS)) {
+                const settingsPage = id.replace(Constants.ShortcutCommands.SETTINGS, '');
                 if (settingsPage === 'About')
-                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.ABOUT);
+                    this.addArcMenuSettingsItem(name, Constants.SettingsPage.ABOUT);
                 else if (settingsPage === 'Menu')
-                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.CUSTOMIZE_MENU);
+                    this.addArcMenuSettingsItem(name, Constants.SettingsPage.CUSTOMIZE_MENU);
                 else if (settingsPage === 'Layout')
-                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.MENU_LAYOUT);
+                    this.addArcMenuSettingsItem(name, Constants.SettingsPage.MENU_LAYOUT);
                 else if (settingsPage === 'Button')
-                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.BUTTON_APPEARANCE);
+                    this.addArcMenuSettingsItem(name, Constants.SettingsPage.BUTTON_APPEARANCE);
                 else if (settingsPage === 'Theme')
-                    this.addArcMenuSettingsItem(title, Constants.SettingsPage.MENU_THEME);
-            } else if (command === Constants.ShortcutCommands.OVERVIEW) {
+                    this.addArcMenuSettingsItem(name, Constants.SettingsPage.MENU_THEME);
+            } else if (id === Constants.ShortcutCommands.OVERVIEW) {
                 this.addAction(_('Activities Overview'), () => Main.overview.toggle());
-            } else if (command === Constants.ShortcutCommands.POWER_OPTIONS) {
+            } else if (id === Constants.ShortcutCommands.POWER_OPTIONS) {
                 this.addPowerOptionsMenuItem();
-            } else if (command === Constants.ShortcutCommands.SHOW_DESKTOP) {
+            } else if (id === Constants.ShortcutCommands.SHOW_DESKTOP) {
                 this.addShowDekstopItem();
-            } else if (command === Constants.ShortcutCommands.PANEL_EXTENSION_SETTINGS) {
+            } else if (id === Constants.ShortcutCommands.PANEL_EXTENSION_SETTINGS) {
                 this.addExtensionSettings();
             }
         }

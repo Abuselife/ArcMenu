@@ -7,8 +7,6 @@ import Gtk from 'gi://Gtk';
 
 import * as Config from 'resource:///org/gnome/Shell/Extensions/js/misc/config.js';
 
-import * as Constants from '../constants.js';
-
 import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export const AboutPage = GObject.registerClass(
@@ -59,14 +57,15 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         this.add(projectHeaderGroup);
         // -----------------------------------------------------------------------
 
-        // Extension/OS Info and Links Group------------------------------------------------
+        // Extension/OS Info------------------------------------------------
         const infoGroup = new Adw.PreferencesGroup();
+        this.add(infoGroup);
 
         const projectVersionRow = new Adw.ActionRow({
             title: _('ArcMenu Version'),
         });
         projectVersionRow.add_suffix(new Gtk.Label({
-            label: metadata.version.toString(),
+            label: metadata['version-name'] ? metadata['version-name'] : metadata.version.toString(),
             css_classes: ['dim-label'],
         }));
         infoGroup.add(projectVersionRow);
@@ -112,14 +111,21 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
             css_classes: ['dim-label'],
         }));
         infoGroup.add(sessionTypeRow);
+        // -----------------------------------------------------------------------
 
-        const gitlabRow = this._createLinkRow(_('ArcMenu GitLab'), metadata.url);
-        infoGroup.add(gitlabRow);
+        // Links -----------------------------------------------------------------
+        const linksGroup = new Adw.PreferencesGroup();
+        this.add(linksGroup);
+
+        const gitlabRow = this._createLinkRow(_('Website'), `${metadata.url}`);
+        linksGroup.add(gitlabRow);
+
+        const reportIssueRow = this._createLinkRow(_('Report an Issue'), `${metadata.url}/-/issues`);
+        linksGroup.add(reportIssueRow);
 
         const donateRow = this._createLinkRow(_('Donate via PayPal'), PAYPAL_LINK);
-        infoGroup.add(donateRow);
+        linksGroup.add(donateRow);
 
-        this.add(infoGroup);
         // -----------------------------------------------------------------------
 
         // Save/Load Settings----------------------------------------------------------
@@ -183,80 +189,121 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         this.add(settingsGroup);
         // -----------------------------------------------------------------------
 
-        // Credits----------------------------------------------------------------
-        const creditsGroup = new Adw.PreferencesGroup({
-            title: _('Credits'),
-        });
-        this.add(creditsGroup);
+        // Credits / Legal ----------------------------------------------------------------
+        const creditsLegalGroup = new Adw.PreferencesGroup();
+        this.add(creditsLegalGroup);
 
-        const creditsRow = new Adw.PreferencesRow({
-            activatable: false,
-            selectable: false,
-        });
-        creditsGroup.add(creditsRow);
+        const {subpage: creditsSubPage, page: creditsPage} = this._createSubPage(_('Credits'));
+        const creditsRow = this._createSubPageRow(_('Credits'), creditsSubPage);
+        creditsLegalGroup.add(creditsRow);
 
-        const creditsBox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
+        const codeByGroup = new Adw.PreferencesGroup({
+            title: _('Brought to you by'),
         });
-        creditsRow.set_child(creditsBox);
+        creditsPage.add(codeByGroup);
+        const creditsRow1 =  this._createLinkRow('Andrew Zaech (2019 - current)', 'https://gitlab.com/AndrewZaech', 'ArcMenu maintainer and developer');
+        codeByGroup.add(creditsRow1);
+        const creditsRow2 =  this._createLinkRow('Andy C (2017 - 2020)', 'https://gitlab.com/LinxGem33', 'ArcMenu founder, maintainer, and digital art designer');
+        codeByGroup.add(creditsRow2);
+        const creditsRow3 =  this._createLinkRow('Alexander Rüedlinger (2017)', 'https://github.com/lexruee', 'Developer');
+        codeByGroup.add(creditsRow3);
 
-        const creditsCarousel = new Adw.Carousel({
-            hexpand: true,
-            halign: Gtk.Align.FILL,
-            margin_top: 5,
-            margin_bottom: 5,
+        const historyGroup = new Adw.PreferencesGroup({
+            title: _('History'),
         });
-        const creditsCarouselDots = new Adw.CarouselIndicatorDots({
-            carousel: creditsCarousel,
+        creditsPage.add(historyGroup);
+
+        const historyText = '<span size="small">ArcMenu was first released in 2017 by Andy C. The original ArcMenu project can be found <a href="https://gitlab.com/LinxGem33/Arc-Menu">here</a>.\n\n' +
+                            'In 2017, ArcMenu <i>started</i> as a fork of the Zorin menu extension by <a href="https://zorin.com/os/Zorin">Zorin OS</a>. ' +
+                            "As it's own separate project, ArcMenu rapidly began developing innovative features and quickly diverged " +
+                            'away from Zorin menu thanks to the works of <a href="https://gitlab.com/LinxGem33">Andy C</a>, ' +
+                            '<a href="https://gitlab.com/AndrewZaech">Andrew Zaech</a>, <a href="https://github.com/lexruee">Alexander Rüedlinger</a>, and other contributors. ' +
+                            "ArcMenu has been rewritten from the ground up since it's inception and has it's own separate, original, and unique code base, unrelated to that of Zorin menu.</span>";
+
+        const historyRow = new Adw.ActionRow({
+            title: historyText,
+            use_markup: true,
         });
-        creditsCarousel.append(new Gtk.Label({
-            label: Constants.DEVELOPERS,
-            use_markup: true,
-            vexpand: true,
-            valign: Gtk.Align.CENTER,
-            hexpand: true,
-            halign: Gtk.Align.FILL,
-            justify: Gtk.Justification.CENTER,
-        }));
-        creditsCarousel.append(new Gtk.Label({
-            label: Constants.CONTRIBUTORS,
-            use_markup: true,
-            vexpand: true,
-            valign: Gtk.Align.CENTER,
-            hexpand: true,
-            halign: Gtk.Align.FILL,
-            justify: Gtk.Justification.CENTER,
-        }));
-        creditsCarousel.append(new Gtk.Label({
-            label: Constants.ARTWORK,
-            use_markup: true,
-            vexpand: true,
-            valign: Gtk.Align.CENTER,
-            hexpand: true,
-            halign: Gtk.Align.FILL,
-            justify: Gtk.Justification.CENTER,
-        }));
-        creditsBox.append(creditsCarousel);
-        creditsBox.append(creditsCarouselDots);
-        // -----------------------------------------------------------------------
+        historyGroup.add(historyRow);
+
+        const contributionsByGroup = new Adw.PreferencesGroup({
+            title: _('Contributions by'),
+        });
+        creditsPage.add(contributionsByGroup);
+        const contributorsRow =  this._createLinkRow(_('Contributors'), 'https://gitlab.com/arcmenu/ArcMenu#contributors');
+        contributionsByGroup.add(contributorsRow);
+        const translatorsRow =  this._createLinkRow(_('Translators'), 'https://gitlab.com/arcmenu/ArcMenu#translators');
+        contributionsByGroup.add(translatorsRow);
+
+        const artworkByGroup = new Adw.PreferencesGroup({
+            title: _('Artwork by'),
+        });
+        creditsPage.add(artworkByGroup);
+        const andycArtworkRow =  this._createLinkRow('Andy C', 'https://gitlab.com/LinxGem33', 'ArcMenu logo and other ArcMenu icon assets');
+        artworkByGroup.add(andycArtworkRow);
+        const azArtworkRow =  this._createLinkRow('Andrew Zaech', 'https://gitlab.com/AndrewZaech', 'Modification and creation of some ArcMenu icon assets');
+        artworkByGroup.add(azArtworkRow);
+
+        const {subpage: legalSubPage, page: legalPage} = this._createSubPage(_('Legal'));
+        const legalRow = this._createSubPageRow(_('Legal'), legalSubPage);
+        creditsLegalGroup.add(legalRow);
 
         const gnuSoftwareGroup = new Adw.PreferencesGroup();
+        legalPage.add(gnuSoftwareGroup);
+
+        const warrantyLabel = _('This program comes with absolutely no warranty.');
+        /* TRANSLATORS: this is the program license url; the string contains the name of the license as link text.*/
+        const urlLabel = _('See the <a href="%s">%s</a> for details.').format('https://gnu.org/licenses/old-licenses/gpl-2.0.html', _('GNU General Public License, version 2 or later'));
+
         const gnuSofwareLabel = new Gtk.Label({
-            label: _(Constants.GNU_SOFTWARE),
+            label: `${_(warrantyLabel)}\n${_(urlLabel)}`,
             use_markup: true,
             justify: Gtk.Justification.CENTER,
         });
-        const gnuSofwareLabelBox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            valign: Gtk.Align.END,
-            vexpand: true,
-        });
-        gnuSofwareLabelBox.append(gnuSofwareLabel);
-        gnuSoftwareGroup.add(gnuSofwareLabelBox);
-        this.add(gnuSoftwareGroup);
+        gnuSoftwareGroup.add(gnuSofwareLabel);
+        // -----------------------------------------------------------------------
     }
 
-    _createLinkRow(title, uri) {
+    _createSubPage(title) {
+        const subpage = new Adw.NavigationPage({
+            title,
+        });
+
+        const headerBar = new Adw.HeaderBar();
+
+        const sidebarToolBarView = new Adw.ToolbarView();
+
+        sidebarToolBarView.add_top_bar(headerBar);
+        subpage.set_child(sidebarToolBarView);
+        const page = new Adw.PreferencesPage();
+        sidebarToolBarView.set_content(page);
+
+        return {subpage, page};
+    }
+
+    _createSubPageRow(title, subpage) {
+        const subpageRow = new Adw.ActionRow({
+            title: _(title),
+            activatable: true,
+        });
+
+        subpageRow.connect('activated', () => {
+            this.get_root().push_subpage(subpage);
+        });
+
+        const goNextImage = new Gtk.Image({
+            gicon: Gio.icon_new_for_string('go-next-symbolic'),
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.CENTER,
+            hexpand: false,
+            vexpand: false,
+        });
+
+        subpageRow.add_suffix(goNextImage);
+        return subpageRow;
+    }
+
+    _createLinkRow(title, uri, subtitle = null) {
         const image = new Gtk.Image({
             icon_name: 'adw-external-link-symbolic',
             valign: Gtk.Align.CENTER,
@@ -264,6 +311,8 @@ class ArcMenuAboutPage extends Adw.PreferencesPage {
         const linkRow = new Adw.ActionRow({
             title: _(title),
             activatable: true,
+            tooltip_text: uri,
+            subtitle: subtitle ? _(subtitle) : null,
         });
         linkRow.connect('activated', () => {
             Gtk.show_uri(this.get_root(), uri, Gdk.CURRENT_TIME);

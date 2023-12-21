@@ -112,30 +112,12 @@ class ArcMenuFineTunePage extends SubPage {
         multiLinedLabelSwitch.connect('notify::active', widget => {
             this._settings.set_boolean('multi-lined-labels', widget.get_active());
         });
-        const multiLinedLabelInfoButton = new Gtk.Button({
-            icon_name: 'help-about-symbolic',
-            valign: Gtk.Align.CENTER,
-        });
-        multiLinedLabelInfoButton.connect('clicked', () => {
-            const dialog = new Gtk.MessageDialog({
-                text: `<b>${_('Multi-Lined Labels')}</b>\n${_('Enable/Disable multi-lined labels on large application icon layouts.')}`,
-                use_markup: true,
-                buttons: Gtk.ButtonsType.OK,
-                message_type: Gtk.MessageType.WARNING,
-                transient_for: this.get_root(),
-                modal: true,
-            });
-            dialog.connect('response', () => {
-                dialog.destroy();
-            });
-            dialog.show();
-        });
         const multiLinedLabelRow = new Adw.ActionRow({
             title: _('Multi-Lined Labels'),
+            subtitle: _('Allow application labels to span multiple lines on grid style layouts'),
             activatable_widget: multiLinedLabelSwitch,
         });
         multiLinedLabelRow.add_suffix(multiLinedLabelSwitch);
-        multiLinedLabelRow.add_suffix(multiLinedLabelInfoButton);
         miscGroup.add(multiLinedLabelRow);
 
         const iconStyleGroup = new Adw.PreferencesGroup();

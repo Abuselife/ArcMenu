@@ -102,7 +102,8 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
             vertical: true,
             style: `padding: 0px ${padding}px 0px 0px;`,
         });
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
+        // eslint-disable-next-line no-unused-expressions
+        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
 
         this.setDefaultMenuView();
         this.updateWidth();
@@ -143,7 +144,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
             const item = frequentAppsList[i];
             if (item.get_parent())
                 item.get_parent().remove_child(item);
-            this.applicationsBox.add_actor(item);
+            this.applicationsBox.add_child(item);
             if (!activeMenuItemSet) {
                 activeMenuItemSet = true;
                 this.activeMenuItem = item;
@@ -200,11 +201,11 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
     loadCategories() {
     }
 
-    destroy() {
+    _onDestroy() {
         this.arcMenu.sourceActor = this.oldSourceActor;
         this.arcMenu.focusActor = this.oldFocusActor;
         this.arcMenu._boxPointer.setPosition(this.oldSourceActor, this.oldArrowAlignment);
-        super.destroy();
+        super._onDestroy();
     }
 };
 
