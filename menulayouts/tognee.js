@@ -58,8 +58,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
         });
         this.appBox.add_child(this.applicationsScrollBox);
         this.applicationsBox = new St.BoxLayout({vertical: true});
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
 
         this.navigateBox = new St.BoxLayout({
             vertical: true,
@@ -114,8 +113,7 @@ export const Layout = class TogneeLayout extends BaseMenuLayout {
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
         this.shortcutsScrollBox.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
-        // eslint-disable-next-line no-unused-expressions
-        this.shortcutsScrollBox.add_actor ? this.shortcutsScrollBox.add_actor(this.shortcutsBox) : this.shortcutsScrollBox.set_child(this.shortcutsBox);
+        this._addChildToParent(this.shortcutsScrollBox, this.shortcutsBox);
         this.quickBox.add_child(this.shortcutsScrollBox);
 
         this._displayPlaces();

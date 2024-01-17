@@ -5,7 +5,6 @@ import Graphene from 'gi://Graphene';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
-import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PointerWatcher from 'resource:///org/gnome/shell/ui/pointerWatcher.js';
@@ -168,7 +167,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     initiate() {
         this._dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
 
-        if (this._dtp?.state === ExtensionState.ENABLED && global.dashToPanel)
+        if (this._dtp?.state === Utils.ExtensionState.ACTIVE && global.dashToPanel)
             this.syncWithDashToPanel();
 
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed', () => this.updateHeight());
@@ -234,7 +233,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
                 this.arcMenu._arrowAlignment = arrowAlignment;
                 this.arcMenuContextMenu._boxPointer.setSourceAlignment(.5);
                 this.arcMenu._boxPointer.setSourceAlignment(.5);
-            } else if (this._dtp?.state === ExtensionState.ENABLED) {
+            } else if (this._dtp?.state === Utils.ExtensionState.ACTIVE) {
                 const monitorIndex = Main.layoutManager.findIndexForActor(this);
                 const side = Utils.getDashToPanelPosition(this._dtpSettings, monitorIndex);
                 this.updateArrowSide(side, false);
@@ -757,11 +756,11 @@ var ArcMenuContextMenu = class ArcMenuArcMenuContextMenu extends PopupMenu.Popup
         const dashToPanel = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
         const azTaskbar = Main.extensionManager.lookup(Constants.AZTASKBAR_UUID);
 
-        if (dashToPanel?.state === ExtensionState.ENABLED && global.dashToPanel) {
+        if (dashToPanel?.state === Utils.ExtensionState.ACTIVE && global.dashToPanel) {
             const item = new PopupMenu.PopupMenuItem(_('Dash to Panel Settings'));
             item.connect('activate', () => Utils.openPrefs(Constants.DASH_TO_PANEL_UUID));
             this.addMenuItem(item);
-        } else if (azTaskbar?.state === ExtensionState.ENABLED && global.azTaskbar) {
+        } else if (azTaskbar?.state === Utils.ExtensionState.ACTIVE && global.azTaskbar) {
             const item = new PopupMenu.PopupMenuItem(_('App Icons Taskbar Settings'));
             item.connect('activate', () => Utils.openPrefs(Constants.AZTASKBAR_UUID));
             this.addMenuItem(item);

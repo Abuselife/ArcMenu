@@ -87,8 +87,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
         this.rightBox.add_child(this.applicationsScrollBox);
 
         this.leftBox = new St.BoxLayout({
@@ -115,8 +114,7 @@ export const Layout = class WhiskerLayout extends BaseMenuLayout {
 
         this.leftBox.add_child(this.categoriesScrollBox);
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        // eslint-disable-next-line no-unused-expressions
-        this.categoriesScrollBox.add_actor ? this.categoriesScrollBox.add_actor(this.categoriesBox) : this.categoriesScrollBox.set_child(this.categoriesBox);
+        this._addChildToParent(this.categoriesScrollBox, this.categoriesBox);
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
         if (searchbarLocation === Constants.SearchbarLocation.TOP) {

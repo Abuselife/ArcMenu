@@ -102,8 +102,7 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
             vertical: true,
             style: `padding: 0px ${padding}px 0px 0px;`,
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
 
         this.setDefaultMenuView();
         this.updateWidth();

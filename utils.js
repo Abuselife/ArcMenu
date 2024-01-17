@@ -7,9 +7,9 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import * as Constants from './constants.js';
 import {getLoginManager} from 'resource:///org/gnome/shell/misc/loginManager.js';
 
+import * as Constants from './constants.js';
 import {ArcMenuManager} from './arcmenuManager.js';
 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -495,3 +495,27 @@ export function getDashToPanelPosition(settings, index) {
     else
         return St.Side.BOTTOM;
 }
+
+/**
+ *
+ * @param {Clutter.Actor} parent
+ * @param {Clutter.Actor} child
+ * @description GNOME 46 no longer supports add_actor() method.\
+ *              Check which method to use to maintain compatibility with GNOME 45 and 46.
+ */
+export function addChildToParent(parent, child) {
+    if (parent.add_actor)
+        parent.add_actor(child);
+    else if (parent instanceof St.Button || parent instanceof St.ScrollView)
+        parent.set_child(child);
+    else
+        parent.add_child(child);
+}
+
+/**
+ * GNOME 46 renamed the extension states. Use this const instead.
+ */
+export const ExtensionState = {
+    ACTIVE: 1,
+    INACTIVE: 2,
+};

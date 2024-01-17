@@ -169,6 +169,10 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.resetScrollBarPosition();
     }
 
+    _addChildToParent(parent, child) {
+        Utils.addChildToParent(parent, child);
+    }
+
     updateWidth(setDefaultMenuView, leftPanelWidthOffset = 0, rightPanelWidthOffset = 0) {
         if (this.is_dual_panel) {
             const leftPanelWidth = this._settings.get_int('left-panel-width') + leftPanelWidthOffset;
@@ -758,6 +762,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         this.applicationsBox.add_child(this._pinnedAppsGrid);
         this._setGridColumns(this._pinnedAppsGrid);
+        const firstItem = this._pinnedAppsGrid.getItemAt(0);
+        this.activeMenuItem = firstItem;
     }
 
     _redisplayPlaces(id) {

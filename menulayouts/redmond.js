@@ -97,8 +97,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
         mainBox.add_child(this.applicationsScrollBox);
 
         const searchbarLocation = this._settings.get_enum('searchbar-default-top-location');
@@ -124,8 +123,7 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.shortcutsScrollBox.add_actor ? this.shortcutsScrollBox.add_actor(this.shortcutsBox) : this.shortcutsScrollBox.set_child(this.shortcutsBox);
+        this._addChildToParent(this.shortcutsScrollBox, this.shortcutsBox);
         this.rightBox.add_child(this.shortcutsScrollBox);
 
         // Add place shortcuts to menu (Home,Documents,Downloads,Music,Pictures,Videos)

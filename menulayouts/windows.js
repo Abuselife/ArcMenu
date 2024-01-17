@@ -78,8 +78,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.pinnedAppsScrollBox.add_actor ? this.pinnedAppsScrollBox.add_actor(this.pinnedAppsBox) : this.pinnedAppsScrollBox.set_child(this.pinnedAppsBox);
+        this._addChildToParent(this.pinnedAppsScrollBox, this.pinnedAppsBox);
 
         this.pinnedAppsVerticalSeparator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
             Constants.SeparatorAlignment.VERTICAL);
@@ -92,8 +91,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'small-vfade',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
         this.subMainBox.add_child(this.applicationsScrollBox);
 
         this.subMainBox.add_child(this.searchEntry);
@@ -267,8 +265,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         extrasMenuPopupBox.add_child(this.computerScrollBox);
 
         const computerBox = new St.BoxLayout({vertical: true});
-        // eslint-disable-next-line no-unused-expressions
-        this.computerScrollBox.add_actor ? this.computerScrollBox.add_actor(computerBox) : this.computerScrollBox.set_child(computerBox);
+        this._addChildToParent(this.computerScrollBox, computerBox);
 
         computerBox.add_child(this.createLabelRow(_('Application Shortcuts')));
         for (let i = 0; i < this.applicationShortcuts.length; i++)
@@ -330,6 +327,7 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
     }
 
     displayFrequentApps() {
+        this._firstFrequentApp = null;
         const mostUsed = Shell.AppUsage.get_default().get_most_used();
         if (mostUsed.length < 1)
             return;
@@ -354,19 +352,19 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
             if (!activeMenuItemSet) {
                 activeMenuItemSet = true;
                 this.activeMenuItem = item;
+                this._firstFrequentApp = item;
             }
         }
     }
 
     displayAllApps() {
         this._clearActorsFromBox();
-        this.activeMenuItemSet = false;
 
         if (!this._settings.get_boolean('windows-disable-frequent-apps'))
             this.displayFrequentApps();
 
         const appList = [];
-        this.applicationsMap.forEach((value, key, _map) => {
+        this.applicationsMap.forEach((value, key) => {
             appList.push(key);
         });
         appList.sort((a, b) => {
@@ -375,8 +373,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
         this.display_type = Constants.DisplayType.LIST;
         this._displayAppList(appList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
 
-        if (this.activeMenuItemSet)
-            this.activeMenuItem = this._frequentActiveItem;
+        if (this._firstFrequentApp)
+            this.activeMenuItem = this._firstFrequentApp;
     }
 
     loadCategories() {
@@ -420,9 +418,6 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
         if (!this.pinnedAppsBox.contains(this._pinnedAppsGrid))
             this.pinnedAppsBox.add_child(this._pinnedAppsGrid);
-
-        if (this.activeMenuItemSet)
-            this.activeMenuItem = this._frequentActiveItem;
     }
 };
 

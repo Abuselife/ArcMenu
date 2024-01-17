@@ -1,6 +1,5 @@
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 
 import {ArcMenuManager} from './arcmenuManager.js';
 import * as Constants from './constants.js';
@@ -46,8 +45,8 @@ export default class ArcMenu extends Extension {
         Main.extensionManager.connectObject('extension-state-changed', (data, extension) => {
             const isDtp = extension.uuid === Constants.DASH_TO_PANEL_UUID;
             const isAzTaskbar = extension.uuid === Constants.AZTASKBAR_UUID;
-            const isEnabled = extension.state === ExtensionState.ENABLED;
-            const isDisabled = extension.state === ExtensionState.DISABLED;
+            const isEnabled = extension.state === Utils.ExtensionState.ACTIVE;
+            const isDisabled = extension.state === Utils.ExtensionState.INACTIVE;
 
             if ((isDtp || isAzTaskbar) && (isEnabled || isDisabled)) {
                 this._disconnectExtensionSignals();
@@ -100,11 +99,11 @@ export default class ArcMenu extends Extension {
 
     _connectExtensionSignals() {
         const dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
-        if (dtp?.state === ExtensionState.ENABLED && global.dashToPanel)
+        if (dtp?.state === Utils.ExtensionState.ACTIVE && global.dashToPanel)
             global.dashToPanel._panelsCreatedId = global.dashToPanel.connect('panels-created', () => this._reload());
 
         const azTaskbar = Main.extensionManager.lookup(Constants.AZTASKBAR_UUID);
-        if (azTaskbar?.state === ExtensionState.ENABLED && global.azTaskbar)
+        if (azTaskbar?.state === Utils.ExtensionState.ACTIVE && global.azTaskbar)
             global.azTaskbar._panelsCreatedId = global.azTaskbar.connect('panels-created', () => this._reload());
     }
 

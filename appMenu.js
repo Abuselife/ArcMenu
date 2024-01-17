@@ -6,7 +6,6 @@ import GLib from 'gi://GLib';
 import St from 'gi://St';
 
 import {AppMenu} from 'resource:///org/gnome/shell/ui/appMenu.js';
-import {ExtensionState} from 'resource:///org/gnome/shell/misc/extensionUtils.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
@@ -19,7 +18,7 @@ const DESKTOP_ICONS_UUIDS = [
 
 /**
  *
- * @param child
+ * @param {Actor} child
  */
 function isPopupMenuItemVisible(child) {
     if (child._delegate instanceof PopupMenu.PopupMenuSection) {
@@ -49,8 +48,7 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
             vscrollbar_policy: St.PolicyType.AUTOMATIC,
         });
         this._boxPointer.bin.set_child(this._scrollBox);
-        // eslint-disable-next-line no-unused-expressions
-        this._scrollBox.add_actor ? this._scrollBox.add_actor(this.box) : this._scrollBox.set_child(this.box);
+        Utils.addChildToParent(this._scrollBox, this.box);
 
         Main.uiGroup.add_child(this.actor);
         this._menuLayout.contextMenuManager.addMenu(this);
@@ -255,7 +253,7 @@ export const AppContextMenu = class ArcMenuAppContextMenu extends AppMenu {
 
         DESKTOP_ICONS_UUIDS.forEach(uuid => {
             const extension = Main.extensionManager.lookup(uuid);
-            if (extension?.state === ExtensionState.ENABLED)
+            if (extension?.state === Utils.ExtensionState.ACTIVE)
                 hasActiveDesktop = true;
         });
 

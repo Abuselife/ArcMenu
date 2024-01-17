@@ -355,6 +355,7 @@ export const DistroIcons = [
     {PATH: 'distro-nobara-symbolic', NAME: 'Nobara'},
     {PATH: 'distro-pardus-symbolic', NAME: 'Pardus'},
     {PATH: 'distro-cachyos-symbolic', NAME: 'CachyOS'},
+    {PATH: 'distro-nixos-symbolic', NAME: 'NixOS'},
 ];
 
 export const MenuLayout = {
@@ -596,4 +597,6 @@ export const DistroIconsDisclaimer = '<i>All brand icons are trademarks of their
     '\n\n•   <b>Red Hat, Inc.©</b> - Copyright 2020 name and logo' +
     '\n\n•   <b>Pardus</b> - name and logo are copyright © 2003-2023 by TUBITAK ULAKBIM' +
     '\n\n•   <b>ZORIN OS</b> - The "Z" logomark is a registered trademark of Zorin Technology Group Ltd. ' +
-                'Copyright © 2019 - 2021 Zorin Technology Group Ltd';
+                'Copyright © 2019 - 2021 Zorin Technology Group Ltd' +
+    '\n\n•   <b>NixOS</b> - The logo is made available under a <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY license</a>. ' +
+                'Logo designed by Tim Cuthbertson (@timbertson)';

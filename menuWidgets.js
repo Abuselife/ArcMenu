@@ -760,8 +760,7 @@ export class PowerOptionsBox extends St.ScrollView {
             vertical,
             style: 'spacing: 6px;',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.add_actor ? this.add_actor(box) : this.set_child(box);
+        Utils.addChildToParent(this, box);
 
         const powerOptions = this._settings.get_value('power-options').deep_unpack();
         for (let i = 0; i < powerOptions.length; i++) {
@@ -2583,8 +2582,7 @@ export class FolderDialog extends PopupMenu.PopupMenu {
             y_align: Clutter.ActorAlign.START,
         });
         this._box.add_child(this._grid);
-        // eslint-disable-next-line no-unused-expressions
-        this._scrollView.add_actor ? this._scrollView.add_actor(this._box) : this._scrollView.set_child(this._box);
+        Utils.addChildToParent(this._scrollView, this._box);
 
         this.box.add_child(this._scrollView);
         this.box.set({

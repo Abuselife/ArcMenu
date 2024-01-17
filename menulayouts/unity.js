@@ -80,8 +80,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             y_align: Clutter.ActorAlign.START,
             style_class: this._disableFadeEffect ? '' : 'vfade',
         });
-        // eslint-disable-next-line no-unused-expressions
-        this.applicationsScrollBox.add_actor ? this.applicationsScrollBox.add_actor(this.applicationsBox) : this.applicationsScrollBox.set_child(this.applicationsBox);
+        this._addChildToParent(this.applicationsScrollBox, this.applicationsBox);
         this._mainBox.add_child(this.applicationsScrollBox);
 
         this._widgetBox = new St.BoxLayout({
@@ -252,8 +251,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
         categoriesPopupBox.add_child(this.categoriesScrollBox);
 
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        // eslint-disable-next-line no-unused-expressions
-        this.categoriesScrollBox.add_actor ? this.categoriesScrollBox.add_actor(this.categoriesBox) : this.categoriesScrollBox.set_child(this.categoriesBox);
+        this._addChildToParent(this.categoriesScrollBox, this.categoriesBox);
 
         const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         const height =  Math.round(350 / scaleFactor);
