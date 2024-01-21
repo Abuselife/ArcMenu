@@ -143,6 +143,9 @@ Linux - is the registered trademark of Linus Torvalds in the U.S. and other coun
 
 * **Pardus** - Pardus is a trademark of the TUBITAK ULAKBIM. Copyright © 2003–2023 TUBITAK ULAKBIM
 
+* **NixOS** - The logo is made available under a <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY license</a>. Logo designed by Tim Cuthbertson.
+
+
 </p>
 </details>
 
