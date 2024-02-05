@@ -17,6 +17,7 @@ export const Layout = class ChromebookLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             column_spacing: 10,
             row_spacing: 10,
             default_menu_width: 415,

@@ -20,6 +20,7 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 5,
             context_menu_location: Constants.ContextMenuLocation.BOTTOM_CENTERED,
             column_spacing: 0,
             row_spacing: 0,

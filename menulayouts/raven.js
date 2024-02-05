@@ -23,6 +23,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: settings.get_enum('raven-search-display-style'),
+            search_results_spacing: 4,
             context_menu_location: Constants.ContextMenuLocation.BOTTOM_CENTERED,
             column_spacing: 10,
             row_spacing: 10,

@@ -23,6 +23,7 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             context_menu_location: Constants.ContextMenuLocation.BOTTOM_CENTERED,
             column_spacing: 15,
             row_spacing: 15,

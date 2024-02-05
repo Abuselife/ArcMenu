@@ -516,6 +516,22 @@ class IconGrid extends St.Widget {
         this.queue_relayout();
     }
 
+    /**
+     * @param {Clutter.ActorAlign} columnSpacing
+     */
+    set column_spacing(columnSpacing) {
+        this.layout_manager.column_spacing = columnSpacing;
+        this.queue_relayout();
+    }
+
+    /**
+     * @param {number} rowSpacing
+     */
+    set row_spacing(rowSpacing) {
+        this.layout_manager.row_spacing = rowSpacing;
+        this.queue_relayout();
+    }
+
     vfunc_allocate(box) {
         const [width, height_] = box.get_size();
         this.layout_manager.adaptToSize(width);

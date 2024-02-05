@@ -240,13 +240,15 @@ class ListSearchResults extends SearchResultsBase {
 
         this.layout = this._settings.get_enum('menu-layout');
 
+        const spacing = this._menuLayout.search_results_spacing;
+
         this._container = new St.BoxLayout({
             vertical: true,
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
             x_expand: true,
             y_expand: true,
-            style: 'margin-top: 8px;',
+            style: `margin-top: ${Math.max(spacing, 8)}px; spacing: ${Math.max(spacing, 2)}px;`,
         });
 
         this.providerInfo = new ArcSearchProviderInfo(provider, this._menuLayout);
@@ -256,7 +258,6 @@ class ListSearchResults extends SearchResultsBase {
                 this._menuLayout.arcMenu.toggle();
             }
         });
-
         this._container.add_child(this.providerInfo);
 
         this._content = new St.BoxLayout({
@@ -264,6 +265,7 @@ class ListSearchResults extends SearchResultsBase {
             x_expand: true,
             y_expand: true,
             x_align: Clutter.ActorAlign.FILL,
+            style: `spacing: ${spacing}px;`,
         });
 
         this._container.add_child(this._content);
@@ -323,8 +325,8 @@ class AppSearchResults extends SearchResultsBase {
 
         const layout = new Clutter.GridLayout({
             orientation: Clutter.Orientation.VERTICAL,
-            column_spacing: this.searchType === Constants.DisplayType.GRID ? this._menuLayout.column_spacing : 0,
-            row_spacing: this.searchType === Constants.DisplayType.GRID ? this._menuLayout.row_spacing : 0,
+            column_spacing: this.searchType === Constants.DisplayType.GRID ? this._menuLayout.column_spacing : this._menuLayout.search_results_spacing,
+            row_spacing: this.searchType === Constants.DisplayType.GRID ? this._menuLayout.row_spacing : this._menuLayout.search_results_spacing,
         });
         this._grid = new St.Widget({
             x_expand: true,
@@ -780,7 +782,7 @@ export class ArcSearchProviderInfo extends BaseMenuItem {
         super(menuLayout);
         this.provider = provider;
         this._menuLayout = menuLayout;
-        this.style = 'padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;';
+        this.style = 'padding-top: 6px; padding-bottom: 6px;';
         this.x_expand = false;
         this.x_align = Clutter.ActorAlign.START;
 

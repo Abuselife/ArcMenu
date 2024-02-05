@@ -36,6 +36,7 @@ export function setVisibleRows(rows, menuLayout) {
     case Constants.MenuLayout.ELEVEN:
     case Constants.MenuLayout.AZ:
     case Constants.MenuLayout.INSIDER:
+    case Constants.MenuLayout.SLEEK:
         rows[Constants.SettingsPage.DIRECTORY_SHORTCUTS].visible = false;
         rows[Constants.SettingsPage.APPLICATION_SHORTCUTS].visible = false;
         rows[Constants.SettingsPage.EXTRA_CATEGORIES].visible = false;

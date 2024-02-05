@@ -54,6 +54,7 @@ export const Layout = class PopLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             column_spacing: 12,
             row_spacing: 12,
             default_menu_width: 1050,

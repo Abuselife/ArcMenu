@@ -21,6 +21,7 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             context_menu_location: Constants.ContextMenuLocation.RIGHT,
             column_spacing: 10,
             row_spacing: 10,

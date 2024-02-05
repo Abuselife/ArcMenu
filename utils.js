@@ -351,6 +351,8 @@ export function getMenuButtonIcon(path) {
     if (iconType === Constants.MenuIconType.CUSTOM) {
         if (path && GLib.file_test(path, GLib.FileTest.IS_REGULAR))
             return path;
+        else
+            return path;
     } else if (iconType === Constants.MenuIconType.DISTRO_ICON) {
         const iconEnum = settings.get_int('distro-icon');
         const iconPath = `${iconDirectory + Constants.DistroIcons[iconEnum].PATH}.svg`;

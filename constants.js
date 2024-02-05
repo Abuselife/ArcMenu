@@ -380,6 +380,7 @@ export const MenuLayout = {
     AZ: 18,
     ENTERPRISE: 19,
     POP: 20,
+    SLEEK: 21,
 };
 
 export const TraditionalMenus = [
@@ -465,6 +466,11 @@ export const ModernMenus = [
         LAYOUT: MenuLayout.POP,
         TITLE: _('Pop'),
         IMAGE: 'menu-pop-symbolic',
+    },
+    {
+        LAYOUT: MenuLayout.SLEEK,
+        TITLE: _('Sleek'),
+        IMAGE: 'menu-sleek-symbolic',
     },
 ];
 

@@ -195,10 +195,11 @@ class ArcMenuMenuPage extends Adw.PreferencesPage {
         row.settingPage = settingPage;
 
         row.connect('activated', () => {
+            this._window.push_subpage(settingPage);
+
             if (settingPage.setActiveLayout)
                 settingPage.setActiveLayout(this._settings.get_enum('menu-layout'));
 
-            this._window.push_subpage(settingPage);
             settingPage.resetScrollAdjustment();
         });
     }

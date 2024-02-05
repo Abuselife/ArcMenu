@@ -44,6 +44,10 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         'row-spacing': GObject.ParamSpec.uint(
             'row-spacing', 'row-spacing', 'row-spacing',
             GObject.ParamFlags.READWRITE, 0, GLib.MAXINT32, 0),
+        'search-results-spacing': GObject.ParamSpec.uint(
+            'search-results-spacing', 'search-results-spacing',
+            'search-results-spacing',  GObject.ParamFlags.READWRITE,
+            0, GLib.MAXINT32, 0),
         'is_dual_panel': GObject.ParamSpec.boolean(
             'is_dual_panel', 'is_dual_panel', 'is_dual_panel',
             GObject.ParamFlags.READWRITE, false),

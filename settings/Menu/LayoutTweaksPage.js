@@ -99,6 +99,9 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         case Constants.MenuLayout.POP:
             this._loadPopTweaks();
             break;
+        case Constants.MenuLayout.SLEEK:
+            this._loadSleekTweaks();
+            break;
         default:
             this._loadPlaceHolderTweaks();
             break;
@@ -662,6 +665,41 @@ class ArcMenuLayoutTweaksPage extends SubPage {
         tweaksGroup.add(this._createFlipHorizontalRow());
         tweaksGroup.add(this._createVertSeparatorRow());
         this.add(tweaksGroup);
+    }
+
+    _loadSleekTweaks() {
+        const tweaksGroup = new Adw.PreferencesGroup();
+
+        tweaksGroup.add(this._createAvatarShapeRow());
+        tweaksGroup.add(this._createSearchBarLocationRow());
+        tweaksGroup.add(this._createFlipHorizontalRow());
+
+        const rightPanelWidthSpinButton = new Gtk.SpinButton({
+            adjustment: new Gtk.Adjustment({
+                lower: 150, upper: 500, step_increment: 25, page_increment: 50, page_size: 0,
+            }),
+            climb_rate: 25,
+            valign: Gtk.Align.CENTER,
+            digits: 0,
+            numeric: true,
+        });
+        rightPanelWidthSpinButton.set_value(this._settings.get_int('sleek-layout-panel-width'));
+        rightPanelWidthSpinButton.connect('value-changed', widget => {
+            this._settings.set_int('sleek-layout-panel-width', widget.get_value());
+        });
+        const rightPanelWidthRow = new Adw.ActionRow({
+            title: _('Right-Panel Width'),
+            activatable_widget: rightPanelWidthSpinButton,
+        });
+        rightPanelWidthRow.add_suffix(rightPanelWidthSpinButton);
+        tweaksGroup.add(rightPanelWidthRow);
+
+        this.add(tweaksGroup);
+
+        const extraShortcutsGroup = new Adw.PreferencesGroup();
+        const extraShortcutsRow = this._createExtraShortcutsRow('sleek-layout-extra-shortcuts');
+        extraShortcutsGroup.add(extraShortcutsRow);
+        this.add(extraShortcutsGroup);
     }
 
     _loadRedmondMenuTweaks() {

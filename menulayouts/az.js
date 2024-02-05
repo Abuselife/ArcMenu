@@ -18,6 +18,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
             has_search: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             context_menu_location: Constants.ContextMenuLocation.BOTTOM_CENTERED,
             column_spacing: 4,
             row_spacing: 4,
@@ -179,7 +180,7 @@ export const Layout = class AzLayout extends BaseMenuLayout {
     }
 
     displayAllApps() {
-        this.setGridLayout(Constants.DisplayType.LIST, 3);
+        this.setGridLayout(Constants.DisplayType.LIST, 4);
         super.displayAllApps();
         this.setGridLayout(Constants.DisplayType.GRID, 4, false);
     }

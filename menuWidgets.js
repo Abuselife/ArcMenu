@@ -448,6 +448,9 @@ export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
             if (separatorLength === Constants.SeparatorStyle.LONG) {
                 this._separator.style = 'margin: 5px 0px; width: 1px;';
                 this.style = 'padding: 5px 0px; margin: 1px 0px;';
+            } else if (separatorLength === Constants.SeparatorStyle.MAX) {
+                this._separator.style = 'margin: 0px 0px; width: 1px;';
+                this.style = 'padding: 0px 0px; margin: 0px 0px;';
             } else {
                 this._syncVisibility();
                 this._settings.connectObject('changed::vert-separator', this._syncVisibility.bind(this), this);

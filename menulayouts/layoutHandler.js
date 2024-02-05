@@ -16,6 +16,7 @@ import {Layout as PopLayout} from './pop.js';
 import {Layout as RavenLayout} from './raven.js';
 import {Layout as RedmondLayout} from './redmond.js';
 import {Layout as RunnerLayout} from './runner.js';
+import {Layout as SleekLayout} from './sleek.js';
 import {Layout as TogneeLayout} from './tognee.js';
 import {Layout as UnityLayout} from './unity.js';
 import {Layout as WhiskerLayout} from './whisker.js';
@@ -64,6 +65,8 @@ export function createMenuLayout(menuButton, layout, isStandaloneRunner) {
         constructor = RedmondLayout;
     else if (layout === MenuLayout.RUNNER)
         constructor = RunnerLayout;
+    else if (layout === MenuLayout.SLEEK)
+        constructor = SleekLayout;
     else if (layout === MenuLayout.TOGNEE)
         constructor = TogneeLayout;
     else if (layout === MenuLayout.UNITY)

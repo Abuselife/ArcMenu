@@ -1,7 +1,9 @@
 import Adw from 'gi://Adw';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk';
 import Gtk from 'gi://Gtk';
+import Pango from 'gi://Pango';
 
 import * as Constants from '../constants.js';
 import * as PW from '../prefsWidgets.js';
@@ -371,10 +373,10 @@ class ArcMenuMenuButtonPage extends Adw.PreferencesPage {
 });
 
 var ArcMenuIconsDialogWindow = GObject.registerClass(
-class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
+class ArcMenuArcMenuIcons extends PW.DialogWindow {
     _init(settings, parent) {
         this._settings = settings;
-        super._init(_('ArcMenu Icons'), parent);
+        super._init(_('Menu Button Icons'), parent);
         this.set_default_size(475, 475);
         this.search_enabled = false;
 
@@ -470,28 +472,29 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
         fileFilter.add_pixbuf_formats();
 
         const fileChooserButton = new Gtk.Button({
-            label: _('Browse...'),
+            label: _('Browse Files...'),
             valign: Gtk.Align.CENTER,
         });
         fileChooserButton.connect('clicked', () => {
             const dialog = new Gtk.FileChooserDialog({
-                title: _('Select an Icon'),
+                title: _('Select an Image File'),
                 transient_for: this.get_root(),
                 modal: true,
                 action: Gtk.FileChooserAction.OPEN,
                 filter: fileFilter,
             });
 
-            dialog.add_button('_Cancel', Gtk.ResponseType.CANCEL);
-            dialog.add_button('_Open', Gtk.ResponseType.ACCEPT);
+            dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
+            dialog.add_button(_('Select'), Gtk.ResponseType.ACCEPT);
 
             dialog.connect('response', (_self, response) => {
                 if (response === Gtk.ResponseType.ACCEPT) {
                     this._arcMenuIconsFlowBox.unselect_all();
                     this._distroIconsFlowBox.unselect_all();
 
-                    customIconTile.setIcon(dialog.get_file().get_path());
-                    this._settings.set_string('custom-menu-button-icon', dialog.get_file().get_path());
+                    const iconPath = dialog.get_file().get_path();
+                    customIconTile.setIcon(iconPath);
+                    this._settings.set_string('custom-menu-button-icon', iconPath);
                     this._settings.set_enum('menu-button-icon', Constants.MenuIconType.CUSTOM);
                     this._customIconFlowBox.select_child(this._customIconFlowBox.get_child_at_index(0));
                 }
@@ -500,10 +503,31 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
             });
             dialog.show();
         });
-        const fileChooserRow = new Adw.ActionRow({
-            title: _('Custom Icon'),
+        const iconChooserButton = new Gtk.Button({
+            label: _('Browse Icons...'),
+            valign: Gtk.Align.CENTER,
         });
-        fileChooserRow.add_suffix(fileChooserButton);
+        iconChooserButton.connect('clicked', () => {
+            const dialog = new IconChooserDialog(this._settings, this.get_root());
+            dialog.connect('response', (_self, response) => {
+                if (response === Gtk.ResponseType.APPLY) {
+                    this._arcMenuIconsFlowBox.unselect_all();
+                    this._distroIconsFlowBox.unselect_all();
+
+                    const newIcon = dialog.iconString;
+                    customIconTile.setIcon(newIcon);
+                    this._settings.set_string('custom-menu-button-icon', newIcon);
+                    this._settings.set_enum('menu-button-icon', Constants.MenuIconType.CUSTOM);
+                    this._customIconFlowBox.select_child(this._customIconFlowBox.get_child_at_index(0));
+                }
+
+                dialog.destroy();
+            });
+            dialog.show();
+        });
+        const fileChooserRow = new Adw.ActionRow();
+        fileChooserRow.add_prefix(fileChooserButton);
+        fileChooserRow.add_suffix(iconChooserButton);
         fileChooserFrame.add(fileChooserRow);
 
         this.setVisiblePage();
@@ -538,6 +562,115 @@ class ArcMenuArcMenuIconsDialogWindow extends PW.DialogWindow {
             this.set_visible_page(this.distroIconsPage);
         else if (this._settings.get_enum('menu-button-icon') === Constants.MenuIconType.CUSTOM)
             this.set_visible_page(this.customIconPage);
+    }
+});
+
+var IconChooserDialog = GObject.registerClass(
+class ArcMenuIconChooserDialog extends PW.DialogWindow {
+    _init(settings, parent) {
+        this._settings = settings;
+        super._init(_('Select an Icon'), parent);
+        this.set_default_size(475, 475);
+        this.search_enabled = false;
+        this.iconString = '';
+
+        this.page.title = _('System Icons');
+        this.page.icon_name = 'go-home-symbolic';
+
+        const searchEntry = new Gtk.SearchEntry({
+            placeholder_text: _('Search...'),
+            search_delay: 250,
+            margin_bottom: 12,
+        });
+        searchEntry.connect('search-changed', () => {
+            const query = searchEntry.text.trim().toLowerCase();
+            if (!query) {
+                filter.set_filter_func(null);
+                return;
+            }
+            filter.set_filter_func(item => {
+                return item.string.toLowerCase().includes(query);
+            });
+        });
+        this.pageGroup.add(searchEntry);
+
+        const scrollWindow = new Gtk.ScrolledWindow();
+        scrollWindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+
+        const factory = new Gtk.SignalListItemFactory();
+        const iconTheme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default());
+        const iconNames = iconTheme.get_icon_names();
+        iconNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        const listStore = new Gtk.StringList({strings: iconNames});
+        const filter = new Gtk.CustomFilter();
+        const filterListModel = new Gtk.FilterListModel({
+            model: listStore,
+            filter,
+        });
+
+        const iconGridView = new Gtk.ListView({
+            model: new Gtk.SingleSelection({model: filterListModel, autoselect: false, selected: -1}),
+            factory,
+            vexpand: true,
+            valign: Gtk.Align.FILL,
+        });
+        scrollWindow.set_child(iconGridView);
+
+        factory.connect('setup', (factory_, item) => {
+            item.connect('notify::selected', () => {
+                applyButton.sensitive = true;
+            });
+            const box = new Gtk.Box({
+                orientation: Gtk.Orientation.HORIZONTAL,
+                spacing: 12,
+                margin_top: 3,
+                margin_bottom: 3,
+                margin_start: 12,
+                margin_end: 12,
+            });
+
+            const image = new Gtk.Image({
+                pixel_size: 32,
+                hexpand: false,
+                halign: Gtk.Align.START,
+            });
+            box.image = image;
+
+            const label = new Gtk.Label({
+                hexpand: false,
+                halign: Gtk.Align.START,
+                wrap: true,
+                wrap_mode: Pango.WrapMode.WORD_CHAR,
+            });
+            box.label = label;
+
+            box.append(image);
+            box.append(label);
+
+            item.set_child(box);
+        });
+        factory.connect('bind', (factory_, {child, item}) => {
+            const iconName = item.string;
+            child.image.icon_name = iconName;
+            child.label.label = iconName;
+        });
+
+        this.pageGroup.add(scrollWindow);
+
+        const applyButton = new Gtk.Button({
+            label: _('Select'),
+            sensitive: false,
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.END,
+            margin_top: 12,
+            css_classes: ['suggested-action'],
+        });
+        applyButton.connect('clicked', () => {
+            this.iconString = iconGridView.model.get_selected_item().string;
+            this.emit('response', Gtk.ResponseType.APPLY);
+        });
+        this.pageGroup.add(applyButton);
     }
 });
 

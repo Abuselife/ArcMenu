@@ -22,6 +22,7 @@
         <value value='18' nick='AZ'/>
         <value value='19' nick='Enterprise'/>
         <value value='20' nick='Pop'/>
+        <value value='21' nick='Sleek'/>
     </enum>
     <enum id='org.gnome.shell.extensions.arcmenu.forcemenulocation'>
         <value value='0' nick='Off'/>
@@ -568,6 +569,10 @@
       <default>[]</default>
       <summary>List of recently installed apps</summary>
     </key>
+    <key type="i" name="sleek-layout-panel-width">
+      <default>225</default>
+      <summary>Sleek layout right panel width.</summary>
+    </key>
     <child name='pinned-apps-folders' schema='org.gnome.shell.extensions.arcmenu.pinned-apps-folders'/>
     <key name="pinned-apps" type="aa{ss}">
       <default> 
@@ -659,6 +664,21 @@
         ]
       </default>
       <summary>'Mint' layout extra shortcuts</summary>
+    </key>
+    <key name="sleek-layout-extra-shortcuts" type="aa{ss}">
+      <default>
+        [
+          {'id': 'ArcMenu_Home', 'name': 'Home', 'icon': 'ArcMenu_Home'},
+          {'id': 'ArcMenu_Documents', 'name': 'Documents', 'icon': 'ArcMenu_Documents'},
+          {'id': 'ArcMenu_Downloads', 'name': 'Downloads', 'icon': 'ArcMenu_Downloads'},
+          {'id': 'ArcMenu_Music', 'name': 'Music', 'icon': 'ArcMenu_Music'},
+          {'id': 'ArcMenu_Pictures', 'name': 'Pictures', 'icon': 'ArcMenu_Pictures'},
+          {'id': 'ArcMenu_Software', 'name': 'Software'},
+          {'id': 'org.gnome.Settings.desktop'},
+          {'id': 'org.gnome.Terminal.desktop'}
+        ]
+      </default>
+      <summary>'Sleek' layout extra shortcuts</summary>
     </key>
     <key name="unity-layout-extra-shortcuts" type="aa{ss}">
       <default>

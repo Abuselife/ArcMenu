@@ -19,6 +19,7 @@ export const Layout = class EnterpriseLayout extends BaseMenuLayout {
             is_dual_panel: true,
             display_type: Constants.DisplayType.GRID,
             search_display_type: Constants.DisplayType.GRID,
+            search_results_spacing: 4,
             context_menu_location: Constants.ContextMenuLocation.BOTTOM_CENTERED,
             supports_category_hover_activation: true,
             column_spacing: 4,
