@@ -383,7 +383,7 @@ export class BaseMenuItem extends St.BoxLayout {
     }
 
     _onDestroy() {
-        if (this._menuButton.tooltip.sourceActor === this)
+        if (this._menuButton.tooltip && this._menuButton.tooltip.sourceActor === this)
             this._menuButton.tooltip.hide(true);
 
         this.isDestroyed = true;
