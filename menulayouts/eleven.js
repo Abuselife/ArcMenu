@@ -281,6 +281,9 @@ export const Layout = class ElevenLayout extends BaseMenuLayout {
     }
 
     displayPinnedApps() {
+        this._hideNavigationButtons();
+        this.allAppsButton.visible = true;
+
         this.loadFrequentApps();
         super.displayPinnedApps();
 
