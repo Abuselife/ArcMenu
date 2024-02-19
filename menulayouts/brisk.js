@@ -132,8 +132,8 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
         const isContainedInCategory = false;
 
         for (let i = 0; i < extraShortcuts.length; i++) {
-            const command = extraShortcuts[i][2];
-            if (command === Constants.ShortcutCommands.SEPARATOR) {
+            const {id} = extraShortcuts[i];
+            if (id === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);

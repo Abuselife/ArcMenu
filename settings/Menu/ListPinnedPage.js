@@ -186,7 +186,7 @@ class ArcMenuListPinnedPage extends SubPage {
     }
 
     _setRowData(row, shortcutData) {
-        const id = shortcutData.id;
+        const id = shortcutData.id ?? '';
         const name = shortcutData.name ?? '';
         const icon = shortcutData.icon ?? '';
 
@@ -344,6 +344,8 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
             this._loadCategories();
         } else if (this._dialogType === Constants.MenuSettingsListType.DIRECTORIES) {
             const extraLinks = this._getDirectoryLinksArray();
+            extraLinks.unshift([_('Separator'), 'list-remove-symbolic', Constants.ShortcutCommands.SEPARATOR]);
+            extraLinks.unshift([_('Spacer'), 'list-remove-symbolic', Constants.ShortcutCommands.SPACER]);
             this._loadExtraCategories(extraLinks);
         } else if (this._dialogType === Constants.MenuSettingsListType.APPLICATIONS) {
             const extraLinks = [];
@@ -353,6 +355,8 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
             extraLinks.push([_('Activities Overview'), 'view-fullscreen-symbolic',
                 Constants.ShortcutCommands.OVERVIEW]);
             extraLinks.push([_('Show All Apps'), 'view-app-grid-symbolic', Constants.ShortcutCommands.SHOW_APPS]);
+            extraLinks.unshift([_('Separator'), 'list-remove-symbolic', Constants.ShortcutCommands.SEPARATOR]);
+            extraLinks.unshift([_('Spacer'), 'list-remove-symbolic', Constants.ShortcutCommands.SPACER]);
             this._loadExtraCategories(extraLinks);
             this._loadCategories();
         } else if (this._dialogType === Constants.MenuSettingsListType.CONTEXT_MENU) {
@@ -534,7 +538,8 @@ class ArcMenuAddAppsToPinnedListWindow extends PW.DialogWindow {
                 this.emit('response', Gtk.ResponseType.REJECT);
             }
 
-            if (frameRow.shortcutData.id === Constants.ShortcutCommands.SEPARATOR)
+            if (frameRow.shortcutData.id === Constants.ShortcutCommands.SEPARATOR ||
+                frameRow.shortcutData.id === Constants.ShortcutCommands.SPACER)
                 return;
 
             match = !match;

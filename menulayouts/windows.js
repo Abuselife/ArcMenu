@@ -151,8 +151,8 @@ export const Layout = class WindowsLayout extends BaseMenuLayout {
 
         const extraButtons = this._settings.get_value('windows-layout-extra-shortcuts').deep_unpack();
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i].id;
-            if (command === Constants.ShortcutCommands.SEPARATOR) {
+            const {id} = extraButtons[i];
+            if (id === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.actionsBox.add_child(separator);

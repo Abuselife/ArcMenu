@@ -426,6 +426,9 @@ export class ArcMenuSeparator extends PopupMenu.PopupBaseMenuItem {
         if (separatorAlignment === Constants.SeparatorAlignment.HORIZONTAL) {
             this.style = 'padding: 0px 5px; margin: 6px 0px;';
             switch (separatorLength) {
+            case Constants.SeparatorStyle.EMPTY:
+                this._separator.visible = false;
+                break;
             case Constants.SeparatorStyle.SHORT:
                 this._separator.style = 'margin: 0px 45px;';
                 break;
@@ -1166,7 +1169,7 @@ export class ShortcutMenuItem extends BaseMenuItem {
 
         let name = itemData.name ?? '';
         const {icon, id} = itemData;
-        this._command = id;
+        this._command = id ?? '';
         this.iconName = icon ?? '';
 
         const shortcutIconType = this._settings.get_enum('shortcut-icon-type');
@@ -2200,7 +2203,7 @@ export class PinnedAppsMenuItem extends DraggableMenuItem {
         this.pinnedAppData = pinnedAppData;
         this._name = pinnedAppData.name ?? '';
         this._icon = pinnedAppData.icon ?? '';
-        this._command = pinnedAppData.id;
+        this._command = pinnedAppData.id ?? '';
         this._iconString = this._icon;
 
         this._app = Shell.AppSystem.get_default().lookup_app(this._command);

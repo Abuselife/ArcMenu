@@ -107,6 +107,7 @@ export const SeparatorStyle = {
     MAX: 3,
     HEADER_LABEL: 4,
     NORMAL: 5,
+    EMPTY: 6,
 };
 
 export const CaretPosition = {
@@ -566,6 +567,7 @@ export const ShortcutCommands = {
     SHOW_APPS: 'ArcMenu_ShowAllApplications',
     RUN_COMMAND: 'ArcMenu_RunCommand',
     SEPARATOR: 'ArcMenu_Separator',
+    SPACER: 'ArcMenu_Spacer',
     SETTINGS: 'ArcMenu_Settings',
     SHOW_DESKTOP: 'ArcMenu_ShowDesktop',
     POWER_OPTIONS: 'ArcMenu_PowerOptions',

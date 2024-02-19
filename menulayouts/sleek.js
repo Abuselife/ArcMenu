@@ -184,9 +184,9 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
         const isContainedInCategory = false;
 
         for (let i = 0; i < extraShortcuts.length; i++) {
-            const command = extraShortcuts[i][2];
-            if (command === Constants.ShortcutCommands.SEPARATOR) {
-                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.MEDIUM,
+            const {id} = extraShortcuts[i];
+            if (id === Constants.ShortcutCommands.SEPARATOR) {
+                const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
                     Constants.SeparatorAlignment.HORIZONTAL);
                 this.shortcutsBox.add_child(separator);
             } else {

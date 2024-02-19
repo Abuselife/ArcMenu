@@ -545,7 +545,11 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     createMenuItem(itemData, displayType, isContainedInCategory) {
         let {id} = itemData;
         const {name, icon} = itemData;
-        let app = Shell.AppSystem.get_default().lookup_app(id);
+        let app;
+
+        // Guard against undefined 'id' in itemData
+        if (id)
+            app = Shell.AppSystem.get_default().lookup_app(id);
 
         // Ubunutu 22.04 uses old version of GNOME settings
         if (id === 'org.gnome.Settings.desktop' && !app) {
@@ -557,6 +561,20 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             return new MW.ShortcutMenuItem(this, itemData, displayType, isContainedInCategory);
 
         switch (id) {
+        case Constants.ShortcutCommands.SEPARATOR: {
+            const item = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.SHORT,
+                Constants.SeparatorAlignment.HORIZONTAL);
+            item.shouldShow = displayType === Constants.DisplayType.LIST;
+
+            return item;
+        }
+        case Constants.ShortcutCommands.SPACER: {
+            const item = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.EMPTY,
+                Constants.SeparatorAlignment.HORIZONTAL);
+            item.shouldShow = displayType === Constants.DisplayType.LIST;
+
+            return item;
+        }
         case Constants.ShortcutCommands.SOFTWARE: {
             const softwareId = Utils.findSoftwareManager();
             return new MW.ShortcutMenuItem(this, {id: softwareId, name, icon},

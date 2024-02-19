@@ -187,8 +187,8 @@ export const Layout = class UnityLayout extends BaseMenuLayout {
 
         const isContainedInCategory = false;
         for (let i = 0; i < extraButtons.length; i++) {
-            const command = extraButtons[i].id;
-            if (command === Constants.ShortcutCommands.SEPARATOR) {
+            const {id} = extraButtons[i];
+            if (id === Constants.ShortcutCommands.SEPARATOR) {
                 const separator = new MW.ArcMenuSeparator(this, Constants.SeparatorStyle.LONG,
                     Constants.SeparatorAlignment.VERTICAL);
                 this.actionsBox.add_child(separator);

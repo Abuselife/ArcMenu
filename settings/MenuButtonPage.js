@@ -594,12 +594,14 @@ class ArcMenuIconChooserDialog extends PW.DialogWindow {
         });
         this.pageGroup.add(searchEntry);
 
-        const scrollWindow = new Gtk.ScrolledWindow();
-        scrollWindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        const iconThemeDefault = Gtk.IconTheme.get_for_display(Gdk.Display.get_default());
 
-        const factory = new Gtk.SignalListItemFactory();
-        const iconTheme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default());
+        const iconTheme = new Gtk.IconTheme({
+            resource_path: iconThemeDefault.resource_path,
+            theme_name: iconThemeDefault.theme_name,
+        });
         const iconNames = iconTheme.get_icon_names();
+
         iconNames.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
         const listStore = new Gtk.StringList({strings: iconNames});
@@ -609,13 +611,19 @@ class ArcMenuIconChooserDialog extends PW.DialogWindow {
             filter,
         });
 
+        const factory = new Gtk.SignalListItemFactory();
         const iconGridView = new Gtk.ListView({
             model: new Gtk.SingleSelection({model: filterListModel, autoselect: false, selected: -1}),
             factory,
             vexpand: true,
             valign: Gtk.Align.FILL,
         });
-        scrollWindow.set_child(iconGridView);
+
+        const scrollWindow = new Gtk.ScrolledWindow({
+            child: iconGridView,
+            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+        });
 
         factory.connect('setup', (factory_, item) => {
             item.connect('notify::selected', () => {
