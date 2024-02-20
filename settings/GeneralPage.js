@@ -532,16 +532,19 @@ class ArcMenuHotkeyDialog extends Adw.Window {
     }
 
     inhibitSystemShortcuts() {
-        GLib.idle_add(0, () => {
-            this.grab_focus();
-            const surface = this._parentWindow.get_surface();
+        this.grab_focus();
 
-            surface.inhibit_system_shortcuts(null);
-        });
+        // Note - surface.inhibit_system_shortcuts() seems to need a different surface on X11 vs Wayland?
+        const isWayland = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
+        const surface = isWayland ? this.get_surface() : this._parentWindow.get_surface();
+
+        surface.inhibit_system_shortcuts(null);
     }
 
     restoreSystemShortcuts() {
-        const surface = this._parentWindow.get_surface();
+        // Note - surface.inhibit_system_shortcuts() seems to need a different surface on X11 vs Wayland?
+        const isWayland = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
+        const surface = isWayland ? this.get_surface() : this._parentWindow.get_surface();
 
         if (surface)
             surface.restore_system_shortcuts();
