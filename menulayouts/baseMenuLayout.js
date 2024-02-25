@@ -733,7 +733,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 if (item.shouldShow)
                     this.pinnedAppsMap.set(id, item);
             }
-            if (item.shouldShow)
+            if (item.shouldShow && !this.pinnedAppsArray.includes(item))
                 this.pinnedAppsArray.push(item);
         });
         return this.pinnedAppsArray;
