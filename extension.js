@@ -97,13 +97,21 @@ export default class ArcMenu extends Extension {
         Utils.convertOldSetting(settings, 'context-menu-shortcuts', 'context-menu-items');
     }
 
+    _isExtensionActive(uuid) {
+        const extension = Main.extensionManager.lookup(uuid);
+        if (extension?.state === Utils.ExtensionState.ACTIVE)
+            return true;
+
+        return false;
+    }
+
     _connectExtensionSignals() {
-        const dtp = Main.extensionManager.lookup(Constants.DASH_TO_PANEL_UUID);
-        if (dtp?.state === Utils.ExtensionState.ACTIVE && global.dashToPanel)
+        const dtpActive = this._isExtensionActive(Constants.DASH_TO_PANEL_UUID);
+        if (dtpActive && global.dashToPanel)
             global.dashToPanel._panelsCreatedId = global.dashToPanel.connect('panels-created', () => this._reload());
 
-        const azTaskbar = Main.extensionManager.lookup(Constants.AZTASKBAR_UUID);
-        if (azTaskbar?.state === Utils.ExtensionState.ACTIVE && global.azTaskbar)
+        const azTaskbarActive = this._isExtensionActive(Constants.AZTASKBAR_UUID);
+        if (azTaskbarActive && global.azTaskbar)
             global.azTaskbar._panelsCreatedId = global.azTaskbar.connect('panels-created', () => this._reload());
     }
 
@@ -129,11 +137,14 @@ export default class ArcMenu extends Extension {
         let panelExtensionEnabled = false;
         let panels;
 
-        if (global.dashToPanel && global.dashToPanel.panels) {
-            panels = global.dashToPanel.panels;
+        const azTaskbarActive = this._isExtensionActive(Constants.AZTASKBAR_UUID);
+        const dtpActive = this._isExtensionActive(Constants.DASH_TO_PANEL_UUID);
+
+        if (dtpActive && global.dashToPanel?.panels) {
+            panels = global.dashToPanel.panels.filter(p => p);
             panelExtensionEnabled = true;
-        } else if (global.azTaskbar && global.azTaskbar.panels) {
-            panels = global.azTaskbar.panels;
+        } else if (azTaskbarActive && global.azTaskbar?.panels) {
+            panels = global.azTaskbar.panels.filter(p => p);
             panelExtensionEnabled = true;
         } else {
             panels = [Main.panel];
