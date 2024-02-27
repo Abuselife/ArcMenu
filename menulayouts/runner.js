@@ -197,6 +197,10 @@ export const Layout = class RunnerLayout extends BaseMenuLayout {
         this.updateWidth();
     }
 
+    loadPinnedApps() {
+
+    }
+
     loadCategories() {
     }
 
