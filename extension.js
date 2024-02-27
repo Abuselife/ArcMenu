@@ -143,15 +143,22 @@ export default class ArcMenu extends Extension {
         if (dtpActive && global.dashToPanel?.panels) {
             panels = global.dashToPanel.panels.filter(p => p);
             panelExtensionEnabled = true;
+            if (panels.length < 1)
+                console.log('ArcMenu log: Dash to Panel detected, but panels not yet created. Set panel count to 0.');
+            else
+                console.log(`ArcMenu log: Dash to Panel detected, with panel count: ${panels.length}.`);
         } else if (azTaskbarActive && global.azTaskbar?.panels) {
             panels = global.azTaskbar.panels.filter(p => p);
             panelExtensionEnabled = true;
         } else {
             panels = [Main.panel];
+            console.log("ArcMenu log: no panel extensions detected, set panel to 'Main.panel'.");
         }
 
-        const panelLength = multiMonitor ? panels.length : 1;
-        for (var i = 0; i < panelLength; i++) {
+        // If dtp or aztaskbar are active but haven't yet created their panels and ArcMenu `multi-monitor` is off,
+        // set panelsCount to the Math.min(panels.length, 1)
+        const panelsCount = multiMonitor ? panels.length : Math.min(panels.length, 1);
+        for (var i = 0; i < panelsCount; i++) {
             // Dash to Panel and AzTaskbar don't store the actual 'panel' in their global 'panels' object
             let panel = panels[i].panel ?? panels[i];
             const panelParent = panels[i].panel ? panels[i] : Main.panel;
