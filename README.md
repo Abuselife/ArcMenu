@@ -74,18 +74,36 @@ In 2017, ArcMenu _started_ as a fork of the Zorin menu extension by Zorin OS. As
 
 ### Translators
 
-**@[Nilvus](https://gitlab.com/Nilvus), @[steve.kossouho](https://gitlab.com/steve.kossouho) - French** | **@[Etamuk](https://gitlab.com/Etamuk), @[daPhipz](https://gitlab.com/daPhipz) - German** | **@[alex4401](https://gitlab.com/alex4401), @[Karpfly](https://gitlab.com/MacKarp), @[Piotr Strebski](https://gitlab.com/strebski) - Polish** | **@[frnogueira](https://gitlab.com/frnogueira), @[Z Bed](https://gitlab.com/zbed), @[perry.werneck](https://gitlab.com/perry.werneck) - Brazilian Portuguese** | **@[sigbjokj](https://gitlab.com/sigbjokj), @[sssandum](https://gitlab.com/sssandum) - Norwegian**
-
- **@[Ivan](https://gitlab.com/vantu5z), @[Ser82-png](https://gitlab.com/Ser82-png) - Russian** | **@[gkkulik](https://gitlab.com/gkkulik) - Silesian** | **@[vikaig](https://gitlab.com/vikaig) - Ukrainian** | **@[jordim](https://gitlab.com/jordim) - Catalan** | **@[aylinux](https://gitlab.com/aylinux), @[Sabri Ünal](https://gitlab.com/sabriunal) - Turkish**
- 
-
-**@[MorganAntonsson](https://gitlab.com/MorganAntonsson) - Swedish** | **@[jiri.doubravsky](https://gitlab.com/jiri.doubravsky), @[panmourovaty](https://gitlab.com/panmourovaty), @[Amerey ](https://gitlab.com/Amerey.eu) - Czech** | **@[juanlucer](https://gitlab.com/juanlucer), @[pjunyent](https://gitlab.com/pjunyent), @[Sergio](https://gitlab.com/IngrownMink4) - Spanish** | **@[plesry](https://gitlab.com/plesry) - Chinese (Taiwan)** | **@[Vombato](https://gitlab.com/Vombato), @[matguidi](https://gitlab.com/matguidi) - Italian**
-
-**@[skygmin](https://gitlab.com/skygmin), @[doufu3344](https://gitlab.com/doufu3344), @[wxtewx](https://gitlab.com/wxtewx) - Simplified Chinese** | **@[Vistaus](https://gitlab.com/Vistaus), @[vinno97](https://gitlab.com/vinno97) - Dutch** | **@[artnay](https://gitlab.com/artnay) - Finnish** |  **@[rimasx](https://gitlab.com/rimasx) - Estonian** | **@[stevendobay](https://gitlab.com/stevendobay), @[Balázs Meskó](https://gitlab.com/meskobalazs) - Hungarian** 
-
-**@[omeritzics](https://gitlab.com/omeritzics) - Hebrew** | **@[prescott66](https://gitlab.com/prescott66) - Slovak** | **@[Mejans](https://gitlab.com/Mejans), @[Quentin](https://gitlab.com/quenty_occitania) - Occitan** | **@[KY4LU](https://gitlab.com/mjkim__) - Korean** |  **@[sayuri](https://gitlab.com/sayuri-), @[helabasa](https://gitlab.com/helabasa) - Sinhalese**
-
-**@[Latgardi](https://gitlab.com/Latgardi) - Belarusian** | **@[Hayao0819](https://gitlab.com/Hayao0819) - Japanese** | **@[cbsvitzer](https://gitlab.com/cbsvitzer) - Danish**
+| Language | Translators |
+| ------ | ------ |
+| **Belarusian** | **@[Latgardi](https://gitlab.com/Latgardi)** |
+| **Brazilian Portuguese** | **@[frnogueira](https://gitlab.com/frnogueira), @[Z Bed](https://gitlab.com/zbed), @[perry.werneck](https://gitlab.com/perry.werneck)** |
+| **Catalan** | **@[jordim](https://gitlab.com/jordim)** |
+| **Chinese (Taiwan)** | **@[plesry](https://gitlab.com/plesry)** |
+| **Czech** | **@[jiri.doubravsky](https://gitlab.com/jiri.doubravsky), @[panmourovaty](https://gitlab.com/panmourovaty), @[Amerey ](https://gitlab.com/Amerey.eu)** |
+| **Danish** | **@[cbsvitzer](https://gitlab.com/cbsvitzer)** |
+| **Dutch** | **@[Vistaus](https://gitlab.com/Vistaus), @[vinno97](https://gitlab.com/vinno97)** |
+| **Estonian** | **@[rimasx](https://gitlab.com/rimasx)** |
+| **Finnish** | **@[artnay](https://gitlab.com/artnay)** |
+| **French** | **@[Nilvus](https://gitlab.com/Nilvus), @[steve.kossouho](https://gitlab.com/steve.kossouho)** |
+| **German** | **@[Etamuk](https://gitlab.com/Etamuk), @[daPhipz](https://gitlab.com/daPhipz)** |
+| **Hebrew** | **@[omeritzics](https://gitlab.com/omeritzics)** |
+| **Hungarian** | **@[stevendobay](https://gitlab.com/stevendobay), @[Balázs Meskó](https://gitlab.com/meskobalazs)** |
+| **Italian** | **@[Vombato](https://gitlab.com/Vombato), @[matguidi](https://gitlab.com/matguidi)** |
+| **Japanese** | **@[Hayao0819](https://gitlab.com/Hayao0819)** |
+| **Korean** | **@[KY4LU](https://gitlab.com/mjkim__)** |
+| **Norwegian** | **@[sigbjokj](https://gitlab.com/sigbjokj), @[sssandum](https://gitlab.com/sssandum)** |
+| **Occitan** | **@[Mejans](https://gitlab.com/Mejans), @[Quentin](https://gitlab.com/quenty_occitania)** |
+| **Polish** | **@[alex4401](https://gitlab.com/alex4401), @[Karpfly](https://gitlab.com/MacKarp), @[Piotr Strebski](https://gitlab.com/strebski)** |
+| **Russian** | **@[Ivan](https://gitlab.com/vantu5z), @[Ser82-png](https://gitlab.com/Ser82-png)** |
+| **Silesian** | **@[gkkulik](https://gitlab.com/gkkulik)** |
+| **Simplified Chinese** | **@[skygmin](https://gitlab.com/skygmin), @[doufu3344](https://gitlab.com/doufu3344), @[wxtewx](https://gitlab.com/wxtewx)** |
+| **Sinhalese** | **@[sayuri](https://gitlab.com/sayuri-), @[helabasa](https://gitlab.com/helabasa)** |
+| **Slovak** | **@[prescott66](https://gitlab.com/prescott66)** |
+| **Spanish** | **@[juanlucer](https://gitlab.com/juanlucer), @[pjunyent](https://gitlab.com/pjunyent), @[Sergio](https://gitlab.com/IngrownMink4)** |
+| **Swedish** | **@[MorganAntonsson](https://gitlab.com/MorganAntonsson)** |
+| **Turkish** | **@[aylinux](https://gitlab.com/aylinux), @[Sabri Ünal](https://gitlab.com/sabriunal)** |
+| **Ukrainian** | **@[vikaig](https://gitlab.com/vikaig)** |
 
 -----
 
