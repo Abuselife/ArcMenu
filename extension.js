@@ -143,21 +143,17 @@ export default class ArcMenu extends Extension {
         if (dtpActive && global.dashToPanel?.panels) {
             panels = global.dashToPanel.panels.filter(p => p);
             panelExtensionEnabled = true;
-            console.log('ArcMenu Log: Dash to Panel enabled.');
         } else if (azTaskbarActive && global.azTaskbar?.panels) {
             panels = global.azTaskbar.panels.filter(p => p);
             panelExtensionEnabled = true;
-            console.log('ArcMenu Log: App Icons Taskbar enabled.');
         } else {
             panels = [Main.panel];
-            console.log('ArcMenu Log: Place ArcMenu in \'Main.Panel\'.');
         }
 
         const panelsCount = multiMonitor ? panels.length : Math.min(panels.length, 1);
-        console.log(`ArcMenu Log: Placing ArcMenu in ${panelsCount} panel(s)...`);
         for (var i = 0; i < panelsCount; i++) {
             if (!panels[i]) {
-                console.log(`ArcMenu Error: panels[${i}] not found. Skipping...`);
+                console.log(`ArcMenu Error: panel ${i} not found. Skipping...`);
                 continue;
             }
 
@@ -191,8 +187,6 @@ export default class ArcMenu extends Extension {
             settingsController.enableButton();
             settingsController.connectSettingsEvents();
             this.settingsControllers.push(settingsController);
-
-            console.log(`ArcMenu Log: Placed ArcMenu in panel[${i}].`);
         }
     }
 
