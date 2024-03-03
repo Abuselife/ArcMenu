@@ -645,12 +645,13 @@ msgid "Always Prefer Top Panel"
 msgstr "Zawsze preferuj górny panel"
 
 # Przydałoby się poprawić po przetłumaczeniu rozszerzenie Dash to Panel
+# Updated Dash To Panel Polish strings, so translation was updated
 # Need update after Dash to Panel translation
 #: settings/GeneralPage.js:132
 #, fuzzy
 msgid "Useful with Dash to Panel setting 'Keep original gnome-shell top panel'"
 msgstr ""
-"Przydatne z ustawieniem Dash to Panel 'Keep original gnome-shell top panel'"
+"Przydatne z ustawieniem Dash to Panel 'Zachowaj oryginalny panel (podgląd)'"
 
 #: settings/GeneralPage.js:146
 msgid "General Settings"
