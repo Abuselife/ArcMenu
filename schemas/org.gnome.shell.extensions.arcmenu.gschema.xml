@@ -233,14 +233,6 @@
       <default>'Off'</default>
       <summary>Force the menu to a specific location</summary>
     </key>
-    <key type="b" name="hotkey-open-primary-monitor">
-      <default>false</default>
-      <summary>show ArcMenu on primary monitor when using hotkey</summary>
-    </key>
-    <key type="b" name="runner-hotkey-open-primary-monitor">
-      <default>false</default>
-      <summary>show standalone Runner menu on primary monitor when using hotkey</summary>
-    </key>
     <key type="i" name="settings-width">
       <default>750</default>
       <summary>ArcMenu Settings Width</summary>
@@ -464,6 +456,14 @@
     <key name="runner-hotkey" type="as">
       <default>[]</default>
       <summary>Keybind to open standalone runner menu. Setting a keybind enables the standalone runner menu.</summary>
+    </key>
+    <key type="b" name="hotkey-open-primary-monitor">
+      <default>false</default>
+      <summary>Show ArcMenu on primary monitor when using hotkey</summary>
+    </key>
+    <key type="b" name="runner-hotkey-open-primary-monitor">
+      <default>false</default>
+      <summary>Show standalone Runner menu on primary monitor when using hotkey</summary>
     </key>
     <key name="position-in-panel" enum="org.gnome.shell.extensions.arcmenu.menu-position">
       <default>'Left'</default>
