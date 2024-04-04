@@ -18,7 +18,7 @@ import * as Utils from './utils.js';
 export const MenuSettingsController = class {
     constructor(panelInfo, index) {
         this.panel = panelInfo.panel;
-        this.currentMonitorIndex = 0;
+        this.monitorIndex = index;
         this.isPrimaryPanel = index === 0;
 
         this._extension = ArcMenuManager.extension;
@@ -258,19 +258,22 @@ export const MenuSettingsController = class {
     }
 
     _toggleMenuOnMonitor(monitor) {
+        let currentMonitorIndex = 0;
         for (let i = 0; i < this._settingsControllers.length; i++) {
             const menuButton = this._settingsControllers[i]._menuButton;
             const {monitorIndex} = this._settingsControllers[i];
+
             if (monitor.index === monitorIndex) {
-                this.currentMonitorIndex = i;
+                currentMonitorIndex = i;
             } else {
                 if (menuButton.arcMenu.isOpen)
                     menuButton.toggleMenu();
                 menuButton.closeContextMenu();
             }
         }
+
         // open the current monitors menu
-        this._settingsControllers[this.currentMonitorIndex]._menuButton.toggleMenu();
+        this._settingsControllers[currentMonitorIndex]._menuButton.toggleMenu();
     }
 
     _closeAllArcMenus() {

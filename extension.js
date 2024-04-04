@@ -179,7 +179,11 @@ export default class ArcMenu extends Extension {
             const panelInfo = {panel, panelBox, panelParent};
             const settingsController = new MenuSettingsController(panelInfo, i);
 
-            settingsController.monitorIndex = panelParent.monitor?.index ?? 0;
+            // Case AzTaskbar - 'panelParent' may be Main.panel, which doesnt have a 'monitor' property.
+            if (panelParent.monitor)
+                settingsController.monitorIndex = panelParent.monitor.index;
+            else if (panel === Main.panel)
+                settingsController.monitorIndex = Main.layoutManager.primaryMonitor.index;
 
             if (panelExtensionEnabled)
                 panel._amDestroyId = panel.connect('destroy', () => this._disableButton(settingsController));
