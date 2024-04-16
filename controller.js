@@ -16,10 +16,11 @@ import {StandaloneRunner} from './standaloneRunner.js';
 import * as Utils from './utils.js';
 
 export const MenuSettingsController = class {
-    constructor(panelInfo, index) {
+    constructor(panelInfo, monitorIndex) {
+        this.panelInfo = panelInfo;
         this.panel = panelInfo.panel;
-        this.monitorIndex = index;
-        this.isPrimaryPanel = index === 0;
+        this.monitorIndex = monitorIndex;
+        this.isPrimaryPanel = panelInfo.isPrimaryPanel;
 
         this._extension = ArcMenuManager.extension;
         this._settingsControllers = ArcMenuManager.settingsControllers;
@@ -35,7 +36,7 @@ export const MenuSettingsController = class {
         }
 
         this._settingsConnections = new Utils.SettingsConnectionsHandler(this._settings);
-        this._menuButton = new MenuButton(panelInfo, index);
+        this._menuButton = new MenuButton(panelInfo, this.monitorIndex);
 
         if (this.isPrimaryPanel) {
             this._overrideOverlayKey = new Keybinder.OverrideOverlayKey();

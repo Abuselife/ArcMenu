@@ -145,14 +145,13 @@ export function canHibernateOrSleep(callName, asyncCallback) {
 export const SettingsConnectionsHandler = class ArcMenuSettingsConnectionsHandler {
     constructor(settings) {
         this._connections = new Map();
-        this._eventPrefix = 'changed::';
         this._settings = settings;
     }
 
     connect(...args) {
         const callback = args.pop();
         for (const event of args)
-            this._connections.set(this._settings.connect(this._eventPrefix + event, callback), this._settings);
+            this._connections.set(this._settings.connect(`changed::${event}`, callback), this._settings);
     }
 
     destroy() {
