@@ -406,7 +406,7 @@ export function ensureActorVisibleInScrollView(actor, axis = Clutter.Orientation
 
     const isVertical = axis === Clutter.Orientation.VERTICAL;
     const {hadjustment, vadjustment} = getScrollViewAdjustments(parent);
-    const {adjustment} = isVertical ? vadjustment : hadjustment;
+    const adjustment = isVertical ? vadjustment : hadjustment;
     const [startPoint, endPoint] = isVertical ? [y1, y2] : [x1, x2];
     const [value, lower_, upper, stepIncrement_, pageIncrement_, pageSize] = adjustment.get_values();
 
