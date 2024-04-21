@@ -1212,8 +1212,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this._menuButton.tooltip.hide(true);
 
         const [dist_, dx_, dy] = action.get_motion_delta(0);
-        const {adjustment} = Utils.getScrollViewAdjustments(scrollBox).vadjustment;
-        adjustment.value -=  dy;
+        const {vadjustment} = Utils.getScrollViewAdjustments(scrollBox);
+        vadjustment.value -=  dy;
         return false;
     }
 
