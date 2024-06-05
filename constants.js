@@ -66,6 +66,11 @@ export const DefaultMenuViewTognee = {
     ALL_PROGRAMS: 1,
 };
 
+export const AllAppsButtonAction = {
+    CATEGORIES_LIST: 0,
+    ALL_PROGRAMS: 1,
+};
+
 export const DefaultMenuViewRedmond = {
     ALL_PROGRAMS: 0,
     PINNED_APPS: 1,
@@ -216,6 +221,12 @@ export const MenuButtonAppearance = {
     ICON_TEXT: 2,
     TEXT_ICON: 3,
     NONE: 4,
+};
+
+export const MenuButtonClickAction = {
+    ARCMENU: 0,
+    CONTEXT_MENU: 1,
+    NONE: 2,
 };
 
 export const PowerType = {
