@@ -297,7 +297,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         if (newMenuLocation === Constants.ForcedMenuLocation.OFF)
             return;
 
-        this.updateArrowSide(St.Side.TOP);
+        this.updateArrowSide(St.Side.TOP, false);
         const rect = Main.layoutManager.getWorkAreaForMonitor(this._monitorIndex);
         const positionX = Math.round(rect.x + (rect.width / 2));
         let positionY;
