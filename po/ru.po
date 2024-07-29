@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Arc Menu\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-06-05 07:25-0400\n"
-"PO-Revision-Date: 2024-06-11 18:18+1000\n"
+"PO-Revision-Date: 2024-07-28 12:38+1000\n"
 "Last-Translator: Ser82-png <asvmail.as@gmail.com>\n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -322,7 +322,7 @@ msgstr "Компьютер"
 
 #: menulayouts/plasma.js:130
 msgid "Leave"
-msgstr "Покинуть"
+msgstr "Выключение"
 
 #: menulayouts/plasma.js:269 menulayouts/windows.js:271
 #: settings/MenuPage.js:123
@@ -331,7 +331,7 @@ msgstr "Ярлыки приложений"
 
 #: menulayouts/plasma.js:274 menulayouts/windows.js:275
 msgid "Places"
-msgstr "Места"
+msgstr "Точки входа"
 
 #: menulayouts/plasma.js:289 menulayouts/windows.js:207
 #: settings/Menu/LayoutTweaksPage.js:757 settings/Menu/LayoutTweaksPage.js:883
