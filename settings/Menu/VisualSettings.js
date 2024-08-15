@@ -111,6 +111,7 @@ class ArcMenuVisualSettingsPage extends SubPage {
         menuLocations.append(_('Off'));
         menuLocations.append(_('Top Centered'));
         menuLocations.append(_('Bottom Centered'));
+        menuLocations.append(_('Monitor Centered'));
         const menuLocationRow = new Adw.ComboRow({
             title: _('Override Menu Location'),
             model: menuLocations,
