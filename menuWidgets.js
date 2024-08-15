@@ -2215,6 +2215,9 @@ export class PinnedAppsMenuItem extends DraggableMenuItem {
 
         this._app = Shell.AppSystem.get_default().lookup_app(this._command);
 
+        // Allows dragging the pinned app into the overview workspace thumbnail.
+        this.app = this._app;
+
         if (this._iconString === Constants.ShortcutCommands.ARCMENU_ICON || this._iconString === `${this._extension.path}/icons/arcmenu-logo-symbolic.svg`)
             this._iconString = `${this._extension.path}/${Constants.ArcMenuLogoSymbolic}`;
 
