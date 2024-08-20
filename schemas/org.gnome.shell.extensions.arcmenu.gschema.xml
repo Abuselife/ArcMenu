@@ -236,7 +236,9 @@
                 ['Dark Blue', 'rgb(30,37,41)', 'rgb(189,230,251)', 'rgb(41,50,55)', '1', '14', '11',
                     'rgba(99,99,98,0.56)', 'rgba(189,230,251,0.08)', 'rgb(189,230,251)', 'rgba(189,230,251,0.15)', 'rgb(189,230,251)'],
                 ['Light Blue', 'rgb(245,247,250)', 'rgb(18,51,84)', 'rgba(18,51,84,0.2)', '1', '14', '11',
-                    'rgba(18,51,84,0.15)', 'rgba(18,51,84,0.08)', 'rgb(18,51,84)', 'rgba(18,51,84,0.15)', 'rgb(18,51,84)']]</default>
+                    'rgba(18,51,84,0.15)', 'rgba(18,51,84,0.08)', 'rgb(18,51,84)', 'rgba(18,51,84,0.15)', 'rgb(18,51,84)'],
+                ['Some New Thing', 'rgb(51,38,102)', 'rgb(170,187,204)', 'rgb(17,34,51)', '1', '4', '11',
+                    'rgb(68,85,102)', 'rgb(85,89,153)', 'rgb(170,204,238)', 'rgb(34,37,85)', 'rgb(221,238,255)']]</default>
       <summary>List of color-themes</summary>
     </key>
     <key name="force-menu-location" enum="org.gnome.shell.extensions.arcmenu.forcemenulocation">
