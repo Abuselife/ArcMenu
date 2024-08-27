@@ -1,6 +1,7 @@
 import AccountsService from 'gi://AccountsService';
 import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GMenu from 'gi://GMenu';
@@ -2671,7 +2672,13 @@ export class FolderDialog extends PopupMenu.PopupMenu {
         const POPUP_ANIMATION_TIME = 400;
 
         const val = 127 * (1 + (dim ? 1 : 0) * DIM_BRIGHTNESS);
-        const color = Clutter.Color.new(val, val, val, 255);
+        const colorValues = {
+            red: val,
+            green: val,
+            blue: val,
+            alpha: 255,
+        };
+        const color = Clutter.Color ? new Clutter.Color(colorValues) : new Cogl.Color(colorValues);
 
         this._arcMenu._boxPointer.ease_property('@effects.dim.brightness', color, {
             mode: Clutter.AnimationMode.LINEAR,

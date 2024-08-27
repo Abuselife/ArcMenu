@@ -130,7 +130,7 @@ export function createXpmImage(color1, color2, color3, color4) {
 
 /**
  *
- * @param {Clutter.Color} color A Clutter.Color to convert to a string in hex format
+ * @param {Gdk.RGBA} color A Gdk.RGBA to convert to a string in hex format
  * @returns String of Color in hex
  */
 export function rgbToHex(color) {
