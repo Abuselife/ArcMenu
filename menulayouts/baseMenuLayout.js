@@ -7,6 +7,7 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {ArcMenuManager} from '../arcmenuManager.js';
 import * as Constants from '../constants.js';
@@ -115,7 +116,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.connect('key-press-event', this._onMainBoxKeyPress.bind(this));
 
         this._tree = new GMenu.Tree({menu_basename: 'applications.menu'});
-        this._tree.connectObject('changed', () => this.reloadApplications(), this);
+        this._reloadApplicationsWorkId = Main.initializeDeferredWork(this, () => this.reloadApplications());
+        this._tree.connectObject('changed', () => Main.queueDeferredWork(this._reloadApplicationsWorkId), this);
 
         AppFavorites.getAppFavorites().connectObject('changed', () => {
             if (this.categoryDirectories) {

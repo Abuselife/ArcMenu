@@ -184,29 +184,35 @@ export const MenuSettingsController = class {
     _initRecentAppsTracker() {
         this._appList = this._listAllApps();
 
+        this._reloadApplicationsWorkId = Main.initializeDeferredWork(this._menuButton, () => this._reloadApplications());
+
         this._installedChangedId = this._appSystem.connect('installed-changed', () => {
-            const isDisabled = this._settings.get_boolean('disable-recently-installed-apps');
-            const appList = this._listAllApps();
-
-            // Filter to find if a new application has been installed
-            const newAppsList = appList.filter(app => !this._appList.includes(app));
-            this._appList = appList;
-
-            if (newAppsList.length && !isDisabled) {
-                // A new app has been installed, Save it in settings
-                const recentApps = this._settings.get_strv('recently-installed-apps');
-                const newRecentApps = [...new Set(recentApps.concat(newAppsList))];
-                this._settings.set_strv('recently-installed-apps', newRecentApps);
-            }
-
-            for (let i = 0; i < this._settingsControllers.length; i++) {
-                const menuButton = this._settingsControllers[i]._menuButton;
-                menuButton.reloadApplications();
-            }
-
-            if (this.runnerMenu)
-                this.runnerMenu.reloadApplications();
+            Main.queueDeferredWork(this._reloadApplicationsWorkId);
         });
+    }
+
+    _reloadApplications() {
+        const isDisabled = this._settings.get_boolean('disable-recently-installed-apps');
+        const appList = this._listAllApps();
+
+        // Filter to find if a new application has been installed
+        const newAppsList = appList.filter(app => !this._appList.includes(app));
+        this._appList = appList;
+
+        if (newAppsList.length && !isDisabled) {
+            // A new app has been installed, Save it in settings
+            const recentApps = this._settings.get_strv('recently-installed-apps');
+            const newRecentApps = [...new Set(recentApps.concat(newAppsList))];
+            this._settings.set_strv('recently-installed-apps', newRecentApps);
+        }
+
+        for (let i = 0; i < this._settingsControllers.length; i++) {
+            const menuButton = this._settingsControllers[i]._menuButton;
+            menuButton.reloadApplications();
+        }
+
+        if (this.runnerMenu)
+            this.runnerMenu.reloadApplications();
     }
 
     _listAllApps() {
