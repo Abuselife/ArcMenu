@@ -200,7 +200,7 @@ class ArcMenuManageThemesDialog extends PW.DialogWindow {
 
             const row = new PW.DragRow({
                 title: theme[0],
-                xpm_pixbuf: pixbuf,
+                pixbuf,
                 icon_pixel_size: 42,
             });
             this.pageGroup.add(row);
