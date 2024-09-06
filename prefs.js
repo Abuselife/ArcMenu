@@ -23,12 +23,12 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
         window.set_default_size(settings.get_int('settings-width'), settings.get_int('settings-height'));
         window.set_title(_('ArcMenu Settings'));
 
-        let pageChangedId = settings.connect('changed::prefs-visible-page', () => {
+        settings.connect('changed::prefs-visible-page', () => {
             if (settings.get_int('prefs-visible-page') !== Constants.SettingsPage.MAIN)
                 this._setVisiblePage(window, settings);
         });
 
-        let pinnedAppsChangedId = settings.connect('changed::pinned-apps', () => {
+        settings.connect('changed::pinned-apps', () => {
             for (const page of window.pages) {
                 if (page instanceof MenuPage) {
                     const {settingPage} = page.pinnedAppsRow;
@@ -43,18 +43,6 @@ export default class ArcMenuPrefs extends ExtensionPreferences {
 
             if (maybeScrolledWindowChild instanceof Gtk.ScrolledWindow)
                 maybeScrolledWindowChild.vadjustment.value = 0;
-        });
-
-        window.connect('close-request', () => {
-            if (pageChangedId) {
-                settings.disconnect(pageChangedId);
-                pageChangedId = null;
-            }
-
-            if (pinnedAppsChangedId) {
-                settings.disconnect(pinnedAppsChangedId);
-                pinnedAppsChangedId = null;
-            }
         });
 
         this._populateWindow(window, settings);

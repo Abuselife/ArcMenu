@@ -1,6 +1,5 @@
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
-import GdkPixbuf from 'gi://GdkPixbuf';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
@@ -80,8 +79,7 @@ class ArcMenuThemePage extends SubPage {
             const image = box.get_child_at(0, 0);
             const label = box.get_child_at(1, 0);
 
-            const xpm = item.xpm.split(', ');
-            const pixbuf = GdkPixbuf.Pixbuf.new_from_xpm_data(xpm);
+            const pixbuf = item.pixbuf;
             const texture = Gdk.Texture.new_for_pixbuf(pixbuf);
 
             label.set_label(item.name);
@@ -265,15 +263,14 @@ class ArcMenuThemePage extends SubPage {
     createIconList(store) {
         const menuThemes = this._settings.get_value('menu-themes').deep_unpack();
         for (const theme of menuThemes) {
-            const xpm = SettingsUtils.createXpmImage(theme[1], theme[2], theme[3], theme[8]);
-            const stringify = xpm.join(', ');
+            const pixbuf = SettingsUtils.createThemePreviewPixbuf(theme[1], theme[2], theme[3], theme[8]);
 
-            const box = new ThemeListItem({
+            const themeListItem = new ThemeListItem({
                 name: theme[0],
-                xpm: stringify,
             });
+            themeListItem.pixbuf = pixbuf;
 
-            store.append(box);
+            store.append(themeListItem);
         }
     }
 
@@ -338,6 +335,5 @@ class ArcMenuThemePage extends SubPage {
 const ThemeListItem = GObject.registerClass({
     Properties: {
         'name': GObject.ParamSpec.string('name', 'Name', 'Name of the item', GObject.ParamFlags.READWRITE, ''),
-        'xpm': GObject.ParamSpec.string('xpm', 'Xpm', 'xpm data', GObject.ParamFlags.READWRITE, ''),
     },
 }, class Item extends GObject.Object {});
