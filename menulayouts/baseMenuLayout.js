@@ -115,6 +115,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         this.connect('key-press-event', this._onMainBoxKeyPress.bind(this));
 
+        this.iconTheme = new St.IconTheme();
         this._tree = new GMenu.Tree({menu_basename: 'applications.menu'});
         this._reloadApplicationsWorkId = Main.initializeDeferredWork(this, () => this.reloadApplications());
         this._tree.connectObject('changed', () => Main.queueDeferredWork(this._reloadApplicationsWorkId), this);

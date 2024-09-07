@@ -2784,7 +2784,7 @@ export class SubCategoryMenuItem extends BaseMenuItem {
             iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
         }
 
-        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._category);
+        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._menuLayout.iconTheme, this._category);
         this._name = `${this._parentDirectory.get_name()} - ${name}`;
         this.label.text = `${name}`;
         this._headerLabel.text = `${this._parentDirectory.get_name()}\n${name}`;
@@ -2925,7 +2925,7 @@ export class CategoryMenuItem extends BaseMenuItem {
             }
         }
 
-        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._category);
+        const [name, gicon, fallbackIcon] = Utils.getCategoryDetails(this._menuLayout.iconTheme, this._category);
         this._name = _(name);
         this.label.text = _(name);
 
