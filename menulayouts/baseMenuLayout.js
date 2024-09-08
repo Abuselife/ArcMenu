@@ -116,6 +116,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.connect('key-press-event', this._onMainBoxKeyPress.bind(this));
 
         this.iconTheme = new St.IconTheme();
+        this.appSys = Shell.AppSystem.get_default();
         this._tree = new GMenu.Tree({menu_basename: 'applications.menu'});
         this._reloadApplicationsWorkId = Main.initializeDeferredWork(this, () => this.reloadApplications());
         this._tree.connectObject('changed', () => Main.queueDeferredWork(this._reloadApplicationsWorkId), this);
@@ -359,7 +360,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                     continue;
                 }
 
-                let app = Shell.AppSystem.get_default().lookup_app(id);
+                let app = this.appSys.lookup_app(id);
                 if (!app)
                     app = new Shell.App({app_info: entry.get_app_info()});
 
@@ -554,12 +555,12 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
         // Guard against undefined 'id' in itemData
         if (id)
-            app = Shell.AppSystem.get_default().lookup_app(id);
+            app = this.appSys.lookup_app(id);
 
         // Ubunutu 22.04 uses old version of GNOME settings
         if (id === 'org.gnome.Settings.desktop' && !app) {
             id = 'gnome-control-center.desktop';
-            app = Shell.AppSystem.get_default().lookup_app(id);
+            app = this.appSys.lookup_app(id);
         }
 
         if (app)

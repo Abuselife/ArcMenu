@@ -191,34 +191,21 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         });
     }
 
-    _clearMenuLayoutTimeouts() {
-        if (this._createMenuLayoutTimeoutID) {
-            GLib.source_remove(this._createMenuLayoutTimeoutID);
-            this._createMenuLayoutTimeoutID = null;
-        }
-    }
-
-    createMenuLayoutTimeout() {
-        this._clearMenuLayoutTimeouts();
+    async createMenuLayoutTimeout() {
         this._clearTooltipShowingId();
         this._clearTooltip();
 
         this._destroyMenuLayout();
 
-        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
-            const layout = this._settings.get_enum('menu-layout');
-            this._menuLayout = LayoutHandler.createMenuLayout(this, layout);
+        const layout = this._settings.get_enum('menu-layout');
+        this._menuLayout = await LayoutHandler.createMenuLayout(this, layout);
 
-            if (this._menuLayout) {
-                this.arcMenu.box.add_child(this._menuLayout);
-                this.setMenuPositionAlignment();
-                this.forceMenuLocation();
-                this.updateHeight();
-            }
-
-            this._createMenuLayoutTimeoutID = null;
-            return GLib.SOURCE_REMOVE;
-        });
+        if (this._menuLayout) {
+            this.arcMenu.box.add_child(this._menuLayout);
+            this.setMenuPositionAlignment();
+            this.forceMenuLocation();
+            this.updateHeight();
+        }
     }
 
     setMenuPositionAlignment() {
@@ -439,7 +426,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             this._startupCompleteId = null;
         }
 
-        this._clearMenuLayoutTimeouts();
         this._clearTooltipShowingId();
 
         if (this.dtpPostionChangedID && this._dtpSettings) {

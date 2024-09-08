@@ -60,16 +60,7 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
         this.createMenuLayoutTimeout();
     }
 
-    _clearMenuLayoutTimeouts() {
-        if (this._createMenuLayoutTimeoutID) {
-            GLib.source_remove(this._createMenuLayoutTimeoutID);
-            this._createMenuLayoutTimeoutID = null;
-        }
-    }
-
-    createMenuLayoutTimeout() {
-        this._clearMenuLayoutTimeouts();
-
+    async createMenuLayoutTimeout() {
         this._clearTooltipShowingId();
         this._clearTooltip();
 
@@ -77,14 +68,9 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
 
         this._destroyMenuLayout();
 
-        this._createMenuLayoutTimeoutID = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
-            const standaloneRunner = true;
-            this._menuLayout = LayoutHandler.createMenuLayout(this, Constants.MenuLayout.RUNNER, standaloneRunner);
-            this.arcMenu.box.add_child(this._menuLayout);
-
-            this._createMenuLayoutTimeoutID = null;
-            return GLib.SOURCE_REMOVE;
-        });
+        const standaloneRunner = true;
+        this._menuLayout = await LayoutHandler.createMenuLayout(this, Constants.MenuLayout.RUNNER, standaloneRunner);
+        this.arcMenu.box.add_child(this._menuLayout);
     }
 
     closeOtherMenus() {
@@ -129,8 +115,6 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
     }
 
     destroy() {
-        this._clearMenuLayoutTimeouts();
-
         this._clearTooltipShowingId();
         this._clearTooltip();
         this._destroyMenuLayout();

@@ -1191,7 +1191,7 @@ export class ShortcutMenuItem extends BaseMenuItem {
             this._command = Utils.findSoftwareManager();
 
         if (!this._app)
-            this._app = Shell.AppSystem.get_default().lookup_app(this._command);
+            this._app = this._menuLayout.appSys.lookup_app(this._command);
 
         if (this._app && !this.iconName) {
             const appIcon = this._app.create_icon_texture(Constants.MEDIUM_ICON_SIZE);
@@ -2214,7 +2214,7 @@ export class PinnedAppsMenuItem extends DraggableMenuItem {
         this._command = pinnedAppData.id ?? '';
         this._iconString = this._icon;
 
-        this._app = Shell.AppSystem.get_default().lookup_app(this._command);
+        this._app = this._menuLayout.appSys.lookup_app(this._command);
 
         // Allows dragging the pinned app into the overview workspace thumbnail.
         this.app = this._app;
@@ -2519,7 +2519,7 @@ export class ApplicationMenuItem extends BaseMenuItem {
             if (metaInfo.clipboardText)
                 St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, metaInfo.clipboardText);
         } else if (metaInfo.id.endsWith('.desktop')) {
-            const app = Shell.AppSystem.get_default().lookup_app(metaInfo.id);
+            const app = this._menuLayout.appSys.lookup_app(metaInfo.id);
             if (app.can_open_new_window())
                 app.open_new_window(-1);
             else
