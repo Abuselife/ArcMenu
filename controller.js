@@ -172,9 +172,9 @@ export const MenuSettingsController = class {
     }
 
     _recreateMenuLayout() {
-        this._menuButton.createMenuLayoutTimeout();
+        this._menuButton.createMenuLayout();
         if (this.runnerMenu)
-            this.runnerMenu.createMenuLayoutTimeout();
+            this.runnerMenu.createMenuLayout();
     }
 
     _forceMenuLocation() {
@@ -234,7 +234,7 @@ export const MenuSettingsController = class {
     }
 
     _changeMenuLayout() {
-        this._menuButton.createMenuLayoutTimeout();
+        this._menuButton.createMenuLayout();
     }
 
     _setDefaultMenuView() {
@@ -316,10 +316,9 @@ export const MenuSettingsController = class {
         this._overrideOverlayKey.disable();
 
         if (runnerHotkey) {
-            if (!this.runnerMenu) {
+            if (!this.runnerMenu)
                 this.runnerMenu = new StandaloneRunner();
-                this.runnerMenu.initiate();
-            }
+
             if (runnerHotkey === Constants.SUPER_L) {
                 this._overrideOverlayKey.enable(() => this.toggleStandaloneRunner());
             } else {
@@ -513,8 +512,10 @@ export const MenuSettingsController = class {
             this._installedChangedId = null;
         }
 
-        if (this.runnerMenu)
+        if (this.runnerMenu) {
             this.runnerMenu.destroy();
+            this.runnerMenu = null;
+        }
 
         this._settingsConnections.destroy();
         this._settingsConnections = null;

@@ -108,6 +108,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.subMenuManager = menuButton.subMenuManager;
         this.arcMenu = menuButton.arcMenu;
 
+        if (this.arcMenu === null)
+            throw new Error('ArcMenu null');
+
         this._focusChild = null;
         this.hasPinnedApps = false;
         this.activeCategoryType = -1;

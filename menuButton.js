@@ -101,6 +101,8 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     _init(panelInfo, monitorIndex) {
         super._init(0.5, null, true);
 
+        this._destroyed = false;
+
         this.set({
             x_expand: false,
         });
@@ -175,7 +177,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this._startupCompleteId = Main.layoutManager.connect('startup-complete', () => this.updateHeight());
 
         this.setMenuPositionAlignment();
-        this.createMenuLayoutTimeout();
+        this.createMenuLayout();
     }
 
     syncWithDashToPanel() {
@@ -191,14 +193,24 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         });
     }
 
-    async createMenuLayoutTimeout() {
+    async createMenuLayout() {
         this._clearTooltipShowingId();
         this._clearTooltip();
 
         this._destroyMenuLayout();
 
         const layout = this._settings.get_enum('menu-layout');
+
+        if (this._destroyed)
+            return;
+
         this._menuLayout = await LayoutHandler.createMenuLayout(this, layout);
+
+        // MenuButton may be destroyed while createMenuLayout() is running
+        if (this._destroyed && this._menuLayout) {
+            this._menuLayout.destroy();
+            return;
+        }
 
         if (this._menuLayout) {
             this.arcMenu.box.add_child(this._menuLayout);
@@ -414,6 +426,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
     }
 
     _onDestroy() {
+        this._destroyed = true;
         this._removePointerWatcher();
 
         if (this._monitorsChangedId) {
@@ -438,6 +451,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this.tooltip?.destroy();
         this.tooltip = null;
         this.arcMenu?.destroy();
+        this.arcMenu = null;
         this.arcMenuContextMenu?.destroy();
 
         super._onDestroy();

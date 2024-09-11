@@ -3,11 +3,11 @@ import {MenuLayout} from '../constants.js';
 /**
  *
  * @param {PanelMenu.Button} menuButton
- * @param {MenuLayout} layout
+ * @param {MenuLayout} layoutEnum
  * @param {boolean} isStandaloneRunner
  */
-export async function createMenuLayout(menuButton, layout, isStandaloneRunner) {
-    if (layout === MenuLayout.GNOME_OVERVIEW)
+export async function createMenuLayout(menuButton, layoutEnum, isStandaloneRunner) {
+    if (layoutEnum === MenuLayout.GNOME_OVERVIEW)
         return null;
 
     // Map each layout to its corresponding file path
@@ -35,14 +35,13 @@ export async function createMenuLayout(menuButton, layout, isStandaloneRunner) {
         [MenuLayout.WINDOWS]: './windows.js',
     };
 
-    const modulePath = layoutMap[layout] || './arcmenu.js'; // Default to ArcMenu if layout isn't found
+    const modulePath = layoutMap[layoutEnum] || './arcmenu.js'; // Default to ArcMenu if layout isn't found
 
     // Dynamically import the required layout
     try {
         const {Layout} = await import(modulePath);
         return new Layout(menuButton, isStandaloneRunner);
     } catch (e) {
-        console.log(`ArcMenu Error! Dynamic import of layout module ${modulePath} failed.`);
         return null;
     }
 }
