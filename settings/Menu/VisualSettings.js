@@ -137,8 +137,8 @@ class ArcMenuVisualSettingsPage extends SubPage {
         });
         const menuArrowRiseSpinButton = new Gtk.SpinButton({
             adjustment: new Gtk.Adjustment({
-                lower: 0,
-                upper: 25,
+                lower: -50,
+                upper: 50,
                 step_increment: 1,
             }),
             climb_rate: 1,

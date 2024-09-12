@@ -308,7 +308,8 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             this.arcMenu.actor.add_style_class_name('bottomOfScreenMenu');
         } else if (newMenuLocation === Constants.ForcedMenuLocation.MONITOR_CENTERED) {
             const menuHeight = this._settings.get_int('menu-height');
-            positionY = Math.round(rect.y + (rect.height / 2) - (menuHeight / 2));
+            const monitor = Main.layoutManager.findMonitorForActor(this);
+            positionY = Math.round(monitor.y + (monitor.height / 2) - (menuHeight / 2));
             Main.layoutManager.setDummyCursorGeometry(positionX, positionY, 0, 0);
         }
 
