@@ -277,7 +277,7 @@ msgstr "未命名文件夹"
 
 #: menuWidgets.js:2424 menulayouts/pop.js:1152
 msgid "New"
-msgstr "新建"
+msgstr "最近新增"
 
 #: menuWidgets.js:2956 menulayouts/az.js:70 menulayouts/eleven.js:62
 #: menulayouts/insider.js:181 menulayouts/plasma.js:117 menulayouts/raven.js:63
