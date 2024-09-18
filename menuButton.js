@@ -372,8 +372,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
             if (this._menuLayout?.updateStyle)
                 this._menuLayout.updateStyle();
-
-            this._maybeShowPanel();
         }
 
         this.arcMenu.toggle();
@@ -428,7 +426,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
     _onDestroy() {
         this._destroyed = true;
-        this._removePointerWatcher();
+        this._stopTrackingMouse();
 
         if (this._monitorsChangedId) {
             Main.layoutManager.disconnect(this._monitorsChangedId);
@@ -496,6 +494,7 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
     _onOpenStateChanged(_menu, open) {
         if (open) {
+            this._maybeShowPanel();
             this.menuButtonWidget.addStylePseudoClass('active');
             this.add_style_pseudo_class('active');
 
@@ -518,69 +517,59 @@ class ArcMenuMenuButton extends PanelMenu.Button {
                     this._dtpNeedsRelease = false;
                     const hidePanel = () => this._panelParent.intellihide?.release(1);
 
-                    const shouldHidePanel = this._maybeHidePanel(hidePanel);
-                    if (!shouldHidePanel)
-                        return;
-
-                    hidePanel();
+                    const isMouseOnPanel = this._isMouseOnPanel();
+                    if (isMouseOnPanel)
+                        this._startTrackingMouse(hidePanel);
+                    else
+                        hidePanel();
                 }
                 if (this._panelNeedsHiding) {
                     this._panelNeedsHiding = false;
                     const hidePanel = () => (this._panelBox.visible = false);
 
-                    const shouldHidePanel = this._maybeHidePanel(hidePanel);
-                    if (!shouldHidePanel)
-                        return;
-
-                    hidePanel();
+                    const isMouseOnPanel = this._isMouseOnPanel();
+                    if (isMouseOnPanel)
+                        this._startTrackingMouse(hidePanel);
+                    else
+                        hidePanel();
                 }
             }
         }
     }
 
-    _maybeHidePanel(hidePanelCallback) {
+    _isMouseOnPanel() {
         const [x, y] = global.get_pointer();
+
         const mouseOnPanel = this._panelHasMousePointer(x, y);
+        if (mouseOnPanel)
+            return true;
 
-        const actor = global.stage.get_event_actor(Clutter.get_current_event());
-        if (actor === this._panelParent || this._panelParent.contains(actor) || mouseOnPanel) {
-            if (this._pointerWatch)
-                return false;
-
-            this._pointerWatch = PointerWatcher.getPointerWatcher().addWatch(200, (pX, pY) => {
-                if (!this._panelHasMousePointer(pX, pY))
-                    hidePanelCallback();
-            });
-
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     _panelHasMousePointer(x, y) {
-        const grabActor = global.stage.get_grab_actor();
-        const sourceActor = grabActor?._sourceActor || grabActor;
-        const statusArea = this._panelParent.statusArea ?? this._panel.statusArea;
-
-        if (sourceActor && (sourceActor === Main.layoutManager.dummyCursor ||
-                            statusArea?.quickSettings?.menu.actor.contains(sourceActor) ||
-                            this._panelParent.contains(sourceActor)))
-            return true;
-
-
         const panelBoxRect = this._panelBox.get_transformed_extents();
         const cursorLocation = new Graphene.Point({x, y});
 
-        if (panelBoxRect.contains_point(cursorLocation)) {
+        if (panelBoxRect.contains_point(cursorLocation))
             return true;
-        } else {
-            this._removePointerWatcher();
+        else
             return false;
-        }
     }
 
-    _removePointerWatcher() {
+    _startTrackingMouse(callback) {
+        if (this._pointerWatch)
+            return;
+
+        this._pointerWatch = PointerWatcher.getPointerWatcher().addWatch(500, (pX, pY) => {
+            if (!this._panelHasMousePointer(pX, pY)) {
+                callback();
+                this._stopTrackingMouse();
+            }
+        });
+    }
+
+    _stopTrackingMouse() {
         if (this._pointerWatch) {
             PointerWatcher.getPointerWatcher()._removeWatch(this._pointerWatch);
             this._pointerWatch = null;
