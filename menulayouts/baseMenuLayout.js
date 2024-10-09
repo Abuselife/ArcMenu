@@ -290,6 +290,19 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.setDefaultMenuView();
     }
 
+    _createSortedAppsList() {
+        const appList = [];
+        this.applicationsMap.forEach((value, key, _map) => {
+            appList.push(key);
+        });
+        appList.sort((a, b) => {
+            const nameA = a.get_name();
+            const nameB = b.get_name();
+            return nameA.localeCompare(nameB);
+        });
+        return appList;
+    }
+
     loadCategories(displayType = Constants.DisplayType.LIST) {
         this.applicationsMap = new Map();
         this._tree.load_sync();
@@ -310,19 +323,17 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             this._loadCategory(categoryMenuItem, dir);
         }
 
+        this._sortedAppsList = this._createSortedAppsList();
+
         let categoryMenuItem = this.categoryDirectories.get(Constants.CategoryType.ALL_PROGRAMS);
         if (categoryMenuItem) {
-            const appList = [];
-            this.applicationsMap.forEach((value, key, _map) => {
-                appList.push(key);
+            this.applicationsMap.forEach((value, _key, _map) => {
                 // Show Recently Installed Indicator on All Programs category
                 if (value.isRecentlyInstalled && !categoryMenuItem.isRecentlyInstalled)
                     categoryMenuItem.setNewAppIndicator(true);
             });
-            appList.sort((a, b) => {
-                return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-            });
-            categoryMenuItem.appList = appList;
+
+            categoryMenuItem.appList = this._sortedAppsList;
         }
 
         categoryMenuItem = this.categoryDirectories.get(Constants.CategoryType.FAVORITES);
@@ -410,8 +421,15 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 }
             }
         }
-        if (categoryMenuItem instanceof MW.SubCategoryMenuItem)
+        if (categoryMenuItem instanceof MW.SubCategoryMenuItem) {
             categoryMenuItem.populateMenu();
+        } else {
+            categoryMenuItem.appList.sort((a, b) => {
+                const nameA = a.get_name();
+                const nameB = b.get_name();
+                return nameA.localeCompare(nameB);
+            });
+        }
     }
 
     setNewAppIndicator() {
@@ -945,15 +963,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     }
 
     displayAllApps() {
-        const appList = [];
-        this.applicationsMap.forEach((value, key, _map) => {
-            appList.push(key);
-        });
-        appList.sort((a, b) => {
-            return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-        });
         this._clearActorsFromBox();
-        this._displayAppList(appList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
+        this._displayAppList(this._sortedAppsList, Constants.CategoryType.ALL_PROGRAMS, this.applicationsGrid);
     }
 
     get activeMenuItem() {

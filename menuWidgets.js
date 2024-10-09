@@ -2845,6 +2845,11 @@ export class SubCategoryMenuItem extends BaseMenuItem {
     }
 
     populateMenu() {
+        this.appList.sort((a, b) => {
+            const nameA = a._app.get_name();
+            const nameB = b._app.get_name();
+            return nameA.localeCompare(nameB);
+        });
         this._subMenuPopup.populateMenu(this.appList);
     }
 
