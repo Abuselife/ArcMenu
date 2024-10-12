@@ -76,7 +76,6 @@ export const Layout = class BriskLayout extends BaseMenuLayout {
         this.leftBox.add_child(this.categoriesScrollBox);
 
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesBox.add_effect_with_name('dim', this._dimEffect);
         this._addChildToParent(this.categoriesScrollBox, this.categoriesBox);
 
         this.actionsBox = new St.BoxLayout({

@@ -77,7 +77,6 @@ export const Layout = class BudgieLayout extends BaseMenuLayout {
         this.leftBox.add_child(this.categoriesScrollBox);
 
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesBox.add_effect_with_name('dim', this._dimEffect);
         this._addChildToParent(this.categoriesScrollBox, this.categoriesBox);
 
         if (this._settings.get_boolean('enable-activities-shortcut')) {

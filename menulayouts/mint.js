@@ -103,7 +103,6 @@ export const Layout = class MintLayout extends BaseMenuLayout {
         });
         this.leftBox.add_child(this.categoriesScrollBox);
         this.categoriesBox = new St.BoxLayout({vertical: true});
-        this.categoriesBox.add_effect_with_name('dim', this._dimEffect);
         this._addChildToParent(this.categoriesScrollBox, this.categoriesBox);
 
         this.searchEntry.style = 'margin: 0px;';

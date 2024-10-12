@@ -207,10 +207,8 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this._menuLayout = await LayoutHandler.createMenuLayout(this, layout);
 
         // MenuButton may be destroyed while createMenuLayout() is running
-        if (this._destroyed && this._menuLayout) {
-            this._menuLayout.destroy();
+        if (this._destroyed)
             return;
-        }
 
         if (this._menuLayout) {
             this.arcMenu.box.add_child(this._menuLayout);

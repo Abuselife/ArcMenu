@@ -74,11 +74,8 @@ export const StandaloneRunner = class ArcMenuStandaloneRunner {
         this._menuLayout = await LayoutHandler.createMenuLayout(this, Constants.MenuLayout.RUNNER, standaloneRunner);
 
         // StandaloneRunner may be destroyed while createMenuLayout() is running
-        if (this._destroyed && this._menuLayout) {
-            this._menuLayout.destroy();
-            this._menuLayout = null;
+        if (this._destroyed)
             return;
-        }
 
         if (this._menuLayout)
             this.arcMenu.box.add_child(this._menuLayout);

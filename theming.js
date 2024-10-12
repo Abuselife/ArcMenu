@@ -230,7 +230,7 @@ export async function updateStylesheet() {
         }
         .arcmenu-menu StEntry:focus{
             background-color: ${modifyColorLuminance(menuBGColor, 0.2, .4)};
-            box-shadow: inset 0 0 0 2px ${modifyColorLuminance(itemActiveBGColor, 0.025, .7)};
+            box-shadow: inset 0 0 0 2px ${itemActiveBGColor};
         }
         .arcmenu-menu StLabel.hint-text{
             color: ${modifyColorLuminance(menuFGColor, 0, 0.6)};
