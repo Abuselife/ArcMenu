@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GMenu from 'gi://GMenu';
@@ -115,6 +116,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.hasPinnedApps = false;
         this.activeCategoryType = -1;
         this._disableFadeEffect = this._settings.get_boolean('disable-scrollview-fade-effect');
+        this._dimEffect = new Clutter.BrightnessContrastEffect({
+            enabled: false,
+        });
 
         this.connect('key-press-event', this._onMainBoxKeyPress.bind(this));
 
@@ -980,6 +984,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     _onSearchEntryChanged(searchEntry, searchString) {
         if (searchEntry.isEmpty()) {
+            // Enable Category Mouse Hover activation while search results are inactive.
+            this._setCategoriesBoxInactive(false);
+
             if (this.applicationsBox.contains(this.searchResults))
                 this.applicationsBox.remove_child(this.searchResults);
 
@@ -1005,6 +1012,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
                 // Used to prevent the top search result from instantly changing
                 // if users mouse is over a differnt menu item.
                 this.blockHoverState = true;
+
+                // Prevent Category Mouse Hover activation while search results are active.
+                this._setCategoriesBoxInactive(true);
 
                 this.searchResults.setTerms(searchString.split(/\s+/));
             }
@@ -1061,6 +1071,9 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
     _onMainBoxKeyPress(actor, event) {
         // Prevent a mouse hover event from setting a new active menu item, until next mouse move event.
         this.blockHoverState = true;
+
+        // Prevent Category Mouse Hover activation while search results are active.
+        this._setCategoriesBoxInactive(true);
 
         const symbol = event.get_key_symbol();
         const unicode = Clutter.keysym_to_unicode(symbol);
@@ -1201,6 +1214,34 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
             });
             this.categoryDirectories = null;
         }
+    }
+
+    _setCategoriesBoxInactive(bool) {
+        const activateOnHover = this._settings.get_boolean('activate-on-hover');
+        if (!activateOnHover)
+            return;
+        if (!this.categoriesBox && !this.supports_category_hover_activation)
+            return;
+
+        this.blockCategoryHoverActivation = bool;
+        const DIM_BRIGHTNESS = -0.4;
+        const ANIMATION_TIME = 200;
+
+        const val = 127 * (1 + (bool ? 1 : 0) * DIM_BRIGHTNESS);
+        const colorValues = {
+            red: val,
+            green: val,
+            blue: val,
+            alpha: 255,
+        };
+        const color = Clutter.Color ? new Clutter.Color(colorValues) : new Cogl.Color(colorValues);
+
+        this.categoriesBox.ease_property('@effects.dim.brightness', color, {
+            mode: Clutter.AnimationMode.LINEAR,
+            duration: ANIMATION_TIME,
+            onStopped: () => (this._dimEffect.enabled = bool),
+        });
+        this._dimEffect.enabled = true;
     }
 
     _createScrollBox(params) {

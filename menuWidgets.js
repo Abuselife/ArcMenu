@@ -2964,6 +2964,7 @@ export class CategoryMenuItem extends BaseMenuItem {
 
     displayAppList() {
         this._menuLayout.searchEntry?.clearWithoutSearchChangeEvent();
+        this._menuLayout._setCategoriesBoxInactive(false);
         this._menuLayout.activeCategoryName = this._name;
 
         switch (this._category) {
@@ -2980,6 +2981,7 @@ export class CategoryMenuItem extends BaseMenuItem {
         default:
             if (this._category === Constants.CategoryType.FREQUENT_APPS)
                 this._menuLayout.populateFrequentAppsList(this);
+
             this._menuLayout.displayCategoryAppList(this.appList, this._category);
             break;
         }
@@ -3005,8 +3007,9 @@ export class CategoryMenuItem extends BaseMenuItem {
     _shouldActivateOnHover() {
         const activateOnHover = this._settings.get_boolean('activate-on-hover');
         const supportsActivateOnHover = this._menuLayout.supports_category_hover_activation;
+        const activeSearchResults = this._menuLayout.blockCategoryHoverActivation;
 
-        return activateOnHover && supportsActivateOnHover;
+        return activateOnHover && supportsActivateOnHover && !activeSearchResults;
     }
 
     _onEnterEvent() {

@@ -222,17 +222,15 @@ export async function updateStylesheet() {
         }
         .arcmenu-menu StEntry{
             font-size: ${menuFontSize}pt;
-            border-color: ${modifyColorLuminance(menuSeparatorColor, 0, .1)};
             color: ${menuFGColor};
             background-color: ${modifyColorLuminance(menuBGColor, 0.1, .4)};
         }
         .arcmenu-menu StEntry:hover{
-            border-color: ${itemHoverBGColor};
             background-color: ${modifyColorLuminance(menuBGColor, 0.15, .4)};
         }
         .arcmenu-menu StEntry:focus{
-            border-color: ${itemActiveBGColor};
             background-color: ${modifyColorLuminance(menuBGColor, 0.2, .4)};
+            box-shadow: inset 0 0 0 2px ${modifyColorLuminance(itemActiveBGColor, 0.025, .7)};
         }
         .arcmenu-menu StLabel.hint-text{
             color: ${modifyColorLuminance(menuFGColor, 0, 0.6)};
