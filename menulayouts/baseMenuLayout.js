@@ -1225,7 +1225,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         this.categoriesBox.ease({
             mode: Clutter.AnimationMode.LINEAR,
             duration: ANIMATION_TIME,
-            opacity: inactive ? 75 : 255,
+            opacity: inactive ? 96 : 255,
         });
     }
 
