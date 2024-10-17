@@ -263,7 +263,8 @@ export const Layout = class AzLayout extends BaseMenuLayout {
     }
 
     _onDestroy() {
-        this.arcMenu.box.style = null;
+        if (this.arcMenu)
+            this.arcMenu.box.style = null;
         this.backButton.destroy();
         this.allAppsButton.destroy();
         super._onDestroy();

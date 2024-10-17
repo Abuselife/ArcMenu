@@ -277,7 +277,8 @@ export const Layout = class RedmondLayout extends BaseMenuLayout {
     }
 
     _onDestroy() {
-        this.arcMenu.box.style = null;
+        if (this.arcMenu)
+            this.arcMenu.box.style = null;
         super._onDestroy();
     }
 };

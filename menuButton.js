@@ -207,8 +207,11 @@ class ArcMenuMenuButton extends PanelMenu.Button {
         this._menuLayout = await LayoutHandler.createMenuLayout(this, layout);
 
         // MenuButton may be destroyed while createMenuLayout() is running
-        if (this._destroyed)
+        if (this._destroyed && this._menuLayout) {
+            this._menuLayout.arcMenu = null;
+            this._menuLayout.destroy();
             return;
+        }
 
         if (this._menuLayout) {
             this.arcMenu.box.add_child(this._menuLayout);
@@ -378,16 +381,6 @@ class ArcMenuMenuButton extends PanelMenu.Button {
             this._menuLayout?.grab_key_focus();
     }
 
-    _maybeShowPanel() {
-        if (this._panelParent.intellihide && this._panelParent.intellihide.enabled) {
-            this._panelParent.intellihide._revealPanel(true);
-            this._panelParent.intellihide.revealAndHold(1);
-        } else if (!this._panelBox.visible) {
-            this._panelBox.visible = true;
-            this._panelNeedsHiding = true;
-        }
-    }
-
     updateHeight() {
         if (!this._menuLayout)
             return;
@@ -523,7 +516,13 @@ class ArcMenuMenuButton extends PanelMenu.Button {
                 }
                 if (this._panelNeedsHiding) {
                     this._panelNeedsHiding = false;
-                    const hidePanel = () => (this._panelBox.visible = false);
+                    // Hide panel if monitor inFullscreen, else show it
+                    const hidePanel = () => {
+                        const monitor = Main.layoutManager.findMonitorForActor(this);
+                        this._panelBox.visible = !(global.window_group.visible &&
+                                                    monitor &&
+                                                    monitor.inFullscreen);
+                    };
 
                     const isMouseOnPanel = this._isMouseOnPanel();
                     if (isMouseOnPanel)
@@ -532,6 +531,16 @@ class ArcMenuMenuButton extends PanelMenu.Button {
                         hidePanel();
                 }
             }
+        }
+    }
+
+    _maybeShowPanel() {
+        if (this._panelParent.intellihide && this._panelParent.intellihide.enabled) {
+            this._panelParent.intellihide._revealPanel(true);
+            this._panelParent.intellihide.revealAndHold(1);
+        } else if (!this._panelBox.visible) {
+            this._panelBox.visible = true;
+            this._panelNeedsHiding = true;
         }
     }
 
@@ -551,8 +560,17 @@ class ArcMenuMenuButton extends PanelMenu.Button {
 
         if (panelBoxRect.contains_point(cursorLocation))
             return true;
-        else
-            return false;
+
+        // Check if panel or panel menus have grab actor
+        const grabActor = global.stage.get_grab_actor();
+        const sourceActor = grabActor?._sourceActor || grabActor;
+        const statusArea = this._panelParent.statusArea ?? this._panel.statusArea;
+        const quickSettingsMenu = statusArea?.quickSettings?.menu.actor;
+
+        if (sourceActor && (quickSettingsMenu?.contains(sourceActor) || this._panelParent.contains(sourceActor)))
+            return true;
+
+        return false;
     }
 
     _startTrackingMouse(callback) {
