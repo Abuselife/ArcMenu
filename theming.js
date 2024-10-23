@@ -188,7 +188,7 @@ export async function updateStylesheet() {
             color: ${menuFGColor};
         }
         .arcmenu-menu .popup-menu-item:focus, .arcmenu-menu .popup-menu-item:hover,
-        .arcmenu-menu .popup-menu-item:checked, .arcmenu-menu .popup-menu-item.selected,
+        .arcmenu-menu .popup-menu-item:checked, .arcmenu-menu .popup-menu-item.selected, .arcmenu-menu .popup-menu-item:selected,
         .arcmenu-menu StButton:focus, .arcmenu-menu StButton:hover, .arcmenu-menu StButton:checked {
             color: ${itemHoverFGColor};
             background-color: ${itemHoverBGColor};

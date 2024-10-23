@@ -290,16 +290,30 @@ export class BaseMenuItem extends St.BoxLayout {
                 if (this._menuLayout.activeMenuItem !== this)
                     this._menuLayout.activeMenuItem = this;
 
-                this.add_style_class_name('selected');
+                this._setSelectedStyle();
                 if (this.can_focus)
                     this.grab_key_focus();
             } else {
-                this.remove_style_class_name('selected');
+                this._removeSelectedStyle();
                 if (!this.isActiveCategory)
                     this.remove_style_pseudo_class('active');
             }
             this.notify('active');
         }
+    }
+
+    _setSelectedStyle() {
+        if (ShellVersion >= 47)
+            this.add_style_pseudo_class('selected');
+        else
+            this.add_style_class_name('selected');
+    }
+
+    _removeSelectedStyle() {
+        if (ShellVersion >= 47)
+            this.remove_style_pseudo_class('selected');
+        else
+            this.remove_style_class_name('selected');
     }
 
     setShouldShow() {
