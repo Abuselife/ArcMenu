@@ -12,6 +12,7 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
+import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Params from 'resource:///org/gnome/shell/misc/params.js';
@@ -36,6 +37,8 @@ const USER_AVATAR_SIZE = 28;
 
 const TOOLTIP_SHOW_TIME = 150;
 const TOOLTIP_HIDE_TIME = 100;
+
+const [ShellVersion] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
 
 /**
  * @param {Constants.PowerType} powerType The power type to activate
@@ -515,8 +518,8 @@ export class ActivitiesMenuItem extends BaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.quicklinks_icon_size);
+        const iconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, this._menuLayout.quicklinks_icon_size);
 
         return new St.Icon({
             icon_name: 'view-fullscreen-symbolic',
@@ -737,8 +740,8 @@ export class ArcMenuButtonItem extends BaseMenuItem {
     }
 
     createIcon(overrideIconSize) {
-        const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.buttons_icon_size);
+        const iconSizeEnum = this._settings.get_enum('button-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, this._menuLayout.buttons_icon_size);
 
         return new St.Icon({
             gicon: this.gicon ? this.gicon : Gio.icon_new_for_string(this.iconName),
@@ -842,11 +845,11 @@ export class LeaveButton extends BaseMenuItem {
     }
 
     createIcon(overrideIconSize) {
-        const IconSizeEnum = this.showLabel ? this._settings.get_enum('quicklinks-item-icon-size')
+        const iconSizeEnum = this.showLabel ? this._settings.get_enum('quicklinks-item-icon-size')
             : this._settings.get_enum('button-item-icon-size');
         const defaultIconSize = this.showLabel ? this._menuLayout.quicklinks_icon_size
             : this._menuLayout.buttons_icon_size;
-        const iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
+        const iconSize = Utils.getIconSize(iconSizeEnum, defaultIconSize);
 
         return new St.Icon({
             gicon: Gio.icon_new_for_string(this.iconName),
@@ -982,8 +985,8 @@ export class PowerMenuItem extends BaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, this._menuLayout.quicklinks_icon_size);
+        const iconSizeEnum = this._settings.get_enum('quicklinks-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, this._menuLayout.quicklinks_icon_size);
 
         return new St.Icon({
             gicon: Gio.icon_new_for_string(Constants.PowerOptions[this.powerType].ICON),
@@ -1030,8 +1033,8 @@ export class NavigationButton extends ArcMenuButtonItem {
     }
 
     createIcon() {
-        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
+        const iconSizeEnum = this._settings.get_enum('misc-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
 
         return new St.Icon({
             gicon: this.gicon ? this.gicon : Gio.icon_new_for_string(this.iconName),
@@ -1094,8 +1097,8 @@ export class BackButton extends BaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, Constants.MISC_ICON_SIZE);
+        const iconSizeEnum = this._settings.get_enum('misc-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, Constants.MISC_ICON_SIZE);
 
         return new St.Icon({
             icon_name: 'go-previous-symbolic',
@@ -1150,8 +1153,8 @@ export class ViewAllAppsButton extends BaseMenuItem {
     }
 
     createIcon() {
-        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, Constants.MISC_ICON_SIZE);
+        const iconSizeEnum = this._settings.get_enum('misc-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, Constants.MISC_ICON_SIZE);
 
         return new St.Icon({
             icon_name: 'go-next-symbolic',
@@ -1342,8 +1345,7 @@ export class ShortcutMenuItem extends BaseMenuItem {
     }
 }
 
-// Menu item which displays the current user
-export class UserMenuItem extends BaseMenuItem {
+export class AvatarMenuItem extends BaseMenuItem {
     static {
         GObject.registerClass(this);
     }
@@ -1358,19 +1360,12 @@ export class UserMenuItem extends BaseMenuItem {
         else
             this.avatarStyle = 'arcmenu-avatar-square';
 
-        if (this._displayType === Constants.DisplayType.BUTTON) {
-            const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
-            const defaultIconSize = this._menuLayout.buttons_icon_size;
-            this.iconSize = Utils.getIconSize(IconSizeEnum, defaultIconSize);
-            this.userMenuIcon.set_style_class_name(`${this.avatarStyle} user-icon`);
-        } else {
-            const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
-            this.iconSize = Utils.getIconSize(IconSizeEnum, USER_AVATAR_SIZE);
-        }
+        const iconSizeEnum = this._settings.get_enum('misc-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, USER_AVATAR_SIZE);
 
-        this.userMenuIcon = new UserMenuIcon(menuLayout, this.iconSize, false);
-        this.add_child(this.userMenuIcon);
-        this.label = this.userMenuIcon.label;
+        const avatarMenuIcon = new AvatarMenuIcon(menuLayout, iconSize, false);
+        this.add_child(avatarMenuIcon);
+        this.label = avatarMenuIcon.label;
         this.add_child(this.label);
 
         if (this._displayType === Constants.DisplayType.BUTTON)
@@ -1384,7 +1379,7 @@ export class UserMenuItem extends BaseMenuItem {
     }
 }
 
-export class UserMenuIcon extends St.Bin {
+export class AvatarMenuIcon extends St.Bin {
     static {
         GObject.registerClass(this);
     }
@@ -3239,8 +3234,8 @@ export class PlaceMenuItem extends BaseMenuItem {
 
         if (this._displayType === Constants.DisplayType.BUTTON) {
             const defaultButtonIconSize = this._menuLayout.buttons_icon_size;
-            const IconSizeEnum = this._settings.get_enum('button-item-icon-size');
-            iconSize = Utils.getIconSize(IconSizeEnum, defaultButtonIconSize);
+            iconSizeEnum = this._settings.get_enum('button-item-icon-size');
+            iconSize = Utils.getIconSize(iconSizeEnum, defaultButtonIconSize);
             this.style = `min-width: ${iconSize}px; min-height: ${iconSize}px;`;
         }
 
@@ -3294,8 +3289,8 @@ export class SearchEntry extends St.Entry {
         this._menuLayout = menuLayout;
         this.triggerSearchChangeEvent = true;
         this._iconClickedId = 0;
-        const IconSizeEnum = this._settings.get_enum('misc-item-icon-size');
-        const iconSize = Utils.getIconSize(IconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
+        const iconSizeEnum = this._settings.get_enum('misc-item-icon-size');
+        const iconSize = Utils.getIconSize(iconSizeEnum, Constants.EXTRA_SMALL_ICON_SIZE);
 
         this._findIcon = new St.Icon({
             style_class: 'search-entry-icon',

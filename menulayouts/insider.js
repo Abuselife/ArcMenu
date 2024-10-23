@@ -68,14 +68,14 @@ export const Layout = class InsiderLayout extends BaseMenuLayout {
                 vertical: true,
                 style: 'padding-bottom: 6px;',
             });
-            const userMenuIcon = new MW.UserMenuIcon(this, 75, true);
-            userMenuIcon.label.set({
+            const avatarMenuIcon = new MW.AvatarMenuIcon(this, 75, true);
+            avatarMenuIcon.label.set({
                 x_align: Clutter.ActorAlign.CENTER,
                 y_align: Clutter.ActorAlign.CENTER,
                 style: 'font-size: large;',
             });
-            userMenuBox.add_child(userMenuIcon);
-            userMenuBox.add_child(userMenuIcon.label);
+            userMenuBox.add_child(avatarMenuIcon);
+            userMenuBox.add_child(avatarMenuIcon.label);
             this._mainBox.add_child(userMenuBox);
         }
 

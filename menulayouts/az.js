@@ -134,8 +134,8 @@ export const Layout = class AzLayout extends BaseMenuLayout {
     _createExtraButtons() {
         this.actionsBox.destroy_all_children();
 
-        const userMenuItem = new MW.UserMenuItem(this, Constants.DisplayType.LIST);
-        this.actionsBox.add_child(userMenuItem);
+        const avatarMenuItem = new MW.AvatarMenuItem(this, Constants.DisplayType.LIST);
+        this.actionsBox.add_child(avatarMenuItem);
 
         const isContainedInCategory = false;
         const extraButtons = this._settings.get_value('az-layout-extra-shortcuts').deep_unpack();
