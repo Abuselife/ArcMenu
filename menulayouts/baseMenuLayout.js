@@ -174,6 +174,8 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
         if (this.has_search) {
             this.searchEntry.clearWithoutSearchChangeEvent();
             this.searchResults.setTerms([]);
+            // Search results have been cleared, set category box active if needed.
+            this._setCategoriesBoxInactive(false);
         }
 
         this._clearActorsFromBox();
@@ -980,9 +982,6 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     _onSearchEntryChanged(searchEntry, searchString) {
         if (searchEntry.isEmpty()) {
-            // Enable Category Mouse Hover activation while search results are inactive.
-            this._setCategoriesBoxInactive(false);
-
             if (this.applicationsBox.contains(this.searchResults))
                 this.applicationsBox.remove_child(this.searchResults);
 
@@ -1214,9 +1213,7 @@ export const BaseMenuLayout = class ArcMenuBaseMenuLayout extends St.BoxLayout {
 
     _setCategoriesBoxInactive(inactive) {
         const activateOnHover = this._settings.get_boolean('activate-on-hover');
-        if (!activateOnHover)
-            return;
-        if (!this.categoriesBox && !this.supports_category_hover_activation)
+        if (!activateOnHover || !this.categoriesBox || !this.supports_category_hover_activation)
             return;
 
         this.blockCategoryHoverActivation = inactive;

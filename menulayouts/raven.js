@@ -62,7 +62,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         const homeScreen = this._settings.get_boolean('enable-unity-homescreen');
         this.activeCategoryName = homeScreen ? _('Pinned') : _('All Programs');
 
-        this.actionsBoxContainer = new St.BoxLayout({
+        this.categoriesBoxContainer = new St.BoxLayout({
             x_expand: false,
             y_expand: true,
             x_align: Clutter.ActorAlign.START,
@@ -70,7 +70,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             vertical: true,
         });
 
-        this.actionsBox = new St.BoxLayout({
+        this.categoriesBox = new St.BoxLayout({
             x_expand: false,
             y_expand: true,
             x_align: Clutter.ActorAlign.START,
@@ -78,7 +78,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
             vertical: true,
             style: 'spacing: 5px;',
         });
-        this.actionsBoxContainer.add_child(this.actionsBox);
+        this.categoriesBoxContainer.add_child(this.categoriesBox);
 
         this.topBox = new St.BoxLayout({
             x_expand: true,
@@ -188,16 +188,16 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
         const style = `margin: 0px 0px 0px 0px; spacing: 10px; background-color: rgba(10, 10, 15, 0.1);
                        padding: 5px 5px; border-color: rgba(186, 196,201, 0.2);`;
 
-        if (this.contains(this.actionsBoxContainer))
-            this.remove_child(this.actionsBoxContainer);
+        if (this.contains(this.categoriesBoxContainer))
+            this.remove_child(this.categoriesBoxContainer);
 
         const ravenPosition = this._settings.get_enum('raven-position');
         if (ravenPosition === Constants.RavenPosition.LEFT) {
-            this.insert_child_at_index(this.actionsBoxContainer, 0);
-            this.actionsBoxContainer.style = `border-right-width: 1px;${style}`;
+            this.insert_child_at_index(this.categoriesBoxContainer, 0);
+            this.categoriesBoxContainer.style = `border-right-width: 1px;${style}`;
         } else if (ravenPosition === Constants.RavenPosition.RIGHT) {
-            this.insert_child_at_index(this.actionsBoxContainer, 1);
-            this.actionsBoxContainer.style = `border-left-width: 1px;${style}`;
+            this.insert_child_at_index(this.categoriesBoxContainer, 1);
+            this.categoriesBoxContainer.style = `border-left-width: 1px;${style}`;
         }
     }
 
@@ -267,7 +267,7 @@ export const Layout = class RavenLayout extends BaseMenuLayout {
 
     displayCategories() {
         for (const categoryMenuItem of this.categoryDirectories.values())
-            this.actionsBox.add_child(categoryMenuItem);
+            this.categoriesBox.add_child(categoryMenuItem);
     }
 
     displayPinnedApps() {
